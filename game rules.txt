@@ -1,0 +1,29 @@
+ok since its not working lets create the game from scratch in javascript:
+its a board game, create the board like chess. All squares are green except for the rows 4 and 5 where it will have a random amount of blue squares (max 5) a random amount of red (max 2) and 1 gray, fill the rest with green also. the blue represents water and pieces cannot stand on it. the gray will allow the defender piece(the one standing on it) to destroy the attacker if the defender dies, and the red will ignore the avoidance of other pieces when the attacker is standing on it.
+
+on each player turn they will have 2 actions available. they can either move or attack and each one consumes on action when they finish then the turn finishes. 
+
+The pieces are the following:
+Pawn : 
+Move:
+the pawn will move 1 square at a time only.
+attack:
+it can attack any inmediate unit that is next to it in any direction. 1 sq
+defence:
+70% that it will dodge attacks.
+
+Horse : 
+Move:
+can move 3 squares in cross direction(forward, backwards ,right, left, diagonal) it can jump terrain and units in the way.
+attack:
+it can attack any inmediate unit that is next to it in any direction. 1 sq
+defence:
+50% that it will dodge attacks.
+
+archer:
+Move:
+same than pawn
+attack:
+it can attack in cross direction 3 squares away from distance, can also hit 2 and 1 square away.
+defence:
+100% of times it will be hit.

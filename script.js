@@ -1,0 +1,403 @@
+const BOARD_SIZE = 8;
+let selectedPiece = null;
+let turn = 'P1';
+let moveCount = 0;
+
+// Track if a piece has attacked during the current turn
+let pieceHasAttacked = {};
+
+// Add images for all the pieces (if needed)
+const pieceImages = {
+    'P1': 'resources/images/p1.pawn.png',  // Add path to Pawn Player 1 image
+    'P2': 'resources/images/p2_pawn.png',  // Add path to Pawn Player 2 image
+    'H1': 'resources/images/p1_horse.png',  // Player 1's horse image
+    'H2': 'resources/images/p2_horse.jpg',  // Add path to Horse Player 2 image
+    'A1': 'resources/images/p1_archer.png',  // Add path to Archer Player 1 image
+    'A2': 'resources/images/p2_a.png',  // Add path to Archer Player 2 image,
+    'GA1': 'resources/images/p1_ga.png',  // Add path to General Archer Player 1 image
+    'GA2': 'resources/images/p2_ga.png',  // Add path to General Archer Player 2 image
+    'GP1': 'resources/images/p1_gp.png',  // Add path to General Pawn Player 1 image
+    'GP2': 'resources/images/p2_gp.png',  // Add path to General Pawn Player 2 image
+    'GH1': 'resources/images/p1_gh.png',  // Add path to General Horse Player 1 image
+    'GH2': 'resources/images/p2_gh.png',  // Add path to General Horse Player 2 image
+    'T1': 'resources/images/p1_t.png',  // Add path to Tower Player 1 image
+    'T2': 'resources/images/p2_t.png'   // Add path to Tower Player 2 image
+};
+
+const towerHp = {
+    'T1': 18,  // Player 1's tower HP
+    'T2': 20   // Player 2's tower HP
+};
+
+const generals = ['GA', 'GP', 'GH'];  // List of possible generals (General Archer, General Pawn, General Horse)
+
+let player1General = '';
+let player2General = '';
+
+const board = [
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', '']
+];
+
+const terrain = [];
+
+function initializeBoard() {
+    assignRandomGenerals();
+    placePieces();
+    createTerrain();
+    renderBoard();
+}
+
+// Assign a random general to each player
+function assignRandomGenerals() {
+    const randomIndexP1 = Math.floor(Math.random() * generals.length);
+    const randomIndexP2 = Math.floor(Math.random() * generals.length);
+    player1General = generals[randomIndexP1] + '1';  // Assign a random general to Player 1
+    player2General = generals[randomIndexP2] + '2';  // Assign a random general to Player 2
+    updatePlayerInfo();
+}
+
+function placePieces() {
+    // Place pawns
+    for (let col = 0; col < BOARD_SIZE; col++) {
+        if (col !== 0 && col !== 7) {
+            board[1][col] = 'P1';  // Player 1's Pawns
+            board[6][col] = 'P2';  // Player 2's Pawns
+        }
+    }
+    // Place horses
+    board[0][2] = 'H1';
+    board[1][7] = 'H1';
+    board[6][0] = 'H2';
+    board[7][5] = 'H2';
+
+    // Place archers
+    board[0][4] = 'A1';
+    board[7][3] = 'A2';
+    board[1][0] = 'A1';
+    board[6][7] = 'A2';
+
+    // Place random generals
+    board[0][3] = player1General;  // Random general for Player 1
+    board[7][4] = player2General;  // Random general for Player 2
+
+    // Place towers
+    board[3][0] = 'T1';  // Player 1's Tower
+    board[4][7] = 'T2';  // Player 2's Tower
+}
+
+function createTerrain() {
+    for (let row = 0; row < BOARD_SIZE; row++) {
+        terrain[row] = [];
+        for (let col = 0; col < BOARD_SIZE; col++) {
+            if (row === 3 || row === 4) {
+                terrain[row][col] = getTerrainForSpecialRows();
+            } else {
+                terrain[row][col] = 'green';
+            }
+        }
+    }
+}
+
+function getTerrainForSpecialRows() {
+    const randomValue = Math.random();
+    if (randomValue < 0.15 && terrain.flat().filter(t => t === 'blue').length < 6) {
+        return 'blue';  // Water
+    } else if (randomValue < 0.30 && terrain.flat().filter(t => t === 'red').length < 2) {
+        return 'red';  // No avoidance
+    } else if (randomValue < 0.35 && terrain.flat().filter(t => t === 'gray').length < 1) {
+        return 'gray';  // Gray for defense boost
+    } else {
+        return 'green';
+    }
+}
+
+function renderBoard() {
+    const gameBoard = document.getElementById('gameBoard');
+    gameBoard.innerHTML = '';
+    
+    for (let row = 0; row < BOARD_SIZE; row++) {
+        const tr = document.createElement('tr');
+        for (let col = 0; col < BOARD_SIZE; col++) {
+            const td = document.createElement('td');
+            td.dataset.row = row;
+            td.dataset.col = col;
+
+             // Set terrain background images based on terrain type with smaller size
+             if (terrain[row][col] === 'green') {
+                td.style.backgroundImage = "url('resources/images/terrain5.png')";
+                td.style.backgroundSize = "50px 50px"; // Set smaller size
+            } else if (terrain[row][col] === 'blue') {
+                td.style.backgroundImage = "url('resources/images/terrain2.png')";
+                td.style.backgroundSize = "50px 50px"; // Set smaller size
+            } else if (terrain[row][col] === 'red') {
+                td.style.backgroundImage = "url('resources/images/terrain3.png')";
+                td.style.backgroundSize = "50px 50px"; // Set smaller size
+            } else if (terrain[row][col] === 'gray') {
+                td.style.backgroundImage = "url('resources/images/terrain6.png')";
+                td.style.backgroundSize = "70px 70px"; // Set smaller size
+            }
+
+            const piece = board[row][col];
+            if (piece && pieceImages[piece]) {
+                const img = document.createElement('img');
+                img.src = pieceImages[piece];
+                td.appendChild(img);
+            } else if (piece) {
+                td.innerText = piece;  // Fallback text if image not available
+                td.classList.add('piece');
+            }
+
+            td.onclick = () => onClick(row, col);
+            tr.appendChild(td);
+        }
+        gameBoard.appendChild(tr);
+    }
+}
+
+function onClick(row, col) {
+    const piece = board[row][col];
+
+    if (selectedPiece) {
+        moveOrAttack(row, col);
+    } else if (piece && piece.endsWith(turn[1])) {
+        selectedPiece = { row, col };
+    }
+}
+
+function moveOrAttack(row, col) {
+    const selectedRow = selectedPiece.row;
+    const selectedCol = selectedPiece.col;
+    const piece = board[selectedRow][selectedCol];
+    const targetPiece = board[row][col];
+    const pieceKey = `${selectedRow},${selectedCol}`;
+
+    // Prevent attacking or moving to the same square (self-clicking)
+    if (selectedRow === row && selectedCol === col) {
+        selectedPiece = null;
+        return;  // Exit the function if the piece is clicked again
+    }
+
+    // Prevent attacking twice but allow moving after an attack
+    if (targetPiece === '' || !pieceHasAttacked[pieceKey]) {
+        if (targetPiece === '') {
+            // Move piece
+            if (isValidMove(selectedRow, selectedCol, row, col)) {
+                movePiece(selectedRow, selectedCol, row, col);
+            }
+        } else if (targetPiece.endsWith(turn === 'P1' ? '2' : '1')) {
+            // Check if the target piece is an enemy before attacking
+            if (isValidAttack(selectedRow, selectedCol, row, col)) {
+                attackPiece(selectedRow, selectedCol, row, col);
+                pieceHasAttacked[pieceKey] = true;  // Mark the piece as having attacked
+            }
+        }
+    }
+
+    selectedPiece = null;
+    renderBoard();
+}
+
+
+function isValidMove(fromRow, fromCol, toRow, toCol) {
+    const piece = board[fromRow][fromCol];
+
+    // Prevent movement to water (blue)
+    if (terrain[toRow][toCol] === 'blue') {
+        alert("Can't move into water!");
+        return false;
+    }
+
+    // Prevent Towers from moving
+    if (piece.startsWith('T')) {
+        return false;  // Towers can't move
+    }
+
+    // General Pawn, Pawn, Archer, and General Archer should only move 1 square in any direction
+    if (piece.startsWith('P') || piece.startsWith('GP') || piece.startsWith('A') || piece.startsWith('GA')) {
+        return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
+    }
+
+    // Horse and General Horse move up to 3 squares in the same direction (straight line or diagonal)
+    if (piece.startsWith('H') || piece.startsWith('GH')) {
+        const rowDiff = Math.abs(toRow - fromRow);
+        const colDiff = Math.abs(toCol - fromCol);
+
+        // Check if it's a straight line or diagonal and within 3 squares
+        return (rowDiff <= 3 && colDiff === 0) ||  // Vertical movement
+               (colDiff <= 3 && rowDiff === 0) ||  // Horizontal movement
+               (rowDiff === colDiff && rowDiff <= 3);  // Diagonal movement
+    }
+
+    return true;  // Default for other pieces (if any)
+}
+
+function movePiece(fromRow, fromCol, toRow, toCol) {
+    board[toRow][toCol] = board[fromRow][fromCol];
+    board[fromRow][fromCol] = '';
+    moveCount++;
+    updatePlayerInfo();
+
+    if (moveCount >= 2) {
+        endTurn();
+    }
+}
+
+function isValidAttack(attRow, attCol, defRow, defCol) {
+    const attacker = board[attRow][attCol];
+    const defender = board[defRow][defCol];
+
+    // Prevent friendly fire
+    if (defender.endsWith(attacker.endsWith('1') ? '1' : '2')) {
+        return false;  // Can't attack own team
+    }
+
+    if (attacker.startsWith('H') || attacker.startsWith('GH')) {
+        // Horses and General Horses can only attack adjacent (1 square) units
+        return Math.abs(attRow - defRow) <= 1 && Math.abs(attCol - defCol) <= 1;
+    } else if (attacker.startsWith('A')) {
+        // Archers can attack up to 3 squares in cross directions
+        return (Math.abs(attRow - defRow) <= 3 && attCol === defCol) ||  // Vertical attack
+               (Math.abs(attCol - defCol) <= 3 && attRow === defRow);   // Horizontal attack
+    } else if (attacker.startsWith('GA')) {
+        // General Archers can attack up to 4 squares in cross directions
+        return (Math.abs(attRow - defRow) <= 4 && attCol === defCol) ||  // Vertical attack
+               (Math.abs(attCol - defCol) <= 4 && attRow === defRow);   // Horizontal attack
+    }
+
+    return Math.abs(attRow - defRow) <= 1 && Math.abs(attCol - defCol) <= 1;  // All other pieces attack adjacent units
+}
+
+function attackPiece(attRow, attCol, defRow, defCol) {
+    const attacker = board[attRow][attCol];
+    const defender = board[defRow][defCol];
+    let hitChance;
+    if(attacker.startsWith('T')){
+        towerHp[attacker] -= 1;
+        alert(`When torret atacks lose 1hp even if it misses: ${towerHp[attacker]}HP`)
+    }
+    // Attack logic with avoidance chances
+    if (terrain[attRow][attCol] === 'red') {
+        hitChance = 1.0;  // Red terrain ignores avoidance
+    } else if (defender.startsWith('P')) {
+        hitChance = 0.3;  // Pawns and General Pawns have 70% avoidance
+        
+    } else if (defender.startsWith('GH')) {
+        hitChance = 0.3;  // General Horse has 70% avoidance
+        if (attacker.startsWith('A') || attacker.startsWith('GA')) {
+            hitChance = 0;
+            alert('Archers always miss General Horse');
+        }
+    } else if (defender.startsWith('GP')) {
+        hitChance = 0.2;  // General Pawn has 80% avoidance
+    } else if (defender.startsWith('H')) {
+        hitChance = 0.5;  // Horse and General Horse have 50% avoidance
+    } else if (defender.startsWith('GA')) {
+        hitChance = 0.5;  // General Archer has 50% avoidance
+    } else {
+        hitChance = 1.0;  // Other units are always hit
+    }
+
+    if ((x=Math.random()) <= hitChance) {
+        if (terrain[defRow][defCol] === 'gray') {
+            board[attRow][attCol] = '';  // Gray terrain destroys the attacker if the defender dies
+            alert(`${attacker} both killed each other due to defender's altitude advantage`);
+        }
+
+        if (defender.startsWith('T')) {
+            // Tower hit logic
+            if (attacker.startsWith('A') || attacker.startsWith('GA')) {
+                towerHp[defender] -= 1;  // Archers and General Archers do 1 damage to towers
+            } else {
+                towerHp[defender] -= 2;  // All other units do 2 damage to towers
+            }
+
+            alert(`${attacker} hit the Tower! ${defender} HP left: ${towerHp[defender]}`);
+            
+            if (towerHp[defender] <= 0) {
+                board[defRow][defCol] = '';  // Tower is destroyed
+                alert(`${attacker} destroyed the Tower! ${attacker} wins!`);
+            }
+        } else {
+            console.log(x)
+            board[defRow][defCol] = '';  // Defender is defeated
+        }
+    } else {
+        console.log(x)
+        alert("Attack missed!");
+
+        if (defender.startsWith('GP') && attacker !== 'A1' && attacker !== 'GA1') {
+            if (Math.random() < 0.3) {
+                board[attRow][attCol] = '';  // Counter-attack eliminates attacker
+                alert(`${defender} counter-attacked and killed ${attacker}!`);
+            }
+        }
+        if (defender.startsWith('GP') && attacker !== 'A2' && attacker !== 'GA2') {
+            if (Math.random() < 0.3) {
+                board[attRow][attCol] = '';  // Counter-attack eliminates attacker
+                alert(`${defender} counter-attacked and killed ${attacker}!`);
+            }
+        }
+    }
+    
+    // Increment action after attack, but don't force the turn to end after tower hit
+    moveCount++;
+    if (moveCount >= 2) {
+        endTurn();
+    }
+}
+
+
+function endTurn() {
+    moveCount = 0;
+    pieceHasAttacked = {};  // Reset attack status for all pieces
+    turn = turn === 'P1' ? 'P2' : 'P1';
+    document.getElementById('message').innerText = `It's now ${turn}'s turn!`;
+    updatePlayerInfo();
+}
+
+// Update the player information on the sidebar
+function updatePlayerInfo() {
+    // Update Player 1's info
+    document.getElementById('player1-turn').innerText = (turn === 'P1') ? 'Yes' : 'No';
+    document.getElementById('player1-actions').innerText = (turn === 'P1') ? 2 - moveCount : 0;  // Show actions only if it's Player 1's turn
+    document.getElementById('player1-general').innerText = getGeneralType('P1');
+
+    // Update Player 2's info
+    document.getElementById('player2-turn').innerText = (turn === 'P2') ? 'Yes' : 'No';
+    document.getElementById('player2-actions').innerText = (turn === 'P2') ? 2 - moveCount : 0;  // Show actions only if it's Player 2's turn
+    document.getElementById('player2-general').innerText = getGeneralType('P2');
+
+    // Highlight the active player's info by adding/removing the 'active-player' class
+    if (turn === 'P1') {
+        document.getElementById('player1-info').classList.add('active-player');
+        document.getElementById('player2-info').classList.remove('active-player');
+    } else {
+        document.getElementById('player2-info').classList.add('active-player');
+        document.getElementById('player1-info').classList.remove('active-player');
+    }
+}
+
+// Helper function to get the general type for each player
+function getGeneralType(player) {
+    if (player === 'P1') {
+        if (player1General.startsWith('GA')) return 'General Archer';
+        if (player1General.startsWith('GP')) return 'General Pawn';
+        if (player1General.startsWith('GH')) return 'General Horse';
+    } else if (player === 'P2') {
+        if (player2General.startsWith('GA')) return 'General Archer';
+        if (player2General.startsWith('GP')) return 'General Pawn';
+        if (player2General.startsWith('GH')) return 'General Horse';
+    }
+    return 'Unknown';  // Fallback in case something goes wrong
+}
+
+updatePlayerInfo();
+// Start the game
+initializeBoard();

@@ -1,0 +1,35 @@
+table {
+    border-collapse: collapse;
+    margin: 20px;
+}
+td {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 20px;
+    border: 1px solid black;
+    position: relative;
+}
+.green {
+    background-color: lightgreen;
+}
+.blue {
+    background-color: lightblue;
+}
+.red {
+    background-color: lightcoral;
+}
+.gray {
+    background-color: lightgray;
+}
+.piece {
+    font-weight: bold;
+}
+img {
+    width: 30px; /* Smaller width */
+    height: 30px; /* Smaller height */
+    position: absolute;
+    top: 15px;  /* Adjust position to center the image */
+    left: 15px; /* Adjust position to center the image */
+}

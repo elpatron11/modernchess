@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+        td {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .green {
+            background-color: lightgreen;
+        }
+        .blue {
+            background-color: lightblue;
+        }
+        .red {
+            background-color: lightcoral;
+        }
+        .gray {
+            background-color: lightgray;
+        }
+        .piece {
+            font-weight: bold;
+        }
+        img {
+            width: 50px; /* Smaller width */
+            height: 50px; /* Smaller height */
+            position: absolute;
+            top: 4px;  /* Adjust position to center the image */
+            left: 2px; /* Adjust position to center the image */
+            right: 1px;
+        }
+        /* Add red border to the current player's info */
+        .active-player {
+            border: 3px solid red;
+            color: red;  /* Change text color to red */
+        }
+        /* Player info container */
+        .player-info {
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            border: 2px solid gray;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Board Game</h1>
+
+<div style="display: flex;">
+    <div class="player-info" id="player1-info">
+        <h2>Player 1</h2>
+        <p>Turn: <span id="player1-turn">No</span></p>
+        <p>Actions left: <span id="player1-actions">2</span></p>
+        <p>General Type: <span id="player1-general">General Archer</span></p>
+    </div>
+    <table id="gameBoard"></table>
+    <div class="player-info" id="player2-info">
+        <h2>Player 2</h2>
+        <p>Turn: <span id="player2-turn">No</span></p>
+        <p>Actions left: <span id="player2-actions">2</span></p>
+        <p>General Type: <span id="player2-general">General Pawn</span></p>
+    </div>
+</div>
+
+
+
+<p id="message"></p>
+
+<script src="script.js"></script>
+
+</body>
+</html>
