@@ -24,8 +24,8 @@ const pieceImages = {
 };
 
 const towerHp = {
-    'T1': 20,
-    'T2': 18
+    'T1': 18,
+    'T2': 20
 };
 
 const generals = ['GA', 'GP', 'GH'];
