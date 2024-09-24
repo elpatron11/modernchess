@@ -1,5 +1,7 @@
 {
-    "root": "CHESSGAME",
-    "clean_urls": true
+    "root": ".",
+    "routes": {
+      "/**": "index.html"
+    }
   }
   
