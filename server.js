@@ -179,6 +179,17 @@ io.on('connection', (socket) => {
                 } else {
                     console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                     io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
+                    
+                    // General Warrior counter-attack logic
+                    if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                        const counterRoll = Math.random();
+                        if (counterRoll <= 0.3) {  // 30% chance to counter-attack
+                            console.log(`Counter-attack! ${attackingPiece} is removed.`);
+                            game.board[from.row][from.col] = '';  // Remove the attacking piece
+                            io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
+                        }}
+
+
                 }
 
                 game.unitHasAttacked[attackingUnit] = true;

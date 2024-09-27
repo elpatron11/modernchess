@@ -278,7 +278,11 @@ function getImageForUnit(unitType) {
         'P1_GW': '/resources/images/p1_gp.png',  // Example: General Warrior image for Player 1
         'P2_GW': '/resources/images/p2_gp.png',  // Example: General Warrior image for Player 2
         'T1': '/resources/images/p1_t.png',        // Example: Tower 1 image
-        'T2': '/resources/images/p2_t.png'         // Example: Tower 2 image
+        'T2': '/resources/images/p2_t.png',         // Example: Tower 2 image
+        'P1_GA': '/resources/images/p1_ga.png',
+        'P2_GA': '/resources/images/p2_ga.png',
+        'P1_GH': '/resources/images/p2_gh.png',
+        'P2_GH': '/resources/images/p1_archer.png'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
