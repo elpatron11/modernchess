@@ -1,0 +1,302 @@
+const socket = io('http://localhost:3000');
+let playerNumber;
+let turn;
+let board = [];
+let roomId = null;
+let selectedPiece = null;  // Track the selected piece for movement
+
+// Join a room when the player clicks the join button
+function joinRoom() {
+    roomId = document.getElementById('roomInput').value.trim();
+    if (roomId) {
+        socket.emit('joinRoom', roomId);
+    }
+}
+
+// Receive player number and initial board state after joining
+socket.on('playerNumber', (data) => {
+    playerNumber = data.playerNumber;
+    board = data.board;
+    turn = data.turn;  // Initialize the turn
+    renderBoard();
+    alert(`You are Player ${playerNumber}`);
+});
+
+// When both players have joined, the game starts and the board is set
+socket.on('gameStart', (boardData) => {
+    board = boardData;
+    renderBoard();
+    alert('Game started!');
+});
+
+// Update the board state after a move
+socket.on('updateBoard', (data) => {
+    board = data.board;
+    turn = data.turn;
+    renderBoard();
+    document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
+});
+
+// Notify if it's not the player's turn
+socket.on('notYourTurn', () => {
+    alert('It is not your turn!');
+});
+
+// Handle clicks on the board for selecting and moving pieces
+function onClick(row, col) {
+    // First, check if it's the player's turn
+    if (turn !== playerNumber) {
+        alert('Not your turn!');
+        return;
+    }
+
+    if (!selectedPiece && board[row][col].startsWith(playerNumber)) {
+        // Select the piece if none is selected and it's the player's piece
+        selectedPiece = { row, col };
+    } else if (selectedPiece) {
+        // If a piece is selected, make the move
+        const from = selectedPiece;
+        const to = { row, col };
+
+        // Send the move to the server
+        socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to } });
+
+        // Reset selectedPiece after the move
+        selectedPiece = null;
+    }
+}
+
+// Render the board in the HTML
+function renderBoard() {
+    const gameBoard = document.getElementById('gameBoard');
+    gameBoard.innerHTML = '';  // Clear the board
+
+    for (let row = 0; row < board.length; row++) {
+        const tr = document.createElement('tr');
+        for (let col = 0; col < board[row].length; col++) {
+            const td = document.createElement('td');
+            td.textContent = board[row][col] || '';
+            td.onclick = () => onClick(row, col);  // Attach click handler to each cell
+            tr.appendChild(td);
+        }
+        gameBoard.appendChild(tr);
+    }
+}
+
+// Attach the joinRoom function to the join button
+document.getElementById('joinButton').onclick = joinRoom;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+server
+
+
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const BOARD_SIZE = 8;
+
+// Store the game state and rooms
+const games = {};
+
+function createChessBoard() {
+    // Initialize an 8x8 chess-like board
+    const board = Array(BOARD_SIZE)
+        .fill(null)
+        .map(() => Array(BOARD_SIZE).fill(''));
+
+    // Place Player 1's pieces
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        board[1][i] = 'P1_P'; // P1 Pawns
+    }
+    board[0][0] = board[0][7] = 'P1_R'; // P1 Rooks
+    board[0][1] = board[0][6] = 'P1_N'; // P1 Knights
+    board[0][2] = board[0][5] = 'P1_B'; // P1 Bishops
+    board[0][3] = 'P1_Q'; // P1 Queen
+    board[0][4] = 'P1_K'; // P1 King
+
+    // Place Player 2's pieces
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        board[6][i] = 'P2_P'; // P2 Pawns
+    }
+    board[7][0] = board[7][7] = 'P2_R'; // P2 Rooks
+    board[7][1] = board[7][6] = 'P2_N'; // P2 Knights
+    board[7][2] = board[7][5] = 'P2_B'; // P2 Bishops
+    board[7][3] = 'P2_Q'; // P2 Queen
+    board[7][4] = 'P2_K'; // P2 King
+
+    return board;
+}
+
+// Serve static files from the "public" directory
+app.use(express.static('public'));
+
+io.on('connection', (socket) => {
+    console.log('A player connected:', socket.id);
+
+    socket.on('joinRoom', (roomId) => {
+        console.log(`Player ${socket.id} joined room ${roomId}`);
+        
+        // Create a new game in the room if it doesn't exist
+        if (!games[roomId]) {
+            games[roomId] = {
+                players: [],
+                board: createChessBoard(),
+                turn: 'P1'
+            };
+        }
+
+        const game = games[roomId];
+
+        // Allow a maximum of 2 players
+        if (game.players.length >= 2) {
+            socket.emit('roomFull');
+            return;
+        }
+
+        game.players.push(socket.id);
+
+        const playerNumber = game.players.length === 1 ? 'P1' : 'P2';
+        socket.emit('playerNumber', { playerNumber, board: game.board, turn: game.turn });
+
+        socket.join(roomId);
+
+        // Notify both players that the game has started when 2 players have joined
+        if (game.players.length === 2) {
+            io.to(roomId).emit('gameStart', game.board);
+        }
+
+        // Handle a move made by a player
+        socket.on('makeMove', (moveData) => {
+            if (game.turn !== moveData.player) {
+                socket.emit('notYourTurn');
+                return;
+            }
+
+            // Update the game board
+            const { from, to } = moveData.move;
+            game.board[to.row][to.col] = game.board[from.row][from.col];
+            game.board[from.row][from.col] = '';
+
+            // Switch turns
+            game.turn = game.turn === 'P1' ? 'P2' : 'P1';
+
+            // Emit the updated board to both players
+            io.to(roomId).emit('updateBoard', {
+                board: game.board,
+                turn: game.turn
+            });
+        });
+
+        // Handle player disconnection
+        socket.on('disconnect', () => {
+            console.log(`Player ${socket.id} disconnected`);
+            game.players = game.players.filter(player => player !== socket.id);
+
+            // If both players leave, clear the game room
+            if (game.players.length === 0) {
+                delete games[roomId];
+            }
+        });
+    });
+});
+
+server.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+html5
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <style>
+        /* Basic table styling for the chessboard */
+        table { border-collapse: collapse; }
+        td { width: 50px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <h1>Chess Game</h1>
+
+    <input type="text" id="roomInput" placeholder="Enter room ID">
+    <button id="joinButton">Join Room</button>
+    
+    <div id="turnInfo"></div>
+    
+    <table id="gameBoard"></table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+

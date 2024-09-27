@@ -33,3 +33,36 @@ img {
     top: 15px;  /* Adjust position to center the image */
     left: 15px; /* Adjust position to center the image */
 }
+/* CSS styles for each terrain */
+.normal-terrain {
+    background-image: url('resources/images/terrain5.png');
+    background-size: cover;
+}
+
+.water-terrain {
+    background-image: url('resources/images/terrain2.png');
+    background-size: cover;
+}
+
+.red-terrain {
+    background-image: url('resources/images/terrain3.png');
+    background-size: cover;
+}
+
+.board-cell {
+    width: 60px;  /* Adjust based on your game board size */
+    height: 60px;
+    border: 1px solid #000;  /* Board grid */
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+}
+
+
+.unit-image {
+    width: 40px; /* Smaller width */
+    height: 40px; /* Smaller height */
+    position: absolute;
+    top: 10px;  /* Adjust position to center the image */
+    left: 10px; /* Adjust position to center the image */
+}

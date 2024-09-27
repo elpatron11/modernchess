@@ -1,408 +1,289 @@
-const BOARD_SIZE = 8;
+const socket = io();
+let playerNumber;
+let turn;
+let board = [];
+let roomId = null;
 let selectedPiece = null;
-let turn = 'P1';
-let moveCount = 0;
-let pieceKillCount = {};
-let pieceHasAttacked = {};  // Track if a piece has already attacked this turn
+let actionCount = 0; // Track 2 actions per turn
+let previousAttacker = null;  // Track previous attacker to prevent two attacks from the same unit
+let unitHasAttacked = {};  // Track which units have attacked in this turn
 
-// Add images for all the pieces (if needed)
-const pieceImages = {
-    'P1': 'resources/images/p1.pawn.png',
-    'P2': 'resources/images/p2_pawn.png',
-    'H1': 'resources/images/p1_horse.png',
-    'H2': 'resources/images/p2_horse.jpg',
-    'A1': 'resources/images/p1_archer.png',
-    'A2': 'resources/images/p2_a.png',
-    'GA1': 'resources/images/p1_ga.png',
-    'GA2': 'resources/images/p2_ga.png',
-    'GP1': 'resources/images/p1_gp.png',
-    'GP2': 'resources/images/p2_gp.png',
-    'GH1': 'resources/images/p1_gh.png',
-    'GH2': 'resources/images/p2_gh.png',
-    'T1': 'resources/images/p1_t.png',
-    'T2': 'resources/images/p2_t.png'
-};
+// Join a room when the player clicks the join button
+function joinRoom() {
+    roomId = document.getElementById('roomInput').value.trim();
+    if (roomId) {
+        const generalChoice = prompt("Choose your General: 'GW' for General Warrior");
+        if (generalChoice === 'GW') {
+            socket.emit('joinRoom', { roomId, general: generalChoice });
+        } else {
+            alert("Invalid choice, please select 'GW'");
+        }
+    }
+}
 
-const towerHp = {
-    'T1': 18,
-    'T2': 20
-};
+// Receive player number and initial board state after joining
+socket.on('playerNumber', (data) => {
+    playerNumber = data.playerNumber;
+    board = data.board;
+    turn = data.turn;
+    actionCount = 0;
 
-const generals = ['GA', 'GP', 'GH'];
+    if (data.general) {
+        // Place the General Warrior on the board
+        if (playerNumber === 'P1') {
+            board[0][3].unit = `P1_${data.general}`;  // Player 1's General Warrior
+        } else {
+            board[7][4].unit = `P2_${data.general}`;  // Player 2's General Warrior
+        }
+    }
 
-let player1General = '';
-let player2General = '';
-
-const board = [
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', '']
-];
-
-const terrain = [];
-
-function initializeBoard() {
-    assignRandomGenerals();
-    placePieces();
-    createTerrain();
     renderBoard();
-    initializeKillCounts();
-    initializeAttackTracker();
-}
+    alert(`You are Player ${playerNumber}`);
+});
 
-// Assign a random general to each player
-function assignRandomGenerals() {
-    const randomIndexP1 = Math.floor(Math.random() * generals.length);
-    const randomIndexP2 = Math.floor(Math.random() * generals.length);
-    player1General = generals[randomIndexP1] + '1';
-    player2General = generals[randomIndexP2] + '2';
-    updatePlayerInfo();
-}
+// When both players have joined, the game starts and the board is set
+socket.on('gameStart', (boardData) => {
+    board = boardData;
+    renderBoard();
+    alert('Game started!');
+});
 
-function placePieces() {
-    for (let col = 0; col < BOARD_SIZE; col++) {
-        if (col !== 0 && col !== 7) {
-            board[1][col] = 'P1';
-            board[6][col] = 'P2';
-        }
+// Update the board state after a move
+socket.on('updateBoard', (data) => {
+    board = data.board;
+    turn = data.turn;
+    actionCount = 0;  // Reset action count after turn switch
+    unitHasAttacked = {};  // Reset attack tracking after turn switch
+    renderBoard();
+    document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
+});
+
+// Handle attack result
+socket.on('attackHit', (message) => {
+    alert(message);
+});
+
+// Handle counter-attack result
+socket.on('counterAttack', (message) => {
+    alert(message);
+});
+
+// Handle missed attacks
+socket.on('attackMiss', (message) => {
+    alert(message);
+});
+
+// Notify if it's not the player's turn
+socket.on('notYourTurn', () => {
+    alert('It is not your turn!');
+});
+
+function onClick(row, col) {
+    console.log(`Clicked cell: (${row}, ${col})`);
+    if (turn !== playerNumber) {
+        alert('Not your turn!');
+        return;
     }
 
-    board[0][2] = 'H1';
-    board[1][7] = 'H1';
-    board[6][0] = 'H2';
-    board[7][5] = 'H2';
+    const piece = board[row][col].unit;
+    console.log(`Clicked piece: ${piece}`);
 
-    board[0][4] = 'A1';
-    board[7][3] = 'A2';
-    board[1][0] = 'A1';
-    board[6][7] = 'A2';
+    if (!selectedPiece && piece.startsWith(playerNumber)) {
+        selectedPiece = { row, col };
+        console.log(`Selected piece: ${piece} at (${row}, ${col})`);
+    } else if (selectedPiece) {
+        const from = selectedPiece;
+        const to = { row, col };
+        console.log(`Attempting move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
 
-    board[0][3] = player1General;
-    board[7][4] = player2General;
+        if (actionCount < 2) {
+            const attackingUnit = `${from.row},${from.col}`;  // Unique ID for the attacking unit
 
-    board[3][0] = 'T1';
-    board[4][7] = 'T2';
-}
+            if (!board[to.row][to.col].unit) {
+                // Move piece logic
+                if (isValidMove(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
+                    makeMove(from, to);
+                    actionCount++;
+                } else {
+                    console.log(`Invalid move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
+                }
+            } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1') || board[to.row][to.col].unit === 'T1' || board[to.row][to.col].unit === 'T2') {
+                // Attack logic, including Towers
+                if (unitHasAttacked[attackingUnit]) {
+                    alert('This unit has already attacked this turn!');
+                    return;
+                }
 
-function createTerrain() {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        terrain[row] = [];
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            if (row === 3 || row === 4) {
-                terrain[row][col] = getTerrainForSpecialRows();
-            } else {
-                terrain[row][col] = 'green';
+                if (isValidAttack(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
+                    console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
+                    makeMove(from, to);  // Handle attacks with the same makeMove method
+                    actionCount++;
+
+                    // Mark this unit as having attacked
+                    unitHasAttacked[attackingUnit] = true;
+                } else {
+                    console.log(`Invalid attack from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
+                }
             }
+
+            if (actionCount === 2) {
+                endTurn();
+            }
+        } else {
+            alert('You have already performed 2 actions this turn.');
         }
+
+        selectedPiece = null;  // Deselect after action
     }
 }
 
-function getTerrainForSpecialRows() {
-    const randomValue = Math.random();
-    if (randomValue < 0.15 && terrain.flat().filter(t => t === 'blue').length < 6) {
-        return 'blue';
-    } else if (randomValue < 0.30 && terrain.flat().filter(t => t === 'red').length < 2) {
-        return 'red';
-    } else if (randomValue < 0.35 && terrain.flat().filter(t => t === 'gray').length < 1) {
-        return 'gray';
-    } else {
-        return 'green';
+// Validate if the move is correct for Warrior (W), Horse (H), Archer (A), General Warrior (GW), or Towers
+function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
+    const destination = board[toRow][toCol].terrain;  // Access the destination terrain
+
+    // Prevent units from stepping on water
+    if (destination === 'water') {
+        console.log('Cannot move onto water terrain!');
+        return false;
     }
+
+    const piece = pieceData.unit;
+
+    // Warrior (W), General Warrior (GW), and Towers can't move
+    if (piece.startsWith('T1') || piece.startsWith('T2')) {
+        return false; // Towers can't move
+    }
+
+    if (piece.startsWith('P1_W') || piece.startsWith('P2_W') || 
+        piece.startsWith('P1_GW') || piece.startsWith('P2_GW')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+
+    // Horse (H) can move up to 3 spaces in a straight line (including diagonal)
+    if (piece.startsWith('P1_H') || piece.startsWith('P2_H')) {
+        return (rowDiff <= 3 && colDiff === 0) ||  // Straight vertical
+               (colDiff <= 3 && rowDiff === 0) ||  // Straight horizontal
+               (rowDiff === colDiff && rowDiff <= 3);  // Diagonal
+    }
+
+    // Archer (A) can move 1 space in any direction
+    if (piece.startsWith('P1_A') || piece.startsWith('P2_A')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+
+    return false;
 }
 
+// Make a move and notify the server
+function makeMove(from, to) {
+    socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to } });
+    selectedPiece = null;  // Deselect after the move
+}
+
+// Validate if the attack is valid
+function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
+
+    let ignoreAvoidance = false;
+
+    // Check if the attacker is standing on red terrain
+    if (board[fromRow][fromCol].terrain === 'red') {
+        ignoreAvoidance = true;
+        console.log('Attacking from red terrain: Ignoring avoidance!');
+    }
+
+    const piece = pieceData.unit;
+
+    // General Warrior (GW), Warrior (W), and Towers attack logic (adjacent pieces, 1 space away in any direction)
+    if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
+        piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||
+        piece.startsWith('T1') || piece.startsWith('T2')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+
+    // Archer (A) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
+    if (piece.startsWith('P1_A') || piece.startsWith('P2_A')) {
+        return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 3);  // Vertical attack
+    }
+
+    // Horse (H) attack logic (adjacent pieces, 1 space away in any direction)
+    if (piece.startsWith('P1_H') || piece.startsWith('P2_H')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+
+    return false;
+}
+
+// End the turn
+function endTurn() {
+    actionCount = 0;  // Reset the action count for the next turn
+    unitHasAttacked = {};  // Reset the attack tracker for the new turn
+    previousAttacker = null;  // Reset the previous attacker
+    selectedPiece = null;  // Deselect the current piece
+    socket.emit('endTurn', { roomId, player: playerNumber });
+}
+
+// Render the board in the HTML
 function renderBoard() {
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let row = 0; row < board.length; row++) {
         const tr = document.createElement('tr');
-        for (let col = 0; col < BOARD_SIZE; col++) {
+        for (let col = 0; col < board[row].length; col++) {
             const td = document.createElement('td');
-            td.dataset.row = row;
-            td.dataset.col = col;
+            td.classList.add('board-cell');
 
-                         // Set terrain background images based on terrain type with smaller size
-             if (terrain[row][col] === 'green') {
-                td.style.backgroundImage = "url('resources/images/terrain5.png')";
-                td.style.backgroundSize = "50px 50px"; // Set smaller size
-            } else if (terrain[row][col] === 'blue') {
-                td.style.backgroundImage = "url('resources/images/terrain2.png')";
-                td.style.backgroundSize = "50px 50px"; // Set smaller size
-            } else if (terrain[row][col] === 'red') {
-                td.style.backgroundImage = "url('resources/images/terrain3.png')";
-                td.style.backgroundSize = "50px 50px"; // Set smaller size
-            } else if (terrain[row][col] === 'gray') {
-                td.style.backgroundImage = "url('resources/images/terrain6.png')";
-                td.style.backgroundSize = "70px 70px"; // Set smaller size
+            const terrainType = board[row][col].terrain;  // Get terrain type
+            const unitType = board[row][col].unit;  // Get unit type
+
+            // Set terrain background based on terrain type
+            if (terrainType === 'water') {
+                td.classList.add('water-terrain');
+            } else if (terrainType === 'red') {
+                td.classList.add('red-terrain');
+            } else {
+                td.classList.add('normal-terrain');
             }
 
-
-            const piece = board[row][col];
-            if (piece && pieceImages[piece]) {
-                const img = document.createElement('img');
-                img.src = pieceImages[piece];
-                td.appendChild(img);
-            } else if (piece) {
-                td.innerText = piece;
-                td.classList.add('piece');
+            // Display unit image based on unit type
+            if (unitType) {
+                const unitImage = document.createElement('img');
+                unitImage.src = getImageForUnit(unitType);  // Set the image source based on the unit
+                unitImage.classList.add('unit-image');  // Optional: Add a class for styling
+                td.appendChild(unitImage);
             }
 
-            td.onclick = () => onClick(row, col);
+            td.onclick = () => onClick(row, col);  // Add click handler
             tr.appendChild(td);
         }
         gameBoard.appendChild(tr);
     }
 }
 
-function initializeKillCounts() {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            const piece = board[row][col];
-            if (piece) {
-                pieceKillCount[`${row},${col}`] = 0;
-            }
-        }
-    }
+
+// Helper function to return the image path for a given unit type
+function getImageForUnit(unitType) {
+    const unitImages = {
+        'P1_W': '/resources/images/p1.pawn.png',
+        'P2_W': '/resources/images/p2_pawn.png',
+        'P1_H': '/resources/images/p1_horse.png',
+        'P2_H': '/resources/images/p2_horse.jpg',
+        'P1_A': '/resources/images/p1_archer.png',
+        'P2_A': '/resources/images/p2_a.png',
+        'P1_GW': '/resources/images/p1_gp.png',  // Example: General Warrior image for Player 1
+        'P2_GW': '/resources/images/p2_gp.png',  // Example: General Warrior image for Player 2
+        'T1': '/resources/images/p1_t.png',        // Example: Tower 1 image
+        'T2': '/resources/images/p2_t.png'         // Example: Tower 2 image
+        // Add other units as needed
+    };
+    return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
 }
 
-function initializeAttackTracker() {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            const piece = board[row][col];
-            if (piece) {
-                pieceHasAttacked[`${row},${col}`] = false;
-            }
-        }
-    }
-}
 
-function onClick(row, col) {
-    const piece = board[row][col];
-
-    if (selectedPiece) {
-        moveOrAttack(row, col);
-    } else if (piece && piece.endsWith(turn[1])) {
-        selectedPiece = { row, col };
-    }
-}
-
-function moveOrAttack(row, col) {
-    const selectedRow = selectedPiece.row;
-    const selectedCol = selectedPiece.col;
-    const piece = board[selectedRow][selectedCol];
-    const targetPiece = board[row][col];
-
-    if (targetPiece === '') {
-        if (isValidMove(selectedRow, selectedCol, row, col)) {
-            movePiece(selectedRow, selectedCol, row, col);
-        }
-    } else if (targetPiece.endsWith(turn === 'P1' ? '2' : '1')) {
-        if (isValidAttack(selectedRow, selectedCol, row, col)) {
-            attackPiece(selectedRow, selectedCol, row, col);
-        }
-    }
-
-    selectedPiece = null;
-    renderBoard();
-}
-
-function isValidMove(fromRow, fromCol, toRow, toCol) {
-    const piece = board[fromRow][fromCol];
-
-    if (terrain[toRow][toCol] === 'blue') {
-        alert("Can't move into water!");
-        return false;
-    }
-
-    if (piece.startsWith('T')) {
-        return false;
-    }
-
-    if (piece.startsWith('P') || piece.startsWith('GP') || piece.startsWith('A') || piece.startsWith('GA')) {
-        return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
-    }
-
-    if (piece.startsWith('H') || piece.startsWith('GH')) {
-        const rowDiff = Math.abs(toRow - fromRow);
-        const colDiff = Math.abs(toCol - fromCol);
-        return (rowDiff <= 3 && colDiff === 0) || (colDiff <= 3 && rowDiff === 0) || (rowDiff === colDiff && rowDiff <= 3);
-    }
-
-    return true;
-}
-
-function movePiece(fromRow, fromCol, toRow, toCol) {
-    board[toRow][toCol] = board[fromRow][fromCol];
-    board[fromRow][fromCol] = '';
-    pieceKillCount[`${toRow},${toCol}`] = pieceKillCount[`${fromRow},${fromCol}`];
-    pieceHasAttacked[`${toRow},${toCol}`] = pieceHasAttacked[`${fromRow},${fromCol}`];
-    delete pieceKillCount[`${fromRow},${fromCol}`];
-    delete pieceHasAttacked[`${fromRow},${fromCol}`];
-    moveCount++;
-    if (moveCount === 2) {
-        endTurn();
-    }
-    updatePlayerInfo();
-}
-
-function isValidAttack(attRow, attCol, defRow, defCol) {
-    const attacker = board[attRow][attCol];
-
-    if (pieceHasAttacked[`${attRow},${attCol}`]) {
-        alert("This unit has already attacked this turn!");
-        return false;
-    }
-
-    if (attacker.startsWith('H') || attacker.startsWith('GH')) {
-        return Math.abs(attRow - defRow) <= 1 && Math.abs(attCol - defCol) <= 1;
-    } else if (attacker.startsWith('A')) {
-        return Math.abs(attRow - defRow) <= 3 && attCol === defCol || attRow === defRow;
-    } else if (attacker.startsWith('GA')) {
-        return Math.abs(attRow - defRow) <= 4 && attCol === defCol || attRow === defRow;
-    }
-
-    return Math.abs(attRow - defRow) <= 1 && Math.abs(attCol - defCol) <= 1;
-}
-
-function attackPiece(attRow, attCol, defRow, defCol) {
-    const attacker = board[attRow][attCol];
-    const defender = board[defRow][defCol];
-    let hitChance;
-    if(attacker.startsWith('T')){
-        towerHp[attacker] -= 1;
-        alert(`Torret attack but(-1hp): ${towerHp[attacker]}HP`)
-    }
-    if (terrain[attRow][attCol] === 'red') {
-        hitChance = 1.0;
-    } else if (defender.startsWith('P')) {
-        hitChance = 0.3;
-    } else if (defender.startsWith('GH')) {
-        hitChance = 0.3;
-        if (attacker.startsWith('A') || attacker.startsWith('GA')) {
-            hitChance = 0;
-            alert('Archers always miss on General Horse');
-        }
-    } else if (defender.startsWith('GP')) {
-        hitChance = 0.2;
-    } else if (defender.startsWith('H')) {
-        hitChance = 0.5;
-    } else if (defender.startsWith('GA')) {
-        hitChance = 0.5;
-    } else {
-        hitChance = 1.0;
-    }
-
-    if (Math.random() <= hitChance) {
-        if (terrain[defRow][defCol] === 'gray') {
-            board[attRow][attCol] = '';
-            alert(`${attacker} both killed each other because of defender's altitude advantage`);
-        }
-
-        if (defender.startsWith('T')) {
-            if (attacker.startsWith('A') || attacker.startsWith('GA')) {
-                towerHp[defender] -= 1;
-            } else {
-                towerHp[defender] -= 2;
-            }
-
-            alert(`${attacker} hit the Tower! ${defender} HP left: ${towerHp[defender]}`);
-            if (towerHp[defender] <= 0) {
-                board[defRow][defCol] = '';
-                alert(`${attacker} destroyed the Tower!, ${attacker} Wins!`);
-            }
-            
-        } else {
-            board[defRow][defCol] = '';
-            incrementKillCount(attRow, attCol);
-        }
-    } else {
-        alert("Attack missed!");
-        if (defender.startsWith('GP') && attacker !== 'A1' && attacker !== 'GA1') {
-            if (Math.random() < 0.3) {
-                board[attRow][attCol] = '';  // Counter-attack eliminates attacker
-                alert(`${defender} counter-attacked and killed ${attacker}!`);
-            }
-        }
-
-    }
-
-    pieceHasAttacked[`${attRow},${attCol}`] = true;  // Mark that the unit has attacked
-    moveCount++;
-    if (moveCount >= 2) {
-        endTurn();
-    }
-}
-
-function incrementKillCount(attRow, attCol) {
-    const key = `${attRow},${attCol}`;
-    if (pieceKillCount[key] !== undefined) {
-        pieceKillCount[key]++;
-        checkForRageMode(attRow, attCol);
-    }
-}
-
-function checkForRageMode(row, col) {
-    const key = `${row},${col}`;
-    const attacker = board[row][col];
-    if (pieceKillCount[key] >= 3) {
-        const player = attacker[attacker.length - 1];
-        if (attacker.startsWith('A')) {
-            board[row][col] = 'GA' + player;
-            alert(`${attacker} has evolved into General Archer!`);
-        } else if (attacker.startsWith('P')) {
-            board[row][col] = 'GP' + player;
-            alert(`${attacker} has evolved into General Pawn!`);
-        } else if (attacker.startsWith('H')) {
-            board[row][col] = 'GH' + player;
-            alert(`${attacker} has evolved into General Horse!`);
-        }
-        pieceKillCount[key] = 0;
-        renderBoard();
-    }
-}
-
-function endTurn() {
-    moveCount = 0;
-    pieceHasAttacked = {};  // Reset attack tracker each turn
-    turn = turn === 'P1' ? 'P2' : 'P1';
-    document.getElementById('message').innerText = `It's now ${turn}'s turn!`;
-    updatePlayerInfo();
-}
-
-function updatePlayerInfo() {
-    document.getElementById('player1-turn').innerText = (turn === 'P1') ? 'Yes' : 'No';
-    document.getElementById('player1-actions').innerText = (turn === 'P1') ? 2 - moveCount : 0;
-    document.getElementById('player1-general').innerText = getGeneralType('P1');
-
-    document.getElementById('player2-turn').innerText = (turn === 'P2') ? 'Yes' : 'No';
-    document.getElementById('player2-actions').innerText = (turn === 'P2') ? 2 - moveCount : 0;
-    document.getElementById('player2-general').innerText = getGeneralType('P2');
-
-    if (turn === 'P1') {
-        document.getElementById('player1-info').classList.add('active-player');
-        document.getElementById('player2-info').classList.remove('active-player');
-    } else {
-        document.getElementById('player2-info').classList.add('active-player');
-        document.getElementById('player1-info').classList.remove('active-player');
-    }
-}
-
-function getGeneralType(player) {
-    if (player === 'P1') {
-        if (player1General.startsWith('GA')) return 'General Archer';
-        if (player1General.startsWith('GP')) return 'General Pawn';
-        if (player1General.startsWith('GH')) return 'General Horse';
-    } else if (player === 'P2') {
-        if (player2General.startsWith('GA')) return 'General Archer';
-        if (player2General.startsWith('GP')) return 'General Pawn';
-        if (player2General.startsWith('GH')) return 'General Horse';
-    }
-    return 'Unknown';
-}
-
-initializeBoard();
+// Attach the joinRoom function to the join button
+document.getElementById('joinButton').onclick = joinRoom;
