@@ -185,7 +185,7 @@ io.on('connection', (socket) => {
                         const counterRoll = Math.random();
                         if (counterRoll <= 0.3) {  // 30% chance to counter-attack
                             console.log(`Counter-attack! ${attackingPiece} is removed.`);
-                            game.board[from.row][from.col] = '';  // Remove the attacking piece
+                            game.board[from.row][from.col].unit = '';  // Remove the attacking piece
                             io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
                         }}
 
