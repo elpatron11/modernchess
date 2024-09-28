@@ -66,3 +66,8 @@ img {
     top: 10px;  /* Adjust position to center the image */
     left: 10px; /* Adjust position to center the image */
 }
+
+.selected-cell {
+    outline: 3px solid red; /* Red outline without affecting layout */
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}

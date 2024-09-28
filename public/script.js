@@ -12,6 +12,7 @@ const missSound = document.getElementById('missSound');
 const stepSound = document.getElementById('stepSound');
 const dieSound = document.getElementById('dieSound');
 const horseMoveSound = document.getElementById('horseMoveSound');
+const counterSound = document.getElementById('counterAttack');
 
 // Join a room when the player clicks the join button
 function joinRoom() {
@@ -79,7 +80,7 @@ socket.on('attackHit', (message) => {
 
 // Handle counter-attack result
 socket.on('counterAttack', (message) => {
-    dieSound();
+    counterSound.play();
     alert(message);
 });
 
@@ -96,6 +97,15 @@ socket.on('notYourTurn', () => {
 
 function onClick(row, col) {
     console.log(`Clicked cell: (${row}, ${col})`);
+
+     // Deselect previous selected piece (if any)
+     if (selectedPiece) {
+        const previousSelectedCell = document.querySelector('.selected-cell');
+        if (previousSelectedCell) {
+            previousSelectedCell.classList.remove('selected-cell');
+        }
+    }
+
     if (turn !== playerNumber) {
         alert('Not your turn!');
         return;
@@ -107,6 +117,11 @@ function onClick(row, col) {
     if (!selectedPiece && piece.startsWith(playerNumber)) {
         selectedPiece = { row, col };
         console.log(`Selected piece: ${piece} at (${row}, ${col})`);
+
+        // Add selected-cell class to the selected square
+        const selectedCell = document.querySelector(`tr:nth-child(${row + 1}) td:nth-child(${col + 1})`);
+        selectedCell.classList.add('selected-cell');
+    
     } else if (selectedPiece) {
         const from = selectedPiece;
         const to = { row, col };
@@ -120,6 +135,11 @@ function onClick(row, col) {
                 if (isValidMove(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
                     makeMove(from, to);
                     actionCount++;
+                    
+                    // Deselect the cell after move
+                    const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
+                    selectedCell.classList.remove('selected-cell');
+                
                 } else {
                     console.log(`Invalid move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
                 }
@@ -134,6 +154,9 @@ function onClick(row, col) {
                     console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
                     makeMove(from, to);  // Handle attacks with the same makeMove method
                     actionCount++;
+                    // Deselect the cell after attack
+                    const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
+                    selectedCell.classList.remove('selected-cell');
 
                     // Mark this unit as having attacked
                     unitHasAttacked[attackingUnit] = true;

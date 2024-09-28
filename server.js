@@ -162,7 +162,7 @@ io.on('connection', (socket) => {
                 }
                 else if (targetPiece === 'T1' || targetPiece === 'T2') {
                     // Tower avoidance
-                    hitChance = targetPiece === 'T1' ? 0.1 : 0.08;  // Tower avoidance rates
+                    hitChance = targetPiece === 'T1' ? 0.07 : 0.06;  // Tower avoidance rates
                     isTower = true;
                 }
 
