@@ -13,6 +13,7 @@ const stepSound = document.getElementById('stepSound');
 const dieSound = document.getElementById('dieSound');
 const horseMoveSound = document.getElementById('horseMoveSound');
 const counterSound = document.getElementById('counterAttack');
+const youWin = document.getElementById('youWin');
 
 // Join a room when the player clicks the join button
 function joinRoom() {
@@ -34,6 +35,21 @@ function joinRoom() {
         }
     }
 }
+
+// Function to save the game state to localStorage
+function saveGameState() {
+    const gameState = {
+        board: board,
+        turn: turn,
+        playerNumber: playerNumber,
+        actionCount: actionCount,
+        unitHasAttacked: unitHasAttacked,
+    };
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+}
+
+// Save game state before the page unloads or on manual save
+window.addEventListener('beforeunload', saveGameState);
 
 // Receive player number and initial board state after joining
 socket.on('playerNumber', (data) => {
@@ -94,6 +110,15 @@ socket.on('attackMiss', (message) => {
 socket.on('notYourTurn', () => {
     alert('It is not your turn!');
 });
+
+// Handle game over event
+socket.on('gameOver', (message) => {
+    alert(message);
+    // Optionally, you can disable further moves and reload the page to start a new game
+    youWin.play();
+    location.reload();
+});
+
 
 function onClick(row, col) {
     console.log(`Clicked cell: (${row}, ${col})`);

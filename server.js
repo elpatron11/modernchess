@@ -117,6 +117,59 @@ io.on('connection', (socket) => {
             io.to(roomId).emit('gameStart', game.board);
         }
 
+        function checkWinCondition(game, player) {
+            const opponent = player === 'P1' ? 'P2' : 'P1';
+            
+            // Check if opponent's tower is destroyed
+            const opponentTower = opponent === 'P1' ? 'T1' : 'T2';
+            let towerAlive = false;
+            let unitsAlive = false;
+        
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const unit = game.board[row][col].unit;
+                    if (unit === opponentTower) {
+                        towerAlive = true;
+                    }
+                    // Check if any of the opponent's units (except towers) are still alive
+                    if (unit && unit.startsWith(opponent) && unit !== opponentTower) {
+                        unitsAlive = true;
+                    }
+                }
+            }
+        
+            // Winning condition: if opponent's tower is destroyed OR if no opponent units (except towers) are alive
+            if (!towerAlive || !unitsAlive) {
+                return true;  // Winning condition met
+            }
+        
+            return false;
+        }
+
+        socket.on('saveGameState', (gameState) => {
+            const game = games[gameState.roomId];
+            game.board = gameState.board;
+            game.turn = gameState.turn;
+            game.actionCount = gameState.actionCount;
+            game.unitHasAttacked = gameState.unitHasAttacked;
+            game.playerNumber = gameState.playerNumber;
+        });
+
+        socket.on('getGameState', (roomId) => {
+            const game = games[roomId];
+            if (game) {
+                // Send the current game state back to the client
+                socket.emit('gameState', {
+                    board: game.board,
+                    turn: game.turn,
+                    playerNumber: game.players.includes(socket.id) ? 'P1' : 'P2', // Assign the player number
+                    actionCount: game.actionCount,
+                    unitHasAttacked: game.unitHasAttacked
+                });
+            }
+        });
+        
+
         socket.on('makeMove', (moveData) => {
             const game = games[moveData.roomId];
 
@@ -176,6 +229,11 @@ io.on('connection', (socket) => {
                     console.log(`Attack hit! ${targetPiece} is removed.`);
                     game.board[to.row][to.col].unit = '';  // Remove the target piece
                     io.to(moveData.roomId).emit('attackHit', `Attack hit! ${targetPiece} is removed.`);
+
+                    if (checkWinCondition(game, game.turn)) {
+                        io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
+                        return;
+                    }
                 } else {
                     console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                     io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
@@ -187,7 +245,12 @@ io.on('connection', (socket) => {
                             console.log(`Counter-attack! ${attackingPiece} is removed.`);
                             game.board[from.row][from.col].unit = '';  // Remove the attacking piece
                             io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
-                        }}
+
+                    if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1')) {
+                    io.to(moveData.roomId).emit('gameOver', `Player ${game.turn === 'P1' ? 'P2' : 'P1'} wins!`);
+                         return;
+                         }
+                         }}
 
 
                 }
