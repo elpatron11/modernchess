@@ -119,12 +119,13 @@ socket.on('gameOver', (message) => {
     location.reload();
 });
 
+let unitHasMoved = {};  // Track which units have moved this turn
 
 function onClick(row, col) {
     console.log(`Clicked cell: (${row}, ${col})`);
 
-     // Deselect previous selected piece (if any)
-     if (selectedPiece) {
+    // Deselect previous selected piece (if any)
+    if (selectedPiece) {
         const previousSelectedCell = document.querySelector('.selected-cell');
         if (previousSelectedCell) {
             previousSelectedCell.classList.remove('selected-cell');
@@ -146,7 +147,7 @@ function onClick(row, col) {
         // Add selected-cell class to the selected square
         const selectedCell = document.querySelector(`tr:nth-child(${row + 1}) td:nth-child(${col + 1})`);
         selectedCell.classList.add('selected-cell');
-    
+
     } else if (selectedPiece) {
         const from = selectedPiece;
         const to = { row, col };
@@ -156,19 +157,23 @@ function onClick(row, col) {
             const attackingUnit = `${from.row},${from.col}`;  // Unique ID for the attacking unit
 
             if (!board[to.row][to.col].unit) {
+                // Check if the unit has already moved
+              
+
                 // Move piece logic
                 if (isValidMove(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
                     makeMove(from, to);
                     actionCount++;
-                    
+                    unitHasMoved[attackingUnit] = true;
+
                     // Deselect the cell after move
                     const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
                     selectedCell.classList.remove('selected-cell');
-                
+
                 } else {
                     console.log(`Invalid move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
                 }
-            } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1') || board[to.row][to.col].unit === 'T1' || board[to.row][to.col].unit === 'T2') {
+            } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1') || board[to.row][to.col].unit === 'P1_T' || board[to.row][to.col].unit === 'P2_T') {
                 // Attack logic, including Towers
                 if (unitHasAttacked[attackingUnit]) {
                     alert('This unit has already attacked this turn!');
@@ -179,15 +184,22 @@ function onClick(row, col) {
                     console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
                     makeMove(from, to);  // Handle attacks with the same makeMove method
                     actionCount++;
-                    // Deselect the cell after attack
-                    const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
-                    selectedCell.classList.remove('selected-cell');
 
                     // Mark this unit as having attacked
                     unitHasAttacked[attackingUnit] = true;
+
+                    // Deselect the cell after attack
+                    const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
+                    selectedCell.classList.remove('selected-cell');
                 } else {
                     console.log(`Invalid attack from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
                 }
+            }
+
+            // Check if unit can move after attacking
+            if (unitHasAttacked[attackingUnit] && !unitHasMoved[attackingUnit] && actionCount < 2) {
+                console.log(`Unit can still move after attacking`);
+                selectedPiece = from;  // Set the unit as still selected for a move
             }
 
             if (actionCount === 2) {
@@ -272,7 +284,7 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     // General Warrior (GW), Warrior (W), and Towers attack logic (adjacent pieces, 1 space away in any direction)
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
         piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||
-        piece.startsWith('T1') || piece.startsWith('T2')) {
+        piece.startsWith('P1_T') || piece.startsWith('P2_T')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -296,6 +308,7 @@ function endTurn() {
     unitHasAttacked = {};  // Reset the attack tracker for the new turn
     previousAttacker = null;  // Reset the previous attacker
     selectedPiece = null;  // Deselect the current piece
+    unitHasAttacked = {};
     socket.emit('endTurn', { roomId, player: playerNumber });
 }
 
@@ -349,8 +362,8 @@ function getImageForUnit(unitType) {
         'P2_A': '/resources/images/p2_a.png',
         'P1_GW': '/resources/images/p1_gp.png',  // Example: General Warrior image for Player 1
         'P2_GW': '/resources/images/p2_gp.png',  // Example: General Warrior image for Player 2
-        'T1': '/resources/images/p1_t.png',        // Example: Tower 1 image
-        'T2': '/resources/images/p2_t.png',         // Example: Tower 2 image
+        'P1_T': '/resources/images/p1_t.png',        // Example: Tower 1 image
+        'P2_T': '/resources/images/p2_t.png',         // Example: Tower 2 image
         'P1_GA': '/resources/images/p1_ga.png',
         'P2_GA': '/resources/images/p2_ga.png',
         'P1_GH': '/resources/images/p2_gh.png',

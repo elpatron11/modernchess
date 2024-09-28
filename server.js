@@ -55,8 +55,8 @@ function createGameBoard() {
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
-    board[3][0].unit = 'T1';  // Player 1 Tower with 90% avoidance
-    board[4][7].unit = 'T2';  // Player 2 Tower with 92% avoidance
+    board[3][0].unit = 'P1_T';  // Player 1 Tower with 90% avoidance
+    board[4][7].unit = 'P2_T';  // Player 2 Tower with 92% avoidance
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -87,7 +87,8 @@ io.on('connection', (socket) => {
                 turn: 'P1',
                 actionCount: 0,  // Track actions for the current player
                 generals: {},
-                unitHasAttacked: {}  // Track attacks per unit
+                unitHasAttacked: {},  // Track attacks per unit
+                unitHasMoved: {}  // Track moves per unit
             };
         }
 
@@ -121,7 +122,7 @@ io.on('connection', (socket) => {
             const opponent = player === 'P1' ? 'P2' : 'P1';
             
             // Check if opponent's tower is destroyed
-            const opponentTower = opponent === 'P1' ? 'T1' : 'T2';
+            const opponentTower = opponent === 'P1' ? 'P1_T' : 'P2_T';
             let towerAlive = false;
             let unitsAlive = false;
         
@@ -172,64 +173,61 @@ io.on('connection', (socket) => {
 
         socket.on('makeMove', (moveData) => {
             const game = games[moveData.roomId];
-
+        
             if (game.turn !== moveData.player) {
                 socket.emit('notYourTurn');
                 return;
             }
-
+        
             const { from, to } = moveData.move;
             const attackingPiece = game.board[from.row][from.col].unit;
             const targetPiece = game.board[to.row][to.col].unit;
-            const fromTerrain = game.board[from.row][from.col].terrain;  // Check if attacking unit stands on red terrain
+            const fromTerrain = game.board[from.row][from.col].terrain;
             const destination = game.board[to.row][to.col].terrain;
-
+        
             // Prevent movement onto water terrain
             if (destination === 'water') {
                 socket.emit('invalidAction', 'You cannot move onto water terrain.');
                 return;
             }
-
+        
             const attackingUnit = `${from.row},${from.col}`;
-            if (game.unitHasAttacked[attackingUnit]) {
-                socket.emit('invalidAction', 'This unit has already attacked this turn.');
-                return;
-            }
-
+        
+           
+        
+        
             // Handle attacks
-            if (targetPiece && (targetPiece.startsWith(game.turn === 'P1' ? 'P2' : 'P1') || targetPiece === 'T1' || targetPiece === 'T2')) {
+            if (targetPiece && (targetPiece.startsWith(game.turn === 'P1' ? 'P2' : 'P1') || targetPiece === 'P1_T' || targetPiece === 'P2_T')) {
                 console.log(`Player ${moveData.player} attacking ${targetPiece} at (${to.row}, ${to.col})`);
-
-                let hitChance = 1.0;  // Default: attack hits
+        
+                let hitChance = 1.0;
                 let isTower = false;
-
+        
                 // Avoidance logic
                 if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                     hitChance = 0.5;  // Horse has a 50% chance to avoid
                 } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
                     hitChance = 0.3;  // Warrior has a 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
-                    hitChance = 1.0;  // Archers always get hit
+                    hitChance = 0.75;  // Archers 25% to avoid
                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                    hitChance = 0.2;  // Archers always get hit
-                }
-                else if (targetPiece === 'T1' || targetPiece === 'T2') {
-                    // Tower avoidance
-                    hitChance = targetPiece === 'T1' ? 0.07 : 0.06;  // Tower avoidance rates
+                    hitChance = 0.2;  // General Warrior
+                } else if (targetPiece === 'P1_T' || targetPiece === 'P2_T') {
+                    hitChance = targetPiece === 'P1_T' ? 0.07 : 0.06;  // Tower avoidance
                     isTower = true;
                 }
-
-                // If attacking unit is on red terrain, ignore avoidance
+        
+                // Ignore avoidance if attacking from red terrain
                 if (fromTerrain === 'red' && !isTower) {
                     hitChance = 1.0;
                 }
-
+        
                 const hitRoll = Math.random();
                 if (hitRoll <= hitChance) {
                     console.log(`Attack hit! ${targetPiece} is removed.`);
                     game.board[to.row][to.col].unit = '';  // Remove the target piece
                     io.to(moveData.roomId).emit('attackHit', `Attack hit! ${targetPiece} is removed.`);
-
+        
                     if (checkWinCondition(game, game.turn)) {
                         io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
                         return;
@@ -237,7 +235,7 @@ io.on('connection', (socket) => {
                 } else {
                     console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                     io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
-                    
+        
                     // General Warrior counter-attack logic
                     if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                         const counterRoll = Math.random();
@@ -245,39 +243,41 @@ io.on('connection', (socket) => {
                             console.log(`Counter-attack! ${attackingPiece} is removed.`);
                             game.board[from.row][from.col].unit = '';  // Remove the attacking piece
                             io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
-
-                    if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1')) {
-                    io.to(moveData.roomId).emit('gameOver', `Player ${game.turn === 'P1' ? 'P2' : 'P1'} wins!`);
-                         return;
-                         }
-                         }}
-
-
+        
+                            if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1')) {
+                                io.to(moveData.roomId).emit('gameOver', `Player ${game.turn === 'P1' ? 'P2' : 'P1'} wins!`);
+                                return;
+                            }
+                        }
+                    }
                 }
-
-                game.unitHasAttacked[attackingUnit] = true;
-
+        
+                game.unitHasAttacked[attackingUnit] = true;  // Unit has attacked but can still move
             } else {
-                // Normal move
+                // Move logic
                 game.board[to.row][to.col].unit = game.board[from.row][from.col].unit;
                 game.board[from.row][from.col].unit = '';
+                game.unitHasMoved[attackingUnit] = true;  // Mark as moved
             }
-
+        
             game.actionCount++;
-
+        
+            // End the turn after two actions
             if (game.actionCount >= 2) {
+                // Reset all tracking arrays properly
                 game.turn = game.turn === 'P1' ? 'P2' : 'P1';
                 game.actionCount = 0;
-                game.unitHasAttacked = {};  // Reset unit attack tracking
+                game.unitHasAttacked = {};  // Reset attack tracking
+                game.unitHasMoved = {};  // Reset movement tracking
             }
-
+        
             io.to(moveData.roomId).emit('updateBoard', {
                 board: game.board,
                 terrain: game.terrain,
                 turn: game.turn,
             });
         });
-
+        
         socket.on('disconnect', () => {
             console.log(`Player ${socket.id} disconnected`);
             game.players = game.players.filter(player => player !== socket.id);
