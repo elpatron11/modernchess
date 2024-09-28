@@ -7,11 +7,24 @@ let selectedPiece = null;
 let actionCount = 0; // Track 2 actions per turn
 let previousAttacker = null;  // Track previous attacker to prevent two attacks from the same unit
 let unitHasAttacked = {};  // Track which units have attacked in this turn
+const backgroundSound = document.getElementById('backgroundSound');
+const missSound = document.getElementById('missSound');
+const stepSound = document.getElementById('stepSound');
+const dieSound = document.getElementById('dieSound');
+const horseMoveSound = document.getElementById('horseMoveSound');
 
 // Join a room when the player clicks the join button
 function joinRoom() {
     roomId = document.getElementById('roomInput').value.trim();
     if (roomId) {
+        backgroundSound.loop = true;
+        backgroundSound.play().then(() => {
+            // Audio is now unlocked for future use
+            console.log("Audio unlocked for future use");
+        }).catch((error) => {
+            // Handle errors (if autoplay restrictions are still in place)
+            console.log("Audio was not allowed to play:", error);
+        });
         const generalChoice = prompt("Choose your General: 'GW' for General Warrior");
         if (generalChoice === 'GW') {
             socket.emit('joinRoom', { roomId, general: generalChoice });
@@ -60,17 +73,20 @@ socket.on('updateBoard', (data) => {
 
 // Handle attack result
 socket.on('attackHit', (message) => {
+    dieSound.play();
     alert(message);
 });
 
 // Handle counter-attack result
 socket.on('counterAttack', (message) => {
+    dieSound();
     alert(message);
 });
 
 // Handle missed attacks
 socket.on('attackMiss', (message) => {
     alert(message);
+    playOnMiss();
 });
 
 // Notify if it's not the player's turn
@@ -179,6 +195,14 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
 // Make a move and notify the server
 function makeMove(from, to) {
     socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to } });
+    const movingPiece = board[from.row][from.col].unit;
+
+    // Check if the moving piece is a Horse
+    if (movingPiece.startsWith('P1_H') || movingPiece.startsWith('P2_H')) {
+        horseMoveSound.play();  // Play horse move sound
+    } else {
+        stepSound.play();  // Play regular move sound
+    }
     selectedPiece = null;  // Deselect after the move
 }
 
@@ -286,6 +310,11 @@ function getImageForUnit(unitType) {
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
+}
+
+// Example: Play sound when a move or attack occurs
+function playOnMiss(){
+    missSound.play()
 }
 
 
