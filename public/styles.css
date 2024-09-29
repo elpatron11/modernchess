@@ -102,9 +102,8 @@ img {
         left: 6px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 5px;  /* Adjust this value to your preferred size */
-        color: red;  /* Optional: Change the color of the text */
-
+        font-size: 8px;  /* Adjust this value to your preferred size */
+        color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
 }
 
@@ -140,10 +139,9 @@ img {
         left: 1px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 5px;  /* Adjust this value to your preferred size */
-        color: red;  /* Optional: Change the color of the text */
+        font-size: 8px;  /* Adjust this value to your preferred size */
+        color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
-
 }
 
 
@@ -179,8 +177,8 @@ img {
     }
 
     .tower-hp {
-        font-size: 5px;  /* Adjust this value to your preferred size */
-        color: red;  /* Optional: Change the color of the text */
+        font-size: 8px;  /* Adjust this value to your preferred size */
+        color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
 
 }
@@ -222,7 +220,7 @@ img {
         left: 3px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 5px;  /* Adjust this value to your preferred size */
-        color: red;  /* Optional: Change the color of the text */
+        font-size: 8px;  /* Adjust this value to your preferred size */
+        color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
 }

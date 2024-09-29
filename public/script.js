@@ -114,7 +114,7 @@ socket.on('attackHit', (data) => {
         dieSound.play();  // Play default attack sound
     }
     
-    alert(message);
+    //alert(message);
 });
 
 // Handle tower damaged event
@@ -138,7 +138,7 @@ socket.on('counterAttack', (message) => {
 
 // Handle missed attacks
 socket.on('attackMiss', (message) => {
-    alert(message);
+    //alert(message);
     playOnMiss();
 });
 
@@ -162,7 +162,7 @@ socket.on('gameOver', (data) => {
     // Delay the reload to allow the sounds to play
     setTimeout(() => {
         location.reload();
-    }, 3000);  // Delay the reload by 3 seconds
+    }, 6000);  // Delay the reload by 3 seconds
 });
 
 let unitHasMoved = {};  // Track which units have moved this turn

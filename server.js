@@ -383,6 +383,10 @@ io.on('connection', (socket) => {
                        if (p1Tower.hp <= 0) {
                            game.board[3][0].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
+                           if (checkWinCondition(game, 'P2')) {
+                            io.to(roomId).emit('gameOver', 'Player 2 wins!');
+                            return;
+                        }
                        }
                    }
    
@@ -396,6 +400,12 @@ io.on('connection', (socket) => {
                        if (p2Tower.hp <= 0) {
                            game.board[4][7].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
+                            // Check for game over, as Player 1 would win
+                            if (checkWinCondition(game, 'P1')) {
+                             io.to(roomId).emit('gameOver', 'Player 1 wins!');
+                                return;
+                             }
+                           
                        }
                    }
    
