@@ -119,7 +119,7 @@ socket.on('attackHit', (data) => {
 
 // Handle tower damaged event
 socket.on('towerDamaged', (message) => {
-    alert(message);  // You can display this message or update a UI element to show the tower's health.
+    //alert(message);  // You can display this message or update a UI element to show the tower's health.
     towerHit.play();
 
 });
@@ -404,7 +404,7 @@ function renderBoard() {
                     const tower = board[row][col];
                     if (tower.hp) {
                         const hpDisplay = document.createElement('div');
-                        hpDisplay.textContent = `HP: ${tower.hp}`;
+                        hpDisplay.textContent = `${tower.hp}`;
                         hpDisplay.classList.add('tower-hp');  // Add this class
                         td.appendChild(hpDisplay);
                     }
