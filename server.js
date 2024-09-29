@@ -280,6 +280,22 @@ io.on('connection', (socket) => {
                         if (fromTerrain === 'red' && !isTower) {
                             hitChance = 1.0;
                         }
+                        if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
+                            const attackingTower = game.board[from.row][from.col];
+                
+                            if (attackingTower.hp > 0) {
+                                attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
+                                console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
+                
+                                // Check if attacking tower is destroyed due to HP loss
+                                if (attackingTower.hp <= 0) {
+                                    console.log(`Tower ${attackingPiece} is destroyed!`);
+                                    game.board[from.row][from.col].unit = '';  // Remove the attacking tower from the board
+                                    io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed after attacking.`);
+                                }
+                            }
+                        }
+
                     }
         
                     const hitRoll = Math.random();
