@@ -183,8 +183,8 @@ io.on('connection', (socket) => {
             const fromTerrain = game.board[from.row][from.col].terrain;
             const destination = game.board[to.row][to.col].terrain;
         
-            // Prevent movement onto water terrain
-            if (destination === 'water') {
+            // Prevent movement onto water terrain and towers can be attacked on the water.
+            if (destination === 'water' && !targetPiece.startsWith('P1_T') && !targetPiece.startsWith('P2_T')) {
                 socket.emit('invalidAction', 'You cannot move onto water terrain.');
                 return;
             }
