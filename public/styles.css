@@ -95,8 +95,8 @@ img {
         font-size: 16px;
     }
     .unit-image {
-        width: 20px; /* Smaller width */
-        height: 20px; /* Smaller height */
+        width: 35px; /* Smaller width */
+        height: 35px; /* Smaller height */
         position: absolute;
         top: 6px;  /* Adjust position to center the image */
         left: 6px; /* Adjust position to center the image */
@@ -119,8 +119,8 @@ img {
     }
 
     .board-cell {
-        width: 25px;
-        height: 25px;
+        width: 35px;
+        height: 35px;
         aspect-ratio: 1 / 1;  /* This maintains square cells */
     }
 
