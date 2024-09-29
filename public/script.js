@@ -94,6 +94,16 @@ socket.on('attackHit', (message) => {
     alert(message);
 });
 
+// Handle tower damaged event
+socket.on('towerDamaged', (message) => {
+    alert(message);  // You can display this message or update a UI element to show the tower's health.
+});
+
+// Handle tower destroyed event
+socket.on('towerDestroyed', (message) => {
+    alert(message);  // You can display a message or remove the tower visually from the board.
+});
+
 // Handle counter-attack result
 socket.on('counterAttack', (message) => {
     counterSound.play();
@@ -228,7 +238,7 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
     const piece = pieceData.unit;
 
     // Warrior (W), General Warrior (GW), and Towers can't move
-    if (piece.startsWith('T1') || piece.startsWith('T2')) {
+    if (piece.startsWith('P1_T') || piece.startsWith('P2_T')) {
         return false; // Towers can't move
     }
 
@@ -335,12 +345,22 @@ function renderBoard() {
                 td.classList.add('normal-terrain');
             }
 
-            // Display unit image based on unit type
+            // Display unit image based on unit type, including tower health
             if (unitType) {
                 const unitImage = document.createElement('img');
                 unitImage.src = getImageForUnit(unitType);  // Set the image source based on the unit
                 unitImage.classList.add('unit-image');  // Optional: Add a class for styling
                 td.appendChild(unitImage);
+
+                // Display tower HP if it's a tower
+                if (unitType === 'P1_T' || unitType === 'P2_T') {
+                    const tower = board[row][col];
+                    if (tower.hp) {
+                        const hpDisplay = document.createElement('div');
+                        hpDisplay.textContent = `HP: ${tower.hp}`;
+                        td.appendChild(hpDisplay);
+                    }
+                }
             }
 
             td.onclick = () => onClick(row, col);  // Add click handler
@@ -349,7 +369,6 @@ function renderBoard() {
         gameBoard.appendChild(tr);
     }
 }
-
 
 // Helper function to return the image path for a given unit type
 function getImageForUnit(unitType) {
