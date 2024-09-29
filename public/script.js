@@ -402,6 +402,7 @@ function renderBoard() {
                     if (tower.hp) {
                         const hpDisplay = document.createElement('div');
                         hpDisplay.textContent = `HP: ${tower.hp}`;
+                        hpDisplay.classList.add('tower-hp');  // Add this class
                         td.appendChild(hpDisplay);
                     }
                 }

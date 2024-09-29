@@ -76,7 +76,7 @@ img {
 /* Responsive styles for smaller screens */
 @media (max-width: 768px) {
     #gameBoard {
-        width: 100%;
+        width: 80%;
         max-width: none;
     }
 
@@ -93,16 +93,27 @@ img {
     #turnInfo, #turnCounterDisplay {
         font-size: 16px;
     }
+    .unit-image {
+        width: 20px; /* Smaller width */
+        height: 20px; /* Smaller height */
+        position: absolute;
+        top: 6px;  /* Adjust position to center the image */
+        left: 6px; /* Adjust position to center the image */
+    }
+    .tower-hp {
+        font-size: 12px;  /* Adjust this value to your preferred size */
+        color: red;  /* Optional: Change the color of the text */
+    }
 }
 
 /* Extra small devices (phones, less than 600px) */
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
     body {
-        font-size: 14px;
+        font-size: 9px;
     }
 
     #gameBoard {
-        width: 100%;
+        width: 80%;
     }
 
     .board-cell {
@@ -111,14 +122,69 @@ img {
     }
 
     button {
-        width: 100%;
+        width: 70%;
         font-size: 14px;
     }
 
     #turnInfo, #turnCounterDisplay {
         font-size: 14px;
     }
+    .unit-image {
+        width: 20px; /* Smaller width */
+        height: 20px; /* Smaller height */
+        position: absolute;
+        top: 1px;  /* Adjust position to center the image */
+        left: 1px; /* Adjust position to center the image */
+    }
+    .tower-hp {
+        font-size: 10px;  /* Adjust this value to your preferred size */
+        color: red;  /* Optional: Change the color of the text */
+    }
+
 }
+
+
+@media (max-width: 600px) {
+    body {
+        font-size: 9px;
+    }
+
+    #gameBoard {
+        width: 80%;
+    }
+
+ 
+
+    button {
+        width: 70%;
+        font-size: 14px;
+    }
+
+    #turnInfo, #turnCounterDisplay {
+        font-size: 14px;
+    }
+    .board-cell {
+        width: 2rem;  /* Reduce the size of the squares */
+        height: 2rem;
+    }
+    .unit-image {
+        width: 1.8rem;  /* Ensure the images fit inside the squares */
+        height: auto;  /* Maintain aspect ratio */
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .tower-hp {
+        font-size: 10px;  /* Adjust this value to your preferred size */
+        color: red;  /* Optional: Change the color of the text */
+    }
+
+}
+
+
+
+
+
 
 /* Very small screens (less than 400px) */
 @media (max-width: 400px) {
@@ -127,7 +193,7 @@ img {
     }
 
     #gameBoard {
-        width: 100%;
+        width: 50%;
     }
 
     .board-cell {
@@ -142,5 +208,16 @@ img {
 
     #turnInfo, #turnCounterDisplay {
         font-size: 12px;
+    }
+    .unit-image {
+        width: 2em; /* Smaller width */
+        height: 2em; /* Smaller height */
+        position: absolute;
+        top: 3px;  /* Adjust position to center the image */
+        left: 3px; /* Adjust position to center the image */
+    }
+    .tower-hp {
+        font-size: 10px;  /* Adjust this value to your preferred size */
+        color: red;  /* Optional: Change the color of the text */
     }
 }
