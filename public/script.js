@@ -97,6 +97,11 @@ socket.on('updateBoard', (data) => {
 socket.on('updateTurnCounter', (turnCounter) => {
     document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
 });
+// Listen for the turn counter update from the server
+socket.on('updateTurnCounter', (turnCounter) => {
+    document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
+});
+
 
 // Handle attack result
 socket.on('attackHit', (data) => {
@@ -152,6 +157,8 @@ socket.on('gameOver', (message) => {
         loserSound.play();  // Play loser sound
         alert("Sorry, you lost!");
     }
+    turnCounter = 0;
+    io.emit('updateTurnCounter', turnCounter);
     location.reload();
 });
 

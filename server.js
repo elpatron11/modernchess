@@ -89,6 +89,11 @@ io.on('connection', (socket) => {
                 unitHasAttacked: {},  // Track attacks per unit
                 unitHasMoved: {}  // Track moves per unit
             };
+              // Reset the turnCounter when a new game starts (first player joins)
+              turnCounter = 0;
+
+              // Emit the reset turn counter to both players
+              io.to(roomId).emit('updateTurnCounter', turnCounter);
         }
 
         const game = games[roomId];
