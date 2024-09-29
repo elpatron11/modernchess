@@ -46,10 +46,8 @@ function createGameBoard() {
     board[7][5].unit = 'P2_H';
 
     // Add Player 1 and Player 2's Archer (A) units
-    board[0][4].unit = 'P1_A';
-    board[7][3].unit = 'P2_A';
-    board[0][4].unit = 'P1_A';
-    board[7][3].unit = 'P2_A';
+    board[0][4].unit = 'P1_M';
+    board[7][3].unit = 'P2_M';
     board[0][0].unit = 'P1_A';
     board[7][0].unit = 'P2_A';
     board[0][7].unit = 'P1_A';
@@ -202,8 +200,12 @@ io.on('connection', (socket) => {
                 if (unit.startsWith('P1_W') || unit.startsWith('P2_W')) {
                     return 2;  // Warrior deals 2 damage
                 } else if (unit.startsWith('P1_H') || unit.startsWith('P2_H')) {
-                    return 3;  // Horse deals 2 damage
-                } else if (unit.startsWith('P1_A') || unit.startsWith('P2_A')) {
+                    return 2;  // Horse deals 2 damage
+                    
+                } else if (unit.startsWith('P1_M') || unit.startsWith('P2_M')) {
+                    return 3;  // Mage deals 3 dmg 
+                }
+                else if (unit.startsWith('P1_A') || unit.startsWith('P2_A')) {
                     return 1;  // Archer deals 2 damage
                 } else if (unit.startsWith('P1_GW') || unit.startsWith('P2_GW')) {
                     return 3;  // General Warrior deals 3 damage
@@ -251,22 +253,26 @@ io.on('connection', (socket) => {
                         io.to(moveData.roomId).emit('towerDamaged', `Tower ${targetPiece} is damaged! Remaining HP: ${tower.hp}`);
                     }
                 } else {
-                    // Avoidance logic for regular units
-                    if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
-                        hitChance = 0.5;  // Horse has a 50% chance to avoid
-                    } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                        hitChance = 0.4;  // Warrior has a 70% chance to avoid
-                    } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
-                        hitChance = 0.75;  // Archers have a 25% chance to avoid
-                    } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                        hitChance = 0.2;  // General Warrior
-                    }
+                      // **Mage always hits (no avoidance)**
+                     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
+                        hitChance = 1.0;  // Mages always hit (no avoidance)
+                     } else {
+                                // Avoidance logic for regular units
+                        if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
+                            hitChance = 0.5;  // Horse has a 50% chance to avoid
+                     } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
+                             hitChance = 0.4;  // Warrior has a 60% chance to avoid
+                  } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
+                     hitChance = 0.75;  // Archers have a 25% chance to avoid
+                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                    hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+                     }
         
                     // Ignore avoidance if attacking from red terrain
                     if (fromTerrain === 'red' && !isTower) {
                         hitChance = 1.0;
                     }
-        
+                }
                     const hitRoll = Math.random();
                     if (hitRoll <= hitChance) {
                         console.log(`Attack hit! ${targetPiece} is removed.`);
