@@ -93,6 +93,11 @@ socket.on('updateBoard', (data) => {
     document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
 });
 
+// Listen for the turn counter update from the server
+socket.on('updateTurnCounter', (turnCounter) => {
+    document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
+});
+
 // Handle attack result
 socket.on('attackHit', (data) => {
     const { message, attackingPiece } = data;  // Correctly extract data properties

@@ -10,7 +10,7 @@ const io = new Server(server, {
     }
 });
 const BOARD_SIZE = 8;
-
+let turnCounter = 0;
 // Store the game state and rooms
 const games = {};
 
@@ -356,7 +356,46 @@ io.on('connection', (socket) => {
                 game.unitHasAttacked = {};  // Reset attack tracking
                 game.unitHasMoved = {};  // Reset movement tracking
             }
-        
+               // Increment the turn counter (full turn is 2 actions per player)
+               turnCounter++;
+               io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);
+               // Every 20 turns, make both towers lose 1 HP
+               if (turnCounter >= 70 && turnCounter % 2 === 0) {  // Every 2 full turns after the 20th turn
+                   const p1Tower = game.board[3][0];
+                   const p2Tower = game.board[4][7];
+   
+                   // Reduce HP for Player 1's tower
+                   if (p1Tower.unit === 'P1_T' && p1Tower.hp > 0) {
+                       p1Tower.hp -= 1;
+                       console.log(`Player 1's tower loses 1 HP, now at ${p1Tower.hp}`);
+                       io.to(moveData.roomId).emit('towerDamaged', `Player 1's tower loses 1 HP! Remaining HP: ${p1Tower.hp}`);
+   
+                       // Check if Player 1's tower is destroyed
+                       if (p1Tower.hp <= 0) {
+                           game.board[3][0].unit = '';  // Remove the tower from the board
+                           io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
+                       }
+                   }
+   
+                   // Reduce HP for Player 2's tower
+                   if (p2Tower.unit === 'P2_T' && p2Tower.hp > 0) {
+                       p2Tower.hp -= 1;
+                       console.log(`Player 2's tower loses 1 HP, now at ${p2Tower.hp}`);
+                       io.to(moveData.roomId).emit('towerDamaged', `Player 2's tower loses 1 HP! Remaining HP: ${p2Tower.hp}`);
+   
+                       // Check if Player 2's tower is destroyed
+                       if (p2Tower.hp <= 0) {
+                           game.board[4][7].unit = '';  // Remove the tower from the board
+                           io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
+                       }
+                   }
+   
+                   // Optionally, check for win conditions after a tower is destroyed
+                   if (checkWinCondition(game, game.turn)) {
+                       io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
+                       return;
+                   }
+               }
             io.to(moveData.roomId).emit('updateBoard', {
                 board: game.board,
                 terrain: game.terrain,
