@@ -87,7 +87,7 @@ img {
     }
 
     button {
-        width: 80%;
+        width: 100%;
         font-size: 14px;
     }
 
@@ -115,7 +115,7 @@ img {
     }
 
     #gameBoard {
-        width: 80%;
+        width: 100%;
     }
 
     .board-cell {
@@ -133,8 +133,8 @@ img {
         font-size: 14px;
     }
     .unit-image {
-        width: 20px; /* Smaller width */
-        height: 20px; /* Smaller height */
+        width: 35px; /* Smaller width */
+        height: 35px; /* Smaller height */
         position: absolute;
         top: 1px;  /* Adjust position to center the image */
         left: 1px; /* Adjust position to center the image */
@@ -168,8 +168,8 @@ img {
     }
     .board-cell {
         aspect-ratio: 1 / 1;  /* This maintains square cells */
-        width: 20px;
-        height: 20px;
+        width: 35px;
+        height: 35px;
     }
     .unit-image {
         
