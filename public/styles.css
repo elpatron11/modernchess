@@ -71,3 +71,76 @@ img {
     outline: 3px solid red; /* Red outline without affecting layout */
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
 }
+
+
+/* Responsive styles for smaller screens */
+@media (max-width: 768px) {
+    #gameBoard {
+        width: 100%;
+        max-width: none;
+    }
+
+    .board-cell {
+        width: 30px;
+        height: 30px;
+    }
+
+    button {
+        width: 80%;
+        font-size: 14px;
+    }
+
+    #turnInfo, #turnCounterDisplay {
+        font-size: 16px;
+    }
+}
+
+/* Extra small devices (phones, less than 600px) */
+@media (max-width: 600px) {
+    body {
+        font-size: 14px;
+    }
+
+    #gameBoard {
+        width: 100%;
+    }
+
+    .board-cell {
+        width: 25px;
+        height: 25px;
+    }
+
+    button {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    #turnInfo, #turnCounterDisplay {
+        font-size: 14px;
+    }
+}
+
+/* Very small screens (less than 400px) */
+@media (max-width: 400px) {
+    body {
+        font-size: 12px;
+    }
+
+    #gameBoard {
+        width: 100%;
+    }
+
+    .board-cell {
+        width: 20px;
+        height: 20px;
+    }
+
+    button {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    #turnInfo, #turnCounterDisplay {
+        font-size: 12px;
+    }
+}
