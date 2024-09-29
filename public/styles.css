@@ -81,6 +81,7 @@ img {
     }
 
     .board-cell {
+        aspect-ratio: 1 / 1;  /* This maintains square cells */
         width: 30px;
         height: 30px;
     }
@@ -101,8 +102,9 @@ img {
         left: 6px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 12px;  /* Adjust this value to your preferred size */
+        font-size: 5px;  /* Adjust this value to your preferred size */
         color: red;  /* Optional: Change the color of the text */
+
     }
 }
 
@@ -119,6 +121,7 @@ img {
     .board-cell {
         width: 25px;
         height: 25px;
+        aspect-ratio: 1 / 1;  /* This maintains square cells */
     }
 
     button {
@@ -137,7 +140,7 @@ img {
         left: 1px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 10px;  /* Adjust this value to your preferred size */
+        font-size: 5px;  /* Adjust this value to your preferred size */
         color: red;  /* Optional: Change the color of the text */
     }
 
@@ -164,18 +167,19 @@ img {
         font-size: 14px;
     }
     .board-cell {
-        width: 2rem;  /* Reduce the size of the squares */
-        height: 2rem;
+        aspect-ratio: 1 / 1;  /* This maintains square cells */
+        width: 20px;
+        height: 20px;
     }
     .unit-image {
-        width: 1.8rem;  /* Ensure the images fit inside the squares */
+        
         height: auto;  /* Maintain aspect ratio */
         max-width: 100%;
         max-height: 100%;
     }
 
     .tower-hp {
-        font-size: 10px;  /* Adjust this value to your preferred size */
+        font-size: 5px;  /* Adjust this value to your preferred size */
         color: red;  /* Optional: Change the color of the text */
     }
 
@@ -197,6 +201,7 @@ img {
     }
 
     .board-cell {
+        
         width: 20px;
         height: 20px;
     }
@@ -217,7 +222,7 @@ img {
         left: 3px; /* Adjust position to center the image */
     }
     .tower-hp {
-        font-size: 10px;  /* Adjust this value to your preferred size */
+        font-size: 5px;  /* Adjust this value to your preferred size */
         color: red;  /* Optional: Change the color of the text */
     }
 }
