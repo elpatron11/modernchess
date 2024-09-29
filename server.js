@@ -260,7 +260,11 @@ io.on('connection', (socket) => {
                         io.to(moveData.roomId).emit('towerDestroyed', `Tower ${targetPiece} is destroyed!`);
         
                         if (checkWinCondition(game, game.turn)) {
-                            io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
+                            io.to(moveData.roomId).emit('gameOver', {
+                                message: `Player ${moveData.player} wins!`,
+                                winner: moveData.player,
+                                loser: game.turn === 'P1' ? 'P2' : 'P1'  // Identify the losing player
+                            });
                             return;
                         }
                     } else {

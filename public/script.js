@@ -148,18 +148,21 @@ socket.on('notYourTurn', () => {
 });
 
 // Handle game over event
-socket.on('gameOver', (message) => {
-    alert(message);
-    if (data.result === 'win') {
-        youWin.play();  // Play winner sound
-        alert("Congratulations, you won!");
-    } else if (data.result === 'lose') {
-        loserSound.play();  // Play loser sound
-        alert("Sorry, you lost!");
+socket.on('gameOver', (data) => {
+    const { message, winner, loser } = data;
+
+    if (playerNumber === winner) {
+        youWin.play();  // Play winning sound
+        alert('Congratulations! You won!');
+    } else if (playerNumber === loser) {
+        loserSound.play();  // Play losing sound
+        alert('You lost! Better luck next time!');
     }
-    turnCounter = 0;
-    io.emit('updateTurnCounter', turnCounter);
-    location.reload();
+
+    // Delay the reload to allow the sounds to play
+    setTimeout(() => {
+        location.reload();
+    }, 3000);  // Delay the reload by 3 seconds
 });
 
 let unitHasMoved = {};  // Track which units have moved this turn
