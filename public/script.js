@@ -14,12 +14,16 @@ const dieSound = document.getElementById('dieSound');
 const horseMoveSound = document.getElementById('horseMoveSound');
 const counterSound = document.getElementById('counterAttack');
 const youWin = document.getElementById('youWin');
-
+const mageMove = document.getElementById('mageMove');
+const spell = document.getElementById('spell');
+const towerHit = document.getElementById('towerHit');
+const towerExplotion = document.getElementById('towerExplotion');
 // Join a room when the player clicks the join button
 function joinRoom() {
     roomId = document.getElementById('roomInput').value.trim();
     if (roomId) {
         backgroundSound.loop = true;
+        backgroundSound.volume=0.1;
         backgroundSound.play().then(() => {
             // Audio is now unlocked for future use
             console.log("Audio unlocked for future use");
@@ -89,19 +93,30 @@ socket.on('updateBoard', (data) => {
 });
 
 // Handle attack result
-socket.on('attackHit', (message) => {
-    dieSound.play();
+socket.on('attackHit', (data) => {
+    const { message, attackingPiece } = data;  // Correctly extract data properties
+
+    // Check if the attacking piece is a Mage (P1_M or P2_M)
+    if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
+        spell.play();  // Play mage attack sound if Mage is attacking
+    } else {
+        dieSound.play();  // Play default attack sound
+    }
+    
     alert(message);
 });
 
 // Handle tower damaged event
 socket.on('towerDamaged', (message) => {
     alert(message);  // You can display this message or update a UI element to show the tower's health.
+    towerHit.play();
+
 });
 
 // Handle tower destroyed event
 socket.on('towerDestroyed', (message) => {
     alert(message);  // You can display a message or remove the tower visually from the board.
+    towerExplotion.play();
 });
 
 // Handle counter-attack result
@@ -150,6 +165,8 @@ function onClick(row, col) {
     const piece = board[row][col].unit;
     console.log(`Clicked piece: ${piece}`);
 
+    const attackingUnit = `${selectedPiece?.row},${selectedPiece?.col}`;  // Unique ID for the attacking unit
+
     if (!selectedPiece && piece.startsWith(playerNumber)) {
         selectedPiece = { row, col };
         console.log(`Selected piece: ${piece} at (${row}, ${col})`);
@@ -164,12 +181,13 @@ function onClick(row, col) {
         console.log(`Attempting move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
 
         if (actionCount < 2) {
-            const attackingUnit = `${from.row},${from.col}`;  // Unique ID for the attacking unit
+            // Check if the unit has already attacked
+            if (unitHasAttacked[attackingUnit] && board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1')) {
+                alert('This unit has already attacked this turn!');
+                return;
+            }
 
             if (!board[to.row][to.col].unit) {
-                // Check if the unit has already moved
-              
-
                 // Move piece logic
                 if (isValidMove(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
                     makeMove(from, to);
@@ -179,17 +197,11 @@ function onClick(row, col) {
                     // Deselect the cell after move
                     const selectedCell = document.querySelector(`tr:nth-child(${from.row + 1}) td:nth-child(${from.col + 1})`);
                     selectedCell.classList.remove('selected-cell');
-
                 } else {
                     console.log(`Invalid move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
                 }
-            } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1') || board[to.row][to.col].unit === 'P1_T' || board[to.row][to.col].unit === 'P2_T') {
+            } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1')) {
                 // Attack logic, including Towers
-                if (unitHasAttacked[attackingUnit]) {
-                    alert('This unit has already attacked this turn!');
-                    return;
-                }
-
                 if (isValidAttack(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
                     console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
                     makeMove(from, to);  // Handle attacks with the same makeMove method
@@ -206,7 +218,7 @@ function onClick(row, col) {
                 }
             }
 
-            // Check if unit can move after attacking
+            // Allow unit to move after attacking
             if (unitHasAttacked[attackingUnit] && !unitHasMoved[attackingUnit] && actionCount < 2) {
                 console.log(`Unit can still move after attacking`);
                 selectedPiece = from;  // Set the unit as still selected for a move
@@ -273,12 +285,16 @@ function makeMove(from, to) {
     socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to } });
     const movingPiece = board[from.row][from.col].unit;
 
-    // Check if the moving piece is a Horse
+    // Check if the moving piece is a Horse or Mage
     if (movingPiece.startsWith('P1_H') || movingPiece.startsWith('P2_H')) {
         horseMoveSound.play();  // Play horse move sound
+    } else if (movingPiece.startsWith('P1_M') || movingPiece.startsWith('P2_M')) {
+        mageMove.play();  // Play mage move sound
     } else {
-        stepSound.play();  // Play regular move sound
+        stepSound.play();  // Play regular move sound for all other units
     }
+
+
     selectedPiece = null;  // Deselect after the move
 }
 

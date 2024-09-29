@@ -181,13 +181,25 @@ io.on('connection', (socket) => {
             const fromTerrain = game.board[from.row][from.col].terrain;
             const destination = game.board[to.row][to.col].terrain;
         
-            // Prevent movement onto water terrain and towers can be attacked on the water.
+            // Prevent movement onto water terrain
             if (destination === 'water' && !targetPiece.startsWith('P1_T') && !targetPiece.startsWith('P2_T')) {
                 socket.emit('invalidAction', 'You cannot move onto water terrain.');
                 return;
             }
         
             const attackingUnit = `${from.row},${from.col}`;
+        
+            // Check if the unit already attacked this turn but allow movement after attack
+            if (game.unitHasAttacked[attackingUnit] && targetPiece) {
+                socket.emit('invalidAction', 'This unit has already attacked this turn.');
+                return;
+            }
+        
+            // Check if the unit has already moved twice
+            if (game.unitHasMoved[attackingUnit] >= 2 && !targetPiece) {
+                socket.emit('invalidAction', 'This unit has already moved twice this turn.');
+                return;
+            }
         
             // Prevent players from attacking their own towers
             if ((targetPiece === 'P1_T' && game.turn === 'P1') || (targetPiece === 'P2_T' && game.turn === 'P2')) {
@@ -201,12 +213,10 @@ io.on('connection', (socket) => {
                     return 2;  // Warrior deals 2 damage
                 } else if (unit.startsWith('P1_H') || unit.startsWith('P2_H')) {
                     return 2;  // Horse deals 2 damage
-                    
                 } else if (unit.startsWith('P1_M') || unit.startsWith('P2_M')) {
-                    return 3;  // Mage deals 3 dmg 
-                }
-                else if (unit.startsWith('P1_A') || unit.startsWith('P2_A')) {
-                    return 1;  // Archer deals 2 damage
+                    return 3;  // Mage deals 3 damage
+                } else if (unit.startsWith('P1_A') || unit.startsWith('P2_A')) {
+                    return 1;  // Archer deals 1 damage
                 } else if (unit.startsWith('P1_GW') || unit.startsWith('P2_GW')) {
                     return 3;  // General Warrior deals 3 damage
                 }
@@ -230,16 +240,14 @@ io.on('connection', (socket) => {
                 if (isTower) {
                     const tower = game.board[to.row][to.col];
         
-                    // Ensure the tower has an HP property; initialize it if needed
                     if (!tower.hp) {
-                        tower.hp = 20;
+                        tower.hp = 20;  // Initialize tower HP if not already set
                     }
         
                     tower.hp -= damage;  // Apply damage to tower
         
                     console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${damage} damage.`);
         
-                    // Check if the tower is destroyed
                     if (tower.hp <= 0) {
                         console.log(`Tower ${targetPiece} is destroyed!`);
                         game.board[to.row][to.col].unit = '';  // Remove the tower from the board
@@ -253,31 +261,32 @@ io.on('connection', (socket) => {
                         io.to(moveData.roomId).emit('towerDamaged', `Tower ${targetPiece} is damaged! Remaining HP: ${tower.hp}`);
                     }
                 } else {
-                      // **Mage always hits (no avoidance)**
-                     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
+                    // Mage always hits (no avoidance)
+                    if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
                         hitChance = 1.0;  // Mages always hit (no avoidance)
-                     } else {
-                                // Avoidance logic for regular units
+                    } else {
+                        // Avoidance logic for regular units
                         if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                             hitChance = 0.5;  // Horse has a 50% chance to avoid
-                     } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                             hitChance = 0.4;  // Warrior has a 60% chance to avoid
-                  } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
-                     hitChance = 0.75;  // Archers have a 25% chance to avoid
-                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                    hitChance = 0.2;  // General Warrior has a 20% chance to avoid
-                     }
+                        } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
+                            hitChance = 0.4;  // Warrior has a 60% chance to avoid
+                        } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
+                            hitChance = 0.75;  // Archers have a 25% chance to avoid
+                        } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                            hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+                        }
         
-                    // Ignore avoidance if attacking from red terrain
-                    if (fromTerrain === 'red' && !isTower) {
-                        hitChance = 1.0;
+                        // Ignore avoidance if attacking from red terrain
+                        if (fromTerrain === 'red' && !isTower) {
+                            hitChance = 1.0;
+                        }
                     }
-                }
+        
                     const hitRoll = Math.random();
                     if (hitRoll <= hitChance) {
                         console.log(`Attack hit! ${targetPiece} is removed.`);
                         game.board[to.row][to.col].unit = '';  // Remove the target piece
-                        io.to(moveData.roomId).emit('attackHit', `Attack hit! ${targetPiece} is removed.`);
+                        io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece });
         
                         if (checkWinCondition(game, game.turn)) {
                             io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
@@ -303,37 +312,27 @@ io.on('connection', (socket) => {
                         }
                     }
                 }
-                   // **Tower loses 1 HP every time it attacks**
-        if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
-            const attackingTower = game.board[from.row][from.col];
-            if (attackingTower.hp > 0) {
-                attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
-                console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
-
-                // Check if attacking tower is destroyed due to HP loss
-                if (attackingTower.hp <= 0) {
-                    console.log(`Tower ${attackingPiece} is destroyed!`);
-                    game.board[from.row][from.col].unit = '';  // Remove the attacking tower from the board
-                    io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed after attacking.`);
-                }
+        
+                game.unitHasAttacked[attackingUnit] = true;  // Mark as attacked but allow further movement
             }
-        }
-     }
         
-            game.unitHasAttacked[attackingUnit] = true;  // Unit has attacked but can still move
-        
-            // Move logic if not attacking
+            // Move logic (if the target piece is empty, i.e., not attacking)
             if (!targetPiece) {
                 game.board[to.row][to.col].unit = game.board[from.row][from.col].unit;
                 game.board[from.row][from.col].unit = '';
-                game.unitHasMoved[attackingUnit] = true;  // Mark as moved
+        
+                // Track the number of moves for the unit
+                if (!game.unitHasMoved[attackingUnit]) {
+                    game.unitHasMoved[attackingUnit] = 1;
+                } else {
+                    game.unitHasMoved[attackingUnit] += 1;
+                }
             }
         
             game.actionCount++;
         
             // End the turn after two actions
             if (game.actionCount >= 2) {
-                // Reset all tracking arrays properly
                 game.turn = game.turn === 'P1' ? 'P2' : 'P1';
                 game.actionCount = 0;
                 game.unitHasAttacked = {};  // Reset attack tracking
