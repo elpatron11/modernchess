@@ -29,15 +29,16 @@ function createGameBoard() {
         Array(BOARD_SIZE).fill(null).map(() => ({ terrain: 'normal', unit: '' })) // Separate terrain and unit
     );
 
-    // Place Player 1's Warrior (W) units
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        board[1][i].unit = 'P1_W';  // Player 1 Warriors
+   // Place Player 1's Warrior (W) units (6 pawns instead of 8)
+    for (let i = 1; i <= 6; i++) {  // Place pawns from column 1 to 6
+    board[1][i].unit = 'P1_W';  // Player 1 Warriors
     }
 
-    // Place Player 2's Warrior (W) units
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        board[6][i].unit = 'P2_W';  // Player 2 Warriors
+// Place Player 2's Warrior (W) units (6 pawns instead of 8)
+    for (let i = 1; i <= 6; i++) {  // Place pawns from column 1 to 6
+    board[6][i].unit = 'P2_W';  // Player 2 Warriors
     }
+
 
     // Add Player 1 and Player 2's Horse (H) units
     board[0][2].unit = 'P1_H';
@@ -53,8 +54,8 @@ function createGameBoard() {
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
-    board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 28 };  // Player 1 Tower
-    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 30 };  // Player 2 Tower
+    board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 23 };  // Player 1 Tower
+    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 25 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -299,6 +300,7 @@ io.on('connection', (socket) => {
                     }
         
                     const hitRoll = Math.random();
+                    console.log(hitRoll);
                     if (hitRoll <= hitChance) {
                         console.log(`Attack hit! ${targetPiece} is removed.`);
                         game.board[to.row][to.col].unit = '';  // Remove the target piece

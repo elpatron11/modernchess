@@ -18,6 +18,7 @@ const mageMove = document.getElementById('mageMove');
 const spell = document.getElementById('spell');
 const towerHit = document.getElementById('towerHit');
 const towerExplotion = document.getElementById('towerExplotion');
+const loserSound = document.getElementById('loserSound');
 // Join a room when the player clicks the join button
 function joinRoom() {
     roomId = document.getElementById('roomInput').value.trim();
@@ -139,8 +140,13 @@ socket.on('notYourTurn', () => {
 // Handle game over event
 socket.on('gameOver', (message) => {
     alert(message);
-    // Optionally, you can disable further moves and reload the page to start a new game
-    youWin.play();
+    if (data.result === 'win') {
+        youWin.play();  // Play winner sound
+        alert("Congratulations, you won!");
+    } else if (data.result === 'lose') {
+        loserSound.play();  // Play loser sound
+        alert("Sorry, you lost!");
+    }
     location.reload();
 });
 
