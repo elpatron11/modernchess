@@ -360,7 +360,7 @@ io.on('connection', (socket) => {
                turnCounter++;
                io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);
                // Every 20 turns, make both towers lose 1 HP
-               if (turnCounter >= 70 && turnCounter % 2 === 0) {  // Every 2 full turns after the 20th turn
+               if (turnCounter >= 100 && turnCounter % 2 === 0) {  // Every 2 full turns after the 20th turn
                    const p1Tower = game.board[3][0];
                    const p2Tower = game.board[4][7];
    
