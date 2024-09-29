@@ -247,7 +247,7 @@ io.on('connection', (socket) => {
                     const tower = game.board[to.row][to.col];
         
                     if (!tower.hp) {
-                        tower.hp = 20;  // Initialize tower HP if not already set
+                        tower.hp = 28;  // Initialize tower HP if not already set
                     }
         
                     tower.hp -= damage;  // Apply damage to tower
