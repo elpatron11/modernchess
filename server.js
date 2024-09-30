@@ -276,18 +276,17 @@ io.on('connection', (socket) => {
                     }
                 } else {
                      // Special avoidance for General Horse when attacked by an Archer
-                    if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
-                    // Check if target is General Horse (GR)
-                             if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                             hitChance = 0.01; // General Horse avoids Archer attacks 99% of the time
-                        }
-                    }
+                   
 
-                    // Mage always hits (no avoidance)
-                    if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
-                        hitChance = 1.0;  // Mages always hit (no avoidance)
+                   // Mage always hits (no avoidance)
+                   if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
+                    hitChance = 1.0;  // Mages always hit (no avoidance)
+                } else if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
+                    // Specific avoidance logic for Archers attacking General Horse (GH)
+                    if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                        hitChance = 0.00;  // General Horse avoids Archer attacks 100% of the time
                     } else {
-                        // Avoidance logic for regular units
+                        // Regular avoidance logic for Archers hitting other units
                         if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                             hitChance = 0.5;  // Horse has a 50% chance to avoid
                         } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
@@ -296,12 +295,28 @@ io.on('connection', (socket) => {
                             hitChance = 0.75;  // Archers have a 25% chance to avoid
                         } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                             hitChance = 0.2;  // General Warrior has a 20% chance to avoid
-                        } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                            hitChance = 0.3;  // General HORSE has a 70% chance to avoid
-                        }else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
-                            hitChance = 0.5;  // General Archer 50 chance to avoid
+                        } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
+                            hitChance = 0.5;  // General Archer has a 50% chance to avoid
                         }
-        
+                    }
+                } else {
+                    // Avoidance logic for regular units
+                    if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
+                        hitChance = 0.5;  // Horse has a 50% chance to avoid
+                    } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
+                        hitChance = 0.4;  // Warrior has a 60% chance to avoid
+                    } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
+                        hitChance = 0.75;  // Archers have a 25% chance to avoid
+                    } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                        hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+                    } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                        hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
+                    } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
+                        hitChance = 0.5;  // General Archer has a 50% chance to avoid
+                    }
+                
+                                
+                            
                         // Ignore avoidance if attacking from red terrain
                         if (fromTerrain === 'red' && !isTower) {
                             hitChance = 1.0;
