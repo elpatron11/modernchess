@@ -279,7 +279,7 @@ io.on('connection', (socket) => {
                     if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
                     // Check if target is General Horse (GR)
                              if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                             hitChance = 0.1; // General Horse avoids Archer attacks 90% of the time
+                             hitChance = 0.01; // General Horse avoids Archer attacks 99% of the time
                         }
                     }
 
