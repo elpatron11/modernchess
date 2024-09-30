@@ -297,7 +297,7 @@ io.on('connection', (socket) => {
                         } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                             hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                         } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                            hitChance = 0.4;  // General HORSE has a 60% chance to avoid
+                            hitChance = 0.3;  // General HORSE has a 70% chance to avoid
                         }else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                             hitChance = 0.5;  // General Archer 50 chance to avoid
                         }
