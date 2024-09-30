@@ -225,6 +225,10 @@ io.on('connection', (socket) => {
                     return 1;  // Archer deals 1 damage
                 } else if (unit.startsWith('P1_GW') || unit.startsWith('P2_GW')) {
                     return 3;  // General Warrior deals 3 damage
+                } else if (unit.startsWith('P1_GH') || unit.startsWith('P2_GH')) {
+                    return 3;  // General Warrior deals 3 damage
+                } else if (unit.startsWith('P1_GA') || unit.startsWith('P2_GA')) {
+                    return 2;  // General Warrior deals 3 damage
                 }
                 return 0;  // Default no damage for unrecognized units
             }
@@ -271,6 +275,14 @@ io.on('connection', (socket) => {
                         io.to(moveData.roomId).emit('towerDamaged', `Tower ${targetPiece} is damaged! Remaining HP: ${tower.hp}`);
                     }
                 } else {
+                     // Special avoidance for General Horse when attacked by an Archer
+                    if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
+                    // Check if target is General Horse (GR)
+                             if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                             hitChance = 0; // General Horse avoids Archer attacks 90% of the time
+                        }
+                    }
+
                     // Mage always hits (no avoidance)
                     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
                         hitChance = 1.0;  // Mages always hit (no avoidance)
@@ -284,6 +296,10 @@ io.on('connection', (socket) => {
                             hitChance = 0.75;  // Archers have a 25% chance to avoid
                         } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                             hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+                        } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                            hitChance = 0.4;  // General HORSE has a 60% chance to avoid
+                        }else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
+                            hitChance = 0.5;  // General Archer 50 chance to avoid
                         }
         
                         // Ignore avoidance if attacking from red terrain

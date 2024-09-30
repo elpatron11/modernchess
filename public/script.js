@@ -22,6 +22,7 @@ const loserSound = document.getElementById('loserSound');
 // Join a room when the player clicks the join button
 function joinRoom() {
     roomId = document.getElementById('roomInput').value.trim();
+    const generalChoice = document.getElementById('generalChoice').value; // Get selected general
     if (roomId) {
         backgroundSound.loop = true;
         backgroundSound.volume=0.1;
@@ -32,15 +33,14 @@ function joinRoom() {
             // Handle errors (if autoplay restrictions are still in place)
             console.log("Audio was not allowed to play:", error);
         });
-        const generalChoice = prompt("Choose your General: 'GW' for General Warrior");
-        if (generalChoice === 'GW') {
+        if (generalChoice === 'GW' || generalChoice === 'GH' || generalChoice === 'GA') {
+            // Emit the joinRoom event with the selected general
             socket.emit('joinRoom', { roomId, general: generalChoice });
         } else {
-            alert("Invalid choice, please select 'GW'");
+            alert("Invalid choice, please select a general.");
         }
     }
 }
-
 // Function to save the game state to localStorage
 function saveGameState() {
     const gameState = {
@@ -286,9 +286,18 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
                (colDiff <= 3 && rowDiff === 0) ||  // Straight horizontal
                (rowDiff === colDiff && rowDiff <= 3);  // Diagonal
     }
+    if (piece.startsWith('P1_GH') || piece.startsWith('P2_GH')) {
+        return (rowDiff <= 3 && colDiff === 0) ||  // Straight vertical
+               (colDiff <= 3 && rowDiff === 0) ||  // Straight horizontal
+               (rowDiff === colDiff && rowDiff <= 3);  // Diagonal
+    }
 
     // Archer (A) can move 1 space in any direction
     if (piece.startsWith('P1_A') || piece.startsWith('P2_A')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+     // Archer (A) can move 1 space in any direction
+     if (piece.startsWith('P1_GA') || piece.startsWith('P2_GA')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -307,7 +316,7 @@ function makeMove(from, to) {
     const movingPiece = board[from.row][from.col].unit;
 
     // Check if the moving piece is a Horse or Mage
-    if (movingPiece.startsWith('P1_H') || movingPiece.startsWith('P2_H')) {
+    if (movingPiece.startsWith('P1_H') || movingPiece.startsWith('P2_H') || movingPiece.startsWith('P1_GH') || movingPiece.startsWith('P2_GH')) {
         horseMoveSound.play();  // Play horse move sound
     } else if (movingPiece.startsWith('P1_M') || movingPiece.startsWith('P2_M')) {
         mageMove.play();  // Play mage move sound
@@ -346,6 +355,11 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
         return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 3);  // Vertical attack
     }
+     //GENERAL Archer (GA) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
+     if (piece.startsWith('P1_GA') || piece.startsWith('P2_GA')) {
+        return (rowDiff === 0 && colDiff <= 4) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 4);  // Vertical attack
+    }
      // Archer (A) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
      if (piece.startsWith('P1_M') || piece.startsWith('P2_M')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
@@ -353,6 +367,10 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     }
     // Horse (H) attack logic (adjacent pieces, 1 space away in any direction)
     if (piece.startsWith('P1_H') || piece.startsWith('P2_H')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+    // Horse (H) attack logic (adjacent pieces, 1 space away in any direction)
+    if (piece.startsWith('P1_GH') || piece.startsWith('P2_GH')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -433,8 +451,8 @@ function getImageForUnit(unitType) {
         'P2_T': '/resources/images/p2_t.png',         // Example: Tower 2 image
         'P1_GA': '/resources/images/p1_ga.png',
         'P2_GA': '/resources/images/p2_ga.png',
-        'P1_GH': '/resources/images/p2_gh.png',
-        'P2_GH': '/resources/images/p1_archer.png',
+        'P1_GH': '/resources/images/p1_gh.png',
+        'P2_GH': '/resources/images/p2_gh.png',
         'P1_M': '/resources/images/p1_mage.png',
         'P2_M': '/resources/images/p2_mage.png'
         // Add other units as needed
