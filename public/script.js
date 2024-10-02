@@ -175,6 +175,26 @@ let unitHasMoved = {};  // Track which units have moved this turn
 
 function onClick(row, col) {
     console.log(`Clicked cell: (${row}, ${col})`);
+    const unit = board[row][col].unit;
+    if (unit) {
+        document.getElementById('unitImage').src = getImageForUnit(unit);
+        document.getElementById('unitDetails').style.display = 'block';
+    } else {
+        document.getElementById('unitDetails').style.display = 'none';
+    }
+
+    // Function to return the image path for a given unit type
+    function getImageForUnit(unitType) {
+        const unitImages = {
+            'P1_W': '/resources/images/tutorial/Pawn.jpg',
+            'P2_W': '/resources/images/tutorial/Pawn.jpg',
+            'P1_H': '/resources/images/tutorial/horse_p1.jpg',
+            'P2_H': '/resources/images/tutorial/horse_p1.jpg',
+            // Add more units as needed
+        };
+        return unitImages[unitType] || '/path/to/default.png';  // Default image if unit type is not found
+    }
+
 
     // Deselect previous selected piece (if any)
     if (selectedPiece) {
