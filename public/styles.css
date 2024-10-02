@@ -99,7 +99,7 @@ img {
 }
 
 #unitImage {
-    width: 1800px;
+    width: 180px;
     height: 180px;  /* Maintains the aspect ratio of the image */
 }
 /* Responsive styles for smaller screens */
