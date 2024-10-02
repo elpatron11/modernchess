@@ -442,7 +442,7 @@ io.on('connection', (socket) => {
                    const p2Tower = game.board[4][7];
    
                    // Reduce HP for Player 1's tower
-                   if (p1Tower.unit === 'P1_T' && p1Tower.hp > 0) {
+                   if (p1Tower.unit === 'P1_T' && p1Tower.hp > 1) {
                        p1Tower.hp -= 1;
                        console.log(`Player 1's tower loses 1 HP, now at ${p1Tower.hp}`);
                        io.to(moveData.roomId).emit('towerDamaged', `Player 1's tower loses 1 HP! Remaining HP: ${p1Tower.hp}`);
@@ -459,7 +459,7 @@ io.on('connection', (socket) => {
                    }
    
                    // Reduce HP for Player 2's tower
-                   if (p2Tower.unit === 'P2_T' && p2Tower.hp > 0) {
+                   if (p2Tower.unit === 'P2_T' && p2Tower.hp > 1) {
                        p2Tower.hp -= 1;
                        console.log(`Player 2's tower loses 1 HP, now at ${p2Tower.hp}`);
                        io.to(moveData.roomId).emit('towerDamaged', `Player 2's tower loses 1 HP! Remaining HP: ${p2Tower.hp}`);
@@ -470,7 +470,7 @@ io.on('connection', (socket) => {
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
                             // Check for game over, as Player 1 would win
                             if (checkWinCondition(game, 'P1',moveData.roomId)) {
-                             io.to(roomId).emit('gameOver', 'Player 1 wins!');
+                             io.to(moveData.roomId).emit('gameOver', 'Player 1 wins!');
                                 return;
                              }
                            
