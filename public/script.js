@@ -20,26 +20,24 @@ const towerHit = document.getElementById('towerHit');
 const towerExplotion = document.getElementById('towerExplotion');
 const loserSound = document.getElementById('loserSound');
 // Join a room when the player clicks the join button
-function joinRoom() {
-    roomId = document.getElementById('roomInput').value.trim();
-    const generalChoice = document.getElementById('generalChoice').value; // Get selected general
-    if (roomId) {
-        backgroundSound.loop = true;
+// Function to start matchmaking
+function startMatchmaking() {
+    console.log("Requesting to join a game");
+    console.log("Emitting joinGame with general:", general);
+    socket.emit('joinGame', { general: general }); // Request the server to join a game
+    backgroundSound.loop = true;
         backgroundSound.volume=0.1;
-        backgroundSound.play().then(() => {
-            // Audio is now unlocked for future use
-            console.log("Audio unlocked for future use");
-        }).catch((error) => {
-            // Handle errors (if autoplay restrictions are still in place)
-            console.log("Audio was not allowed to play:", error);
-        });
-        if (generalChoice === 'GW' || generalChoice === 'GH' || generalChoice === 'GA') {
-            // Emit the joinRoom event with the selected general
-            socket.emit('joinRoom', { roomId, general: generalChoice });
-        } else {
-            alert("Invalid choice, please select a general.");
-        }
+        backgroundSound.play();
+}
+
+function joinGame() {
+    const general = document.getElementById('generalChoice').value; // Ensure this ID matches your HTML element
+    if (!general) {
+        alert("Please select a general before joining.");
+        return;
     }
+
+    socket.emit('joinGame', { general: general });
 }
 // Function to save the game state to localStorage
 function saveGameState() {
@@ -77,11 +75,17 @@ socket.on('playerNumber', (data) => {
 });
 
 // When both players have joined, the game starts and the board is set
-socket.on('gameStart', (boardData) => {
-    board = boardData;
+// Receive game start data and initialize the game
+socket.on('gameStart', (data) => {
+    roomId = data.roomId;
+    board = data.board;
+    playerNumber = data.playerNumber;
+    turn = data.turn || 'P1'; // Assuming the game always starts with Player 1
+    actionCount = 0;
     renderBoard();
-    alert('Game started!');
+    alert(`Game started! You are Player ${playerNumber}`);
 });
+
 
 // Update the board state after a move
 socket.on('updateBoard', (data) => {
@@ -467,4 +471,7 @@ function playOnMiss(){
 
 
 // Attach the joinRoom function to the join button
-document.getElementById('joinButton').onclick = joinRoom;
+document.getElementById('joinButton').onclick = startMatchmaking;
+
+
+

@@ -14,15 +14,16 @@
 <body>
     <h1>Chess Game</h1>
 
-    <input type="text" id="roomInput" placeholder="Enter Room ID" value="testRoom1">
+  
+    <label for="generalSelect">Choose your General:</label>
     <select id="generalChoice">
         <option value="GW">General Warrior (GW)</option>
         <option value="GH">General Horse (GH)</option>
         <option value="GA">General Archer (GA)</option>
     </select>
-    <button id="joinButton" onclick="joinRoom()">Join Room</button>
-    
-    <div id="turnInfo"></div>
+    <!-- Example button for joining a game -->
+    <button onclick="joinGame()">Buscar Partida</button>
+    <div id="turnInfo">Waiting for the game to start...</div>
     <div id="turnCounterDisplay">Move: 0 (After 60 both tower loose 1hp per turn)</div>
     <table id="gameBoard">
     <audio id="missSound" src="resources/audio/swordMiss.mp3" ></audio>
