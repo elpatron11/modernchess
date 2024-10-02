@@ -159,36 +159,32 @@ io.on('connection', (socket) => {
 
 
 
-        function checkWinCondition(game, player) {
+        function checkWinCondition(game, player, roomId) {
             const opponent = player === 'P1' ? 'P2' : 'P1';
-            
-            // Check if opponent's tower is destroyed
-            const opponentTower = opponent === 'P1' ? 'P1_T' : 'P2_T';
             let towerAlive = false;
             let unitsAlive = false;
         
             for (let row = 0; row < BOARD_SIZE; row++) {
                 for (let col = 0; col < BOARD_SIZE; col++) {
                     const unit = game.board[row][col].unit;
-                    if (unit === opponentTower) {
+                    if (unit.startsWith(opponent) && unit.includes('_T')) {
                         towerAlive = true;
                     }
-                    // Check if any of the opponent's units (except towers) are still alive
-                    if (unit && unit.startsWith(opponent) && unit !== opponentTower) {
+                    if (unit.startsWith(opponent) && !unit.includes('_T')) {
                         unitsAlive = true;
                     }
                 }
             }
         
-            // Winning condition: if opponent's tower is destroyed OR if no opponent units (except towers) are alive
             if (!towerAlive || !unitsAlive) {
-                turnCounter = 0;
-                io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);  // Notify all clients in the room of the reset
-                return true;  // Winning condition met
+                io.to(roomId).emit('gameOver', { message: `Player ${player} wins!` });
+                io.to(roomId).emit('updateTurnCounter', turnCounter);  // Properly using roomId
+                return true;
             }
         
             return false;
         }
+        
 
         socket.on('saveGameState', (gameState) => {
             const game = games[gameState.roomId];
@@ -304,7 +300,7 @@ io.on('connection', (socket) => {
                         game.board[to.row][to.col].unit = '';  // Remove the tower from the board
                         io.to(moveData.roomId).emit('towerDestroyed', `Tower ${targetPiece} is destroyed!`);
         
-                        if (checkWinCondition(game, game.turn)) {
+                        if (checkWinCondition(game, game.turn, moveData.roomId)) {
                             io.to(moveData.roomId).emit('gameOver', {
                                 message: `Player ${moveData.player} wins!`,
                                 winner: moveData.player,
@@ -387,7 +383,7 @@ io.on('connection', (socket) => {
                         game.board[to.row][to.col].unit = '';  // Remove the target piece
                         io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece });
         
-                        if (checkWinCondition(game, game.turn)) {
+                        if (checkWinCondition(game, game.turn, moveData.roomId)) {
                             io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
                             return;
                         }
@@ -403,7 +399,7 @@ io.on('connection', (socket) => {
                                 game.board[from.row][from.col].unit = '';  // Remove the attacking piece
                                 io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
         
-                                if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1')) {
+                                if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1', moveData.roomId)) {
                                     io.to(moveData.roomId).emit('gameOver', `Player ${game.turn === 'P1' ? 'P2' : 'P1'} wins!`);
                                     return;
                                 }
@@ -455,7 +451,7 @@ io.on('connection', (socket) => {
                        if (p1Tower.hp <= 0) {
                            game.board[3][0].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
-                           if (checkWinCondition(game, 'P2')) {
+                           if (checkWinCondition(game, 'P2',moveData.roomId)) {
                             io.to(roomId).emit('gameOver', 'Player 2 wins!');
                             return;
                         }
@@ -473,7 +469,7 @@ io.on('connection', (socket) => {
                            game.board[4][7].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
                             // Check for game over, as Player 1 would win
-                            if (checkWinCondition(game, 'P1')) {
+                            if (checkWinCondition(game, 'P1',moveData.roomId)) {
                              io.to(roomId).emit('gameOver', 'Player 1 wins!');
                                 return;
                              }
@@ -482,7 +478,7 @@ io.on('connection', (socket) => {
                    }
    
                    // Optionally, check for win conditions after a tower is destroyed
-                   if (checkWinCondition(game, game.turn)) {
+                   if (checkWinCondition(game, game.turn,moveData.roomId )) {
                        io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
                        return;
                    }
@@ -496,22 +492,39 @@ io.on('connection', (socket) => {
         
 
         socket.on('disconnect', () => {
-            console.log(`Player ${socket.id} disconnected.`);
-             // Remove the player from the matchmaking queue if they disconnect
-                matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
-                  // Remove from game if they are in one
-    const playerGames = Object.entries(games).filter(([_, game]) => game.players.includes(socket.id));
-    playerGames.forEach(([gameId, game]) => {
-        if (game.players.length === 1) {
-            // If only one player remains, delete the game
-            delete games[gameId];
-        } else {
-            // Remove player from the game
-            games[gameId].players = game.players.filter(playerId => playerId !== socket.id);
-        }
+            console.log(`Player ${socket.id} disconnected`);
+        
+            // Remove from matchmaking queue
+            const initialQueueLength = matchmakingQueue.length;
+            matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
+            if (initialQueueLength !== matchmakingQueue.length) {
+                console.log(`Player ${socket.id} removed from matchmaking queue.`);
+            }
+        
+            // Check all games for the disconnected player
+            Object.entries(games).forEach(([gameId, game]) => {
+                if (game.players.includes(socket.id)) {
+                    console.log(`Player ${socket.id} was in game ${gameId}.`);
+        
+                    // Filter out the disconnected player
+                    games[gameId].players = game.players.filter(playerId => playerId !== socket.id);
+        
+                    // If only one player remains, notify them and potentially end the game
+                    if (games[gameId].players.length === 1) {
+                        const remainingPlayerId = games[gameId].players[0];
+                        io.to(remainingPlayerId).emit('opponentDisconnected', {
+                            message: 'Your opponent has disconnected. The game will end.',
+                        });
+                        // Optionally end the game or delete it
+                        delete games[gameId];
+                        console.log(`Game ${gameId} ended due to player disconnection.`);
+                    }
+                }
+            });
         });
-    });
-    });
+        
+});
+
 });
 
 const port = process.env.PORT || 3000;

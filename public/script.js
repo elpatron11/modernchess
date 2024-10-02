@@ -30,7 +30,7 @@ function startMatchmaking() {
 
 function joinGame() {
     const general = document.getElementById('generalChoice').value;
-    backgroundSound.loop = true;
+        backgroundSound.loop = true;
         backgroundSound.volume=0.1;
         backgroundSound.play();
          // Ensure this ID matches your HTML element
@@ -192,6 +192,11 @@ function onClick(row, col) {
             'P2_W': '/resources/images/tutorial/Pawn.jpg',
             'P1_H': '/resources/images/tutorial/horse_p1.jpg',
             'P2_H': '/resources/images/tutorial/horse_p1.jpg',
+            'P1_M': '/resources/images/tutorial/mage.jpg',
+            'P2_M': '/resources/images/tutorial/mage.jpg',
+            'P1_A': '/resources/images/tutorial/Archer.jpg',
+            'P2_A': '/resources/images/tutorial/Archer.jpg',
+
             // Add more units as needed
         };
         return unitImages[unitType] || '/path/to/default.png';  // Default image if unit type is not found

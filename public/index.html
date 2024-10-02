@@ -14,23 +14,23 @@
 <body>
     <h1>Chess Game</h1>
 
-  
     <label for="generalSelect">Choose your General:</label>
     <select id="generalChoice">
         <option value="GW">General Warrior (GW)</option>
         <option value="GH">General Horse (GH)</option>
         <option value="GA">General Archer (GA)</option>
     </select>
-    <!-- Example button for joining a game -->
-    <button onclick="joinGame()">Buscar Partida</button>
+   <!-- Example button for joining a game -->
+   <button onclick="joinGame()">Buscar Partida</button>
     <div id="turnInfo">Waiting for the game to start...</div>
     <div id="statusDisplay" style="display: none;">Waiting for opponent...</div>
     <div id="turnCounterDisplay">Move: 0 (After 60 both tower loose 1hp per turn)</div>
     <div id="gameContainer"></div>
+    <div id="unitDetails" style="display: none;">
+        <img id="unitImage" src="" alt="Unit Image">
+    </div>
     <table id="gameBoard">
-        <div id="unitDetails" style="display: none;">
-            <img id="unitImage" src="" alt="Unit Image">
-        </div>
+        
     </div>
     <audio id="missSound" src="resources/audio/swordMiss.mp3" ></audio>
     <audio id="backgroundSound" src="resources/audio/background.mp3" ></audio>

@@ -99,8 +99,8 @@ img {
 }
 
 #unitImage {
-    width: 150px;
-    height: 150px;  /* Maintains the aspect ratio of the image */
+    width: 1800px;
+    height: 180px;  /* Maintains the aspect ratio of the image */
 }
 /* Responsive styles for smaller screens */
 @media (max-width: 768px) {
@@ -135,6 +135,11 @@ img {
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
         text-align: right;
         display: block; /* Ensure the label is a block-level element */
+    }
+
+    #unitImage {
+        width: 150px;
+        height: 150px;  /* Maintains the aspect ratio of the image */
     }
 }
 
@@ -175,6 +180,10 @@ img {
         text-align: right;
         display: block; /* Ensure the label is a block-level element */
     }
+    #unitImage {
+        width: 150px;
+        height: 150px;  /* Maintains the aspect ratio of the image */
+    }
 }
 
 
@@ -214,6 +223,10 @@ img {
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
         text-align: right;
          display: block; /* Ensure the label is a block-level element */
+    }
+    #unitImage {
+        width: 150px;
+        height: 150px;  /* Maintains the aspect ratio of the image */
     }
 
 }
@@ -257,5 +270,9 @@ img {
     .tower-hp {
         font-size: 8px;  /* Adjust this value to your preferred size */
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
+    }
+    #unitImage {
+        width: 150px;
+        height: 150px;  /* Maintains the aspect ratio of the image */
     }
 }
