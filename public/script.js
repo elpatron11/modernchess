@@ -84,6 +84,8 @@ socket.on('gameStart', (data) => {
     actionCount = 0;
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
+    const statusDisplay = document.getElementById('statusDisplay');
+    statusDisplay.style.display = 'none'; // Hide the status message
 });
 
 
@@ -469,6 +471,12 @@ function playOnMiss(){
     missSound.play()
 }
 
+// Client-side JavaScript
+socket.on('waitingForOpponent', (data) => {
+    const statusDisplay = document.getElementById('statusDisplay'); // Ensure you have this element in your HTML
+    statusDisplay.textContent = data.status;
+    statusDisplay.style.display = 'block';  // Make the status visible
+});
 
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;

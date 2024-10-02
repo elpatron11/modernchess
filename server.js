@@ -13,7 +13,7 @@ const BOARD_SIZE = 8;
 let turnCounter = 0;
 // Store the game state and rooms
 const games = {};
-const matchmakingQueue = [];
+let matchmakingQueue = [];
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
@@ -129,10 +129,12 @@ io.on('connection', (socket) => {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
                 // Re-add the current player with new data
                 matchmakingQueue.push({ socket: socket, general: data.general });
+                socket.emit('waitingForOpponent', { status: 'Esperando Oponente...' });
             }
         } else {
             // Add the current player to the matchmaking queue
             matchmakingQueue.push({ socket: socket, general: data.general });
+            socket.emit('waitingForOpponent', { status: 'Esperando Oponente...' });
             console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general}`);
         }
   
@@ -475,8 +477,10 @@ io.on('connection', (socket) => {
 
         socket.on('disconnect', () => {
             console.log(`Player ${socket.id} disconnected.`);
-            matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
-            console.log(`Player ${socket.id} removed from matchmaking queue due to disconnection.`);
+             // Remove the player from the matchmaking queue if they disconnect
+                matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
+    
+            // Handle other disconnection logic, e.g., removing from games, notifying opponents, etc.
         });
     });
 });
