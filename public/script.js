@@ -25,13 +25,15 @@ function startMatchmaking() {
     console.log("Requesting to join a game");
     console.log("Emitting joinGame with general:", general);
     socket.emit('joinGame', { general: general }); // Request the server to join a game
-    backgroundSound.loop = true;
-        backgroundSound.volume=0.1;
-        backgroundSound.play();
+        
 }
 
 function joinGame() {
-    const general = document.getElementById('generalChoice').value; // Ensure this ID matches your HTML element
+    const general = document.getElementById('generalChoice').value;
+    backgroundSound.loop = true;
+        backgroundSound.volume=0.1;
+        backgroundSound.play();
+         // Ensure this ID matches your HTML element
     if (!general) {
         alert("Please select a general before joining.");
         return;

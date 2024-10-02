@@ -103,7 +103,8 @@ io.on('connection', (socket) => {
                     unitHasAttacked: {},
                     unitHasMoved: {}
                 };
-                
+                turnCounter = 0;
+                io.to(roomId).emit('updateTurnCounter', turnCounter);  // Notify clients of the reset
                 // Add generals to the board positions
                 games[roomId].board[0][3].unit = `P1_${data.general}`; // Set Player 1's general
                 games[roomId].board[7][4].unit = `P2_${opponentData.general}`; // Set Player 2's general
@@ -164,6 +165,8 @@ io.on('connection', (socket) => {
         
             // Winning condition: if opponent's tower is destroyed OR if no opponent units (except towers) are alive
             if (!towerAlive || !unitsAlive) {
+                turnCounter = 0;
+                io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);  // Notify all clients in the room of the reset
                 return true;  // Winning condition met
             }
         
