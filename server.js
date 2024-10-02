@@ -82,6 +82,23 @@ io.on('connection', (socket) => {
             console.error('Invalid or no data received for general');
             return;  // Exit the function if no data is provided
         }
+           // Check if the player is already in a game
+    const playerGame = Object.values(games).find(game => game.players.includes(socket.id));
+    if (playerGame) {
+        console.log(`Player ${socket.id} is already in a game.`);
+        socket.emit('error', 'You are already in a game.');
+        return;
+    }
+
+    // Check if the player is already in the matchmaking queue
+    const isQueued = matchmakingQueue.some(player => player.socket.id === socket.id);
+    if (isQueued) {
+        console.log(`Player ${socket.id} is already in the matchmaking queue.`);
+        socket.emit('error', 'You are already waiting for a match.');
+        return;
+    }
+
+
 
         if (matchmakingQueue.length > 0) {
             // Directly retrieve the opponent data object from the queue
@@ -482,9 +499,18 @@ io.on('connection', (socket) => {
             console.log(`Player ${socket.id} disconnected.`);
              // Remove the player from the matchmaking queue if they disconnect
                 matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
-    
-            // Handle other disconnection logic, e.g., removing from games, notifying opponents, etc.
+                  // Remove from game if they are in one
+    const playerGames = Object.entries(games).filter(([_, game]) => game.players.includes(socket.id));
+    playerGames.forEach(([gameId, game]) => {
+        if (game.players.length === 1) {
+            // If only one player remains, delete the game
+            delete games[gameId];
+        } else {
+            // Remove player from the game
+            games[gameId].players = game.players.filter(playerId => playerId !== socket.id);
+        }
         });
+    });
     });
 });
 
