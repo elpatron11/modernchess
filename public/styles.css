@@ -134,18 +134,14 @@ img {
 }
 
 
-#unitDetails {
-    border: 1px solid #ccc;
-    padding: 10px;
-    width: 150px; /* Adjusted width for the image container */
-    display: none; /* Hidden by default */
-}
+
 
 #unitImage {
     display: flex;
     justify-content: center;
-    width: 350px;
-    height:400px;  /* Maintains the aspect ratio of the image */
+    width: 300px;
+    height:300px;  /* Maintains the aspect ratio of the image */
+    position: absolute;
 }
 
 
@@ -385,8 +381,8 @@ img {
          display: block; /* Ensure the label is a block-level element */
     }
     #unitImage {
-        width: 150px;
-        height: 150px;  /* Maintains the aspect ratio of the image */
+        width: 100px;
+        height: 100px;  /* Maintains the aspect ratio of the image */
     }
 
     .control-panel {
@@ -469,8 +465,8 @@ img {
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
     #unitImage {
-        width: 125px;
-        height: 125px;  /* Maintains the aspect ratio of the image */
+        width: 100px;
+        height: 100px;  /* Maintains the aspect ratio of the image */
     }
     .control-panel {
         padding: 5px 20px;
