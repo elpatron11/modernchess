@@ -299,7 +299,7 @@ io.on('connection', (socket) => {
                         console.log(`Tower ${targetPiece} is destroyed!`);
                         game.board[to.row][to.col].unit = '';  // Remove the tower from the board
                         io.to(moveData.roomId).emit('towerDestroyed', `Tower ${targetPiece} is destroyed!`);
-        
+                        io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
                         if (checkWinCondition(game, game.turn, moveData.roomId)) {
                             io.to(moveData.roomId).emit('gameOver', {
                                 message: `Player ${moveData.player} wins!`,
@@ -369,7 +369,9 @@ io.on('connection', (socket) => {
                                 if (attackingTower.hp <= 0) {
                                     console.log(`Tower ${attackingPiece} is destroyed!`);
                                     game.board[from.row][from.col].unit = '';  // Remove the attacking tower from the board
-                                    io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed after attacking.`);
+                                    io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed. `);
+                                    io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} Lose!`)
+                                    
                                 }
                             }
                         }
@@ -451,6 +453,7 @@ io.on('connection', (socket) => {
                        if (p1Tower.hp <= 0) {
                            game.board[3][0].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
+                           io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
                            if (checkWinCondition(game, 'P2',moveData.roomId)) {
                             io.to(roomId).emit('gameOver', 'Player 2 wins!');
                             return;
@@ -468,6 +471,7 @@ io.on('connection', (socket) => {
                        if (p2Tower.hp <= 0) {
                            game.board[4][7].unit = '';  // Remove the tower from the board
                            io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
+                           io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
                             // Check for game over, as Player 1 would win
                             if (checkWinCondition(game, 'P1',moveData.roomId)) {
                              io.to(moveData.roomId).emit('gameOver', 'Player 1 wins!');
