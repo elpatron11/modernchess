@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Game</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
    <style>
         /* Basic table styling for the chessboard */
         table { border-collapse: collapse; }
@@ -12,26 +13,38 @@
     </style>
 </head>
 <body>
-    <h1>Chess Game</h1>
+    <div class="control-panel" id="control-Panel">
+    <div class="container text-center mt-4"></div>
+    <h3>Intelligent Generals</h3>
 
-    <label for="generalSelect">Choose your General:</label>
+    <div class="my-3">
+    <label for="generalSelect">Pick General:</label>
     <select id="generalChoice">
         <option value="GW">General Warrior (GW)</option>
         <option value="GH">General Horse (GH)</option>
         <option value="GA">General Archer (GA)</option>
     </select>
+    </div>
    <!-- Example button for joining a game -->
-   <button onclick="joinGame()">Buscar Partida</button>
-    <div id="turnInfo">Waiting for the game to start...</div>
-    <div id="statusDisplay" style="display: none;">Waiting for opponent...</div>
-    <div id="turnCounterDisplay">Move: 0 (After 60 both tower loose 1hp per turn)</div>
-    <div id="gameContainer"></div>
+
+   <button  onclick="joinGame()"  class="btn btn-primary">Buscar Partida</button>
+    <div id="signs">
+        <div id="turnInfo" class="alert alert-info mt-3" >Turn P1</div>
+        <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
+        <div id="turnCounterDisplay" class="alert alert-warning mt-3">Move: 0 </div>
+           
+    </div>  
+</div>
+    <button id="leaveGameButton" style="display: none;">Leave Game</button>         
+    <div id="gameContainer" class="d-flex justify-content-center mt-3">
+    
+     
     <div id="unitDetails" style="display: none;">
-        <img id="unitImage" src="" alt="Unit Image">
+        <img id="unitImage" src="" alt="Unit Image" class="img-fluid">
     </div>
-    <table id="gameBoard">
-        
+    <table id="gameBoard" >
     </div>
+</div>
     <audio id="missSound" src="resources/audio/swordMiss.mp3" ></audio>
     <audio id="backgroundSound" src="resources/audio/background.mp3" ></audio>
     <audio id="stepSound" src="resources/audio/step.mp3" ></audio>
@@ -44,6 +57,11 @@
     <audio id="spell" src="resources/audio/spell.mp3"></audio>
     <audio id="towerHit" src="resources/audio/towerHit.mp3"></audio>
     <audio id="towerExplotion" src="resources/audio/towerExplotion.mp3"></audio>
+    
+        <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 

@@ -29,7 +29,7 @@ function startMatchmaking() {
 }
 
 function joinGame() {
-    const general = document.getElementById('generalChoice').value;
+        const general = document.getElementById('generalChoice').value;
         backgroundSound.loop = true;
         backgroundSound.volume=0.1;
         backgroundSound.play();
@@ -79,11 +79,13 @@ socket.on('playerNumber', (data) => {
 // When both players have joined, the game starts and the board is set
 // Receive game start data and initialize the game
 socket.on('gameStart', (data) => {
+    
     roomId = data.roomId;
     board = data.board;
     playerNumber = data.playerNumber;
     turn = data.turn || 'P1'; // Assuming the game always starts with Player 1
     actionCount = 0;
+    
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
     const statusDisplay = document.getElementById('statusDisplay');
@@ -422,6 +424,11 @@ function endTurn() {
 
 // Render the board in the HTML
 function renderBoard() {
+      // Hide the control panel
+      document.getElementById('control-Panel').style.display = 'none';
+      document.getElementById('leaveGameButton').style.display = 'block';
+      // Show the game board or other game start related elements
+      document.getElementById('gameBoard').style.display = 'block';
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
 
@@ -505,6 +512,10 @@ socket.on('waitingForOpponent', (data) => {
     statusDisplay.style.display = 'block';  // Make the status visible
 });
 
+//Leave button
+document.getElementById('leaveGameButton').addEventListener('click', function() {
+    window.location.reload(); // Reloads the current document.
+});
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
 
