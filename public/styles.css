@@ -200,7 +200,12 @@ img {
     }
 
     #turnInfo, #turnCounterDisplay {
-        font-size: 16px;
+        font-size: 12px;
+    }
+
+    #turn-move{
+        display:flex;
+        align-items: center;
     }
     .unit-image {
         width: 35px; /* Smaller width */
@@ -283,7 +288,7 @@ img {
     }
 
     #turnInfo, #turnCounterDisplay {
-        font-size: 14px;
+        font-size: 12px;
     }
     .unit-image {
         width: 30px; /* Smaller width */
@@ -332,6 +337,8 @@ img {
     button:hover {
         background-color: #0056b3;  /* Darker shade on hover */
     }
+
+  
     
 }
 
@@ -360,7 +367,7 @@ img {
     }
 
     #turnInfo, #turnCounterDisplay {
-        font-size: 14px;
+        font-size: 12px;
     }
     .board-cell {
         aspect-ratio: 1 / 1;  /* This maintains square cells */

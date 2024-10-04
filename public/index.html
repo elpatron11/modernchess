@@ -29,13 +29,17 @@
 
    <button  onclick="joinGame()"  class="btn btn-primary">Buscar Partida</button>
     <div id="signs">
-        <div id="turnInfo" class="alert alert-info mt-3" >Turn P1</div>
         <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
-        <div id="turnCounterDisplay" class="alert alert-warning mt-3">Move: 0 </div>
+        
            
     </div>  
 </div>
-    <button id="leaveGameButton" style="display: none;">Leave Game</button>         
+
+    <button id="leaveGameButton" style="display: none;">Leave Game</button>  
+    <div id="turn-move"></div>   
+     <div id="turnInfo" class="alert alert-info mt-3" >Turn P1</div> 
+    <div id="turnCounterDisplay" class="alert alert-warning mt-3">Move: 0 </div>    
+    </div>  
     <div id="gameContainer" class="d-flex justify-content-center mt-3">
     
      
