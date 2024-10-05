@@ -21,9 +21,9 @@ const Player = require('./models/Player'); // Ensure the path is correct
 const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbHost = process.env.DB_HOST;
-const dbUrl = process.env.DB_URL;
 
-mongoose.connect(dbUrl, {
+
+mongoose.connect(process.env.DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected!"))
