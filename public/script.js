@@ -250,7 +250,7 @@ socket.on('gameOver', async (data) => {
         alert('Congratulations! You won!');
         console.log('Congratulations! You won!'); // Use console log 
         
-    } else if (playerNumber === loser) {
+    } else if (playerUsername === loser) {
         loserSound.play();  // Play losing sound
         alert('You lost! Better luck next time!');
         console.log('You lost! Better luck next time!'); // Use console log for testing
