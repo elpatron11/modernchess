@@ -173,7 +173,11 @@ img {
     background-color: #d32f2f; /* Darker red on hover for visual feedback */
 }
 
-
+#userInfo{
+    color:#d32f2f;
+    font-weight: bold;
+    background-color: #f4f4f4;
+}
 
 /* Responsive styles for smaller screens */
 @media (max-width: 768px) {

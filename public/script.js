@@ -21,6 +21,82 @@ const towerExplotion = document.getElementById('towerExplotion');
 const loserSound = document.getElementById('loserSound');
 // Join a room when the player clicks the join button
 // Function to start matchmaking
+
+//mongodb
+function getPlayerData(username) {
+    fetch(`/player/${username}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Player Data:', data);
+            // Do something with the player data
+        })
+        .catch(error => console.error('Error fetching player data:', error));
+}
+
+
+
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Received login response:", data);  // Check the actual data received
+        if (data.message === "Login successful") {
+            // Hide login form and show user details
+            localStorage.setItem('username', data.username);  // Storing in local storage
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userInfo').innerHTML = `
+                Username: ${data.username}<br>
+                Rating: ${data.rating}<br>
+                Games Played: ${data.gamesPlayed}
+            `;
+        } else {
+            alert('Login failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error logging in:', error);
+        alert('Login failed, please check the console for more information.');
+    });
+}
+
+
+
+// Function to register a new user
+function register() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.username) {
+            alert('Registration successful!');
+        } else {
+            alert('Registration failed: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error registering:', error));
+}
+
+
+
+
 function startMatchmaking() {
     console.log("Requesting to join a game");
     console.log("Emitting joinGame with general:", general);
@@ -29,6 +105,7 @@ function startMatchmaking() {
 }
 
 function joinGame() {
+        const username = localStorage.getItem('username'); 
         const general = document.getElementById('generalChoice').value;
         backgroundSound.loop = true;
         backgroundSound.volume=0.1;
@@ -39,7 +116,7 @@ function joinGame() {
         return;
     }
 
-    socket.emit('joinGame', { general: general });
+    socket.emit('joinGame', {username:username, general: general });
 }
 // Function to save the game state to localStorage
 function saveGameState() {
@@ -138,6 +215,7 @@ socket.on('towerDamaged', (message) => {
 socket.on('towerDestroyed', (message) => {
     alert(message);  // You can display a message or remove the tower visually from the board.
     towerExplotion.play();
+    
 });
 
 // Handle counter-attack result
@@ -158,21 +236,23 @@ socket.on('notYourTurn', () => {
 });
 
 // Handle game over event
-socket.on('gameOver', (data) => {
+socket.on('gameOver', async (data) => {
     const { message, winner, loser } = data;
 
     if (playerNumber === winner) {
         youWin.play();  // Play winning sound
         alert('Congratulations! You won!');
+       await updateGameResult(data.winner, data.loser);
     } else if (playerNumber === loser) {
         loserSound.play();  // Play losing sound
         alert('You lost! Better luck next time!');
+       await updateGameResult(data.winner, data.loser);
     }
 
     // Delay the reload to allow the sounds to play
     setTimeout(() => {
         location.reload();
-    }, 6000);  // Delay the reload by 3 seconds
+    }, 8000);  // Delay the reload by 3 seconds
 });
 
 let unitHasMoved = {};  // Track which units have moved this turn
@@ -224,6 +304,8 @@ function onClick(row, col) {
     const attackingUnit = `${selectedPiece?.row},${selectedPiece?.col}`;  // Unique ID for the attacking unit
 
     if (!selectedPiece && piece.startsWith(playerNumber)) {
+        
+        
         selectedPiece = { row, col };
         console.log(`Selected piece: ${piece} at (${row}, ${col})`);
 
@@ -518,6 +600,7 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
 });
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
+
 
 
 

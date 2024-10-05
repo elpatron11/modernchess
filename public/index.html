@@ -31,11 +31,22 @@
     <div id="signs">
         <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
         
-           
+          
     </div>  
 </div>
 
     <button id="leaveGameButton" style="display: none;">Leave Game</button>  
+    <!-- User info -->
+    <div id="userInfo"   style="display: none;" class="container text-center mt-4"> </div>
+     <!-- HTML for registration form -->
+     <div id="loginForm">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <button onclick="login()">Login</button>
+       
+    </div>
+
     <div id="turn-move"></div>   
      <div id="turnInfo" class="alert alert-info mt-3" >Turn P1</div> 
     <div id="turnCounterDisplay" class="alert alert-warning mt-3">Move: 0 </div>    
