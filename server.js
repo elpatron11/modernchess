@@ -324,6 +324,19 @@ io.on('connection', (socket) => {
         }
     
         if (!towerAlive || !unitsAlive) {
+            let winnerUsername = game.players['P1'].username; // Example path, adjust according to your structure
+            let loserUsername = game.players['P2'].username;
+            console.log(loserUsername)
+            updateGameResult(winnerUsername, loserUsername).then(() => {
+                io.to(roomId).emit('gameOver', {
+                    message: `Player ${game.turn} wins!`,
+                    winner: game.turn,
+                    loser: game.turn === 'P1' ? 'P2' : 'P1'
+                });
+            }).catch(error => {
+                console.error('Failed to update game results:', error);
+                io.to(roomId).emit('error', { message: 'Failed to update game result.' });
+            });
             io.to(roomId).emit('gameOver', { message: `Player ${player} wins!`, winner: player,
                 loser: opponent });
             
@@ -460,11 +473,14 @@ io.on('connection', (socket) => {
                             console.error('Winner or loser username is undefined');
                             io.to(moveData.roomId).emit('error', { message: 'Game result cannot be updated due to missing data.' });
                         } else {
+                            io.to(move.roomId).emit('gameOver', { message: `Player ${player} wins!`, winner: player,
+                                loser: opponent });
                             updateGameResult(winnerUsername, loserUsername).then(() => {
                                 io.to(moveData.roomId).emit('gameOver', {
                                     message: `Player ${game.turn} wins!`,
                                     winner: game.turn,
                                     loser: game.turn === 'P1' ? 'P2' : 'P1'
+                                    
                                 });
                             }).catch(error => {
                                 console.error('Failed to update game results:', error);
