@@ -68,14 +68,17 @@ app.post('/login', async (req, res) => {
     try {
         const player = await Player.findOne({ username });
         if (!player) {
+            console.log("User not found in database");
             return res.status(404).json({ message: "User not found." });
         }
 
         const isMatch = await bcrypt.compare(password, player.password);
         if (!isMatch) {
+            console.log("Passwords do not match");
             return res.status(400).json({ message: "Invalid credentials." });
         }
 
+        console.log("Login successful for user:", username);
         res.json({
             message: "Login successful",
             username: player.username,
@@ -83,9 +86,11 @@ app.post('/login', async (req, res) => {
             gamesPlayed: player.gamesPlayed
         });
     } catch (error) {
+        console.error("Error during login:", error);
         res.status(500).json({ message: error.message });
     }
 });
+
 
 app.post('/update-game-result', async (req, res) => {
     const { winnerUsername, loserUsername } = req.body;
