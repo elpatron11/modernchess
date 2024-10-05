@@ -65,13 +65,17 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
+
+
     try {
         const player = await Player.findOne({ username });
         if (!player) {
             console.log("User not found in database");
             return res.status(404).json({ message: "User not found." });
         }
-
+        console.log("Input Password:", password);
+        
+        console.log("DB Hash:", player.password); // Log DB hash
         const isMatch = await bcrypt.compare(password, player.password);
         if (!isMatch) {
             console.log("Passwords do not match");
@@ -90,6 +94,16 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+
+
+async function checkHash() {
+    const password = 'yourTestPassword';
+    const hashed = await bcrypt.hash(password, 10);
+    console.log('Hashed:', hashed);
+}
+
+checkHash();
 
 
 app.post('/update-game-result', async (req, res) => {
