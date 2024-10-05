@@ -164,7 +164,7 @@ function createGameBoard() {
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
     board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
-    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 1 };  // Player 2 Tower
+    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
