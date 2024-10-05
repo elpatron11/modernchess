@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const playerSchema = new mongoose.Schema({
   username: {
@@ -20,12 +20,10 @@ const playerSchema = new mongoose.Schema({
   }
 });
 
-// Middleware to hash password before saving
-playerSchema.pre('save', async function(next) {
-    if (this.isModified('password') || this.isNew) {
-      this.password = await bcrypt.hash(this.password, 10);
-    }
-    next();
-  });
-  
-  module.exports = mongoose.model('Player', playerSchema);
+// Pre-save middleware to hash password before saving it to the database
+
+
+
+// Compile and export the model
+const Player = mongoose.model('Player', playerSchema);
+module.exports = Player;

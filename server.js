@@ -15,7 +15,7 @@ let turnCounter = 0;
 // Store the game state and rooms
 const games = {};
 let matchmakingQueue = [];
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const Player = require('./models/Player'); // Ensure the path is correct
 const dbUser = process.env.DB_USER;
@@ -48,14 +48,19 @@ app.get('/player/:username', async (req, res) => {
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
     try {
-        const existingPlayer = await Player.findOne({ username });
+        const existingPlayer = await Player.findOne({ username: trimmedUsername });
         if (existingPlayer) {
             return res.status(400).json({ message: "Username already exists." });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newPlayer = new Player({ username, password: hashedPassword });
+        const newPlayer = new Player({
+            username: trimmedUsername, 
+            password: trimmedPassword  // Save password as plain text
+        });
         await newPlayer.save();
         res.status(201).json({ message: "Registration successful", username: newPlayer.username });
     } catch (error) {
@@ -63,26 +68,23 @@ app.post('/register', async (req, res) => {
     }
 });
 
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
 
     try {
-        const player = await Player.findOne({ username });
+        const player = await Player.findOne({ username: trimmedUsername });
         if (!player) {
-            console.log("User not found in database");
             return res.status(404).json({ message: "User not found." });
         }
-        console.log("Input Password:", password);
-        
-        console.log("DB Hash:", player.password); // Log DB hash
-        const isMatch = await bcrypt.compare(password, player.password);
-        if (!isMatch) {
-            console.log("Passwords do not match");
+
+        // Compare plain text passwords directly
+        if (trimmedPassword !== player.password) {
             return res.status(400).json({ message: "Invalid credentials." });
         }
 
-        console.log("Login successful for user:", username);
         res.json({
             message: "Login successful",
             username: player.username,
@@ -90,20 +92,12 @@ app.post('/login', async (req, res) => {
             gamesPlayed: player.gamesPlayed
         });
     } catch (error) {
-        console.error("Error during login:", error);
         res.status(500).json({ message: error.message });
     }
 });
 
 
 
-async function checkHash() {
-    const password = 'yourTestPassword';
-    const hashed = await bcrypt.hash(password, 10);
-    console.log('Hashed:', hashed);
-}
-
-checkHash();
 
 
 app.post('/update-game-result', async (req, res) => {
@@ -183,7 +177,7 @@ function createGameBoard() {
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
     board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
-    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
+    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 1 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -330,41 +324,45 @@ io.on('connection', (socket) => {
         let towerAlive = false;
         let unitsAlive = false;
     
+        // Check if the opponent still has a tower or any units alive
         for (let row = 0; row < BOARD_SIZE; row++) {
             for (let col = 0; col < BOARD_SIZE; col++) {
                 const unit = game.board[row][col].unit;
-                if (unit.startsWith(opponent) && unit.includes('_T')) {
-                    towerAlive = true;
-                }
-                if (unit.startsWith(opponent) && !unit.includes('_T')) {
-                    unitsAlive = true;
+                if (unit.startsWith(opponent)) {
+                    if (unit.includes('_T')) {
+                        towerAlive = true;  // Opponent's tower is still alive
+                    } else {
+                        unitsAlive = true;  // Opponent has other units alive
+                    }
                 }
             }
         }
     
-        if (!towerAlive || !unitsAlive) {
-            let winnerUsername = game.players['P1'].username; // Example path, adjust according to your structure
-            let loserUsername = game.players['P2'].username;
-            console.log(loserUsername)
+        // Win condition: Opponent has no tower and no units left
+        if (!towerAlive && !unitsAlive) {
+            let winnerUsername = game.players[player].username;
+            let loserUsername = game.players[opponent].username;
+            
+            console.log(`Game over! Winner: ${winnerUsername}, Loser: ${loserUsername}`);
+            
+            // Update the game result and emit the gameOver event
             updateGameResult(winnerUsername, loserUsername).then(() => {
                 io.to(roomId).emit('gameOver', {
-                    message: `Player ${game.turn} wins!`,
-                    winner: game.turn,
-                    loser: game.turn === 'P1' ? 'P2' : 'P1'
+                    message: `Player ${player} wins!`,
+                    winner: winnerUsername,
+                    loser: loserUsername
                 });
             }).catch(error => {
                 console.error('Failed to update game results:', error);
                 io.to(roomId).emit('error', { message: 'Failed to update game result.' });
             });
-            io.to(roomId).emit('gameOver', { message: `Player ${player} wins!`, winner: player,
-                loser: opponent });
-            
-            io.to(roomId).emit('updateTurnCounter', turnCounter);  // Properly using roomId
-            return true;
+    
+            return true;  // Game over, return true
         }
     
-        return false;
+        return false;  // No win condition met, return false
     }
+    
     
 
     socket.on('saveGameState', (gameState) => {
@@ -485,22 +483,22 @@ io.on('connection', (socket) => {
                     // Determine winner and loser based on current player's turn
                     // Suppose you determine the winner and loser based on some game logic
                         // Suppose you determine the winner and loser based on some game logic
-                        let winnerUsername = game.players['P1'].username; // Example path, adjust according to your structure
-                        let loserUsername = game.players['P2'].username;
+                        let winnerUsername = game.turn === 'P1' ? game.players['P1'].username : game.players['P2'].username;
+                        let loserUsername = game.turn === 'P1' ? game.players['P2'].username : game.players['P1'].username;
                         console.log(loserUsername)
                         if (!winnerUsername || !loserUsername) {
                             console.error('Winner or loser username is undefined');
                             io.to(moveData.roomId).emit('error', { message: 'Game result cannot be updated due to missing data.' });
                         } else {
-                            io.to(move.roomId).emit('gameOver', { message: `Player ${player} wins!`, winner: player,
-                                loser: opponent });
+                            io.to(moveData.roomId).emit('gameOver', { message: `Player ${winnerUsername} wins!`, winner: winnerUsername,
+                                loser: loserUsername });
                             updateGameResult(winnerUsername, loserUsername).then(() => {
-                                io.to(moveData.roomId).emit('gameOver', {
-                                    message: `Player ${game.turn} wins!`,
-                                    winner: game.turn,
-                                    loser: game.turn === 'P1' ? 'P2' : 'P1'
-                                    
+                                io.to(moveData.roomId).emit('gameOver', { 
+                                    message: `Player ${winnerUsername} wins!`, 
+                                    winner: winnerUsername,
+                                    loser: loserUsername 
                                 });
+                                
                             }).catch(error => {
                                 console.error('Failed to update game results:', error);
                                 io.to(moveData.roomId).emit('error', { message: 'Failed to update game result.' });
@@ -720,4 +718,3 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => {
 console.log(`Server running on port ${port}`);
 });
-

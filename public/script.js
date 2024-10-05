@@ -1,3 +1,4 @@
+
 const socket = io();
 let playerNumber;
 let turn;
@@ -238,17 +239,24 @@ socket.on('notYourTurn', () => {
 // Handle game over event
 socket.on('gameOver', async (data) => {
     const { message, winner, loser } = data;
+    console.log('playerNumber:', playerNumber);
+    console.log('winner:', winner);
+    console.log('loser:', loser);
 
-    if (playerNumber === winner) {
+    const playerUsername = localStorage.getItem('username'); 
+
+    if (playerUsername === winner) {
         youWin.play();  // Play winning sound
         alert('Congratulations! You won!');
-       await updateGameResult(data.winner, data.loser);
+        console.log('Congratulations! You won!'); // Use console log 
+        
     } else if (playerNumber === loser) {
         loserSound.play();  // Play losing sound
         alert('You lost! Better luck next time!');
-       await updateGameResult(data.winner, data.loser);
+        console.log('You lost! Better luck next time!'); // Use console log for testing
+        
     }
-
+    await updateGameResult(data.winner, data.loser);
     // Delay the reload to allow the sounds to play
     setTimeout(() => {
         location.reload();
@@ -600,7 +608,3 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
 });
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
-
-
-
-
