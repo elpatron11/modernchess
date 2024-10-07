@@ -192,22 +192,35 @@ function saveGameState() {
 
 function loadGeneralDropdown() {
     const username = localStorage.getItem('username');
+    
+    // Fetch user data from the backend including the generals they own
     fetch(`/player/${username}`)
         .then(response => response.json())
-        .then(player => {
-            const dropdown = document.getElementById('generalChoice');
-            dropdown.innerHTML = '';  // Clear previous options
+        .then(playerData => {
+            const generals = playerData.generals || []; // Assume 'generals' is an array of owned generals
+            
+              // Add default General Warrior (GW) if not already included
+              if (!generals.includes('GW')) {
+                generals.unshift('GW'); // Add GW at the start if it's missing
+            }
 
-           
+            // Get the dropdown element
+            const generalDropdown = document.getElementById('generalChoice');
+            
+            // Clear any existing options (if necessary)
+            generalDropdown.innerHTML = '';
 
-             player.ownedGenerals.forEach(general => {
+            // Populate the dropdown with the generals that the player owns
+            generals.forEach(general => {
                 const option = document.createElement('option');
                 option.value = general;
-                option.textContent = general;  // You can add fancier names or icons here
-                dropdown.appendChild(option);
+                option.textContent = `General ${general}`; // Adjust label format as needed
+                generalDropdown.appendChild(option);
             });
         })
-        .catch(error => console.error('Error fetching player data:', error));
+        .catch(error => {
+            console.error('Error fetching player data:', error);
+        });
 }
 
 
