@@ -263,33 +263,33 @@ function logout() {
 io.on('connection', (socket) => {
     console.log('A player connected:', socket.id);
 
-    io.on('connection', (socket) => {
-        socket.on('leaveGame', (data) => {
-            const { roomId, playerNumber } = data;
-            const game = games[roomId];
-            if (!game) return;
+    socket.on('leaveGame', ({ roomId, playerNumber }) => {
+        const game = games[roomId];
+        if (game) {
+            const winner = playerNumber === 'P1' ? 'P2' : 'P1';
+            const loser = playerNumber;
     
-            const opponent = playerNumber === 'P1' ? 'P2' : 'P1';
-            const winnerUsername = game.players[opponent].username;
-            const loserUsername = game.players[playerNumber].username;
-    
-            // Update game result and rating as the player left
-            updateGameResult(winnerUsername, loserUsername).then(() => {
-                // Notify both players about the game over
-                io.to(roomId).emit('gameOver', {
-                    message: `Player ${game.players[playerNumber].username} left the game. ${game.players[opponent].username} wins by default.`,
-                    winner: opponent,
-                    loser: playerNumber
-                });
-            }).catch(error => {
-                console.error('Failed to update game results:', error);
-                io.to(roomId).emit('error', { message: 'Failed to update game result.' });
+            // Emit gameOver to both players
+            io.to(roomId).emit('gameOver', {
+                message: `Player ${loser} left the game. Player ${winner} wins!`,
+                winner: game.players[winner].username,
+                loser: game.players[loser].username
             });
     
-            // Optionally, remove the game from the games list if the game is over
-            delete games[roomId];
-        });
+            // Perform the updateGameResult afterward
+            updateGameResult(game.players[winner].username, game.players[loser].username)
+                .then(() => {
+                    console.log('Game result updated successfully');
+                    // Optionally remove the game after updating results
+                    delete games[roomId];
+                })
+                .catch((error) => {
+                    console.error('Failed to update game results:', error);
+                });
+        }
     });
+    
+    
     
     socket.on('joinGame', (data) => {
         console.log("Received data for joinGame:", data);

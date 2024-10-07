@@ -102,6 +102,7 @@ window.onload = function() {
     
     if (username) {
         // Optional: You can check with the server if the username is still valid
+        loadGeneralDropdown(username); // Repopulate the dropdown based on ownership
         fetch(`/player/${username}`)
             .then(response => response.json())
             .then(data => {
@@ -197,7 +198,9 @@ function loadGeneralDropdown() {
             const dropdown = document.getElementById('generalChoice');
             dropdown.innerHTML = '';  // Clear previous options
 
-            player.ownedGenerals.forEach(general => {
+           
+
+             player.ownedGenerals.forEach(general => {
                 const option = document.createElement('option');
                 option.value = general;
                 option.textContent = general;  // You can add fancier names or icons here
@@ -321,7 +324,7 @@ socket.on('gameOver', async (data) => {
     console.log('loser:', loser);
 
     const playerUsername = localStorage.getItem('username'); 
-
+    alert(message);
     if (playerUsername === winner) {
         youWin.play();  // Play winning sound
         alert('Congratulations! You won!');
