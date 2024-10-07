@@ -284,12 +284,21 @@ io.on('connection', (socket) => {
             return;
         }
 
-        const isQueued = matchmakingQueue.some(player => player.socket.id === socket.id);
+        const isQueued = matchmakingQueue.some(player => player.username === username);
         if (isQueued) {
             console.log(`Player ${socket.id} is already in the matchmaking queue.`);
             socket.emit('error', 'You are already waiting for a match.');
             return;
         }
+            // Check if the player is already in a game
+            const isInGame = Object.values(games).some(game => {
+                return Object.values(game.players).some(player => player.username === username);
+            });
+    
+            if (isInGame) {
+                socket.emit('error', { message: 'You are already in a game' });
+                return;
+            }
 
         if (matchmakingQueue.length > 0) {
             const opponentData = matchmakingQueue.shift();
