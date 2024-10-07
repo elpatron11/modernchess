@@ -344,11 +344,11 @@ socket.on('gameOver', async (data) => {
         console.log('Congratulations! You won!'); // Use console log 
       // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
- 
+      
       setTimeout(() => {
           location.reload();
       }, 8000);  // Delay to let the sound play
-        await updateGameResult(data.winner, data.loser);
+        
         
         
     } else if (playerUsername === loser) {
@@ -361,10 +361,22 @@ socket.on('gameOver', async (data) => {
            
           location.reload();
       }, 8000);  // Delay to let the sound play
-        await updateGameResult(data.winner, data.loser);
+       
     }
- 
+    resetGameState();
 });
+
+function resetGameState() {
+    roomId = null;
+    playerNumber = null;
+    turn = null;
+    board = [];
+    selectedPiece = null;
+    actionCount = 0;
+    previousAttacker = null;
+    unitHasAttacked = {};
+}
+
 
 let unitHasMoved = {};  // Track which units have moved this turn
 
@@ -711,6 +723,7 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
         socket.emit('leaveGame', { roomId: roomId, playerNumber: playerNumber });
         // Hide the leave button once the player has left
         document.getElementById('leaveGameButton').style.display = 'none';
+        resetGameState();
         
     }
 });

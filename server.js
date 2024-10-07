@@ -404,7 +404,7 @@ io.on('connection', (socket) => {
             }
         }
     
-        // Win condition: Opponent has no tower and no units left
+        // Win condition: Opponent has no tower or no units left
         if (!towerAlive || !unitsAlive) {
             let winnerUsername = game.players[player].username;
             let loserUsername = game.players[opponent].username;
@@ -767,9 +767,14 @@ io.on('connection', (socket) => {
         if (initialQueueLength !== matchmakingQueue.length) {
             console.log(`Player ${socket.id} removed from matchmaking queue.`);
         }
-    
+        for (const roomId in games) {
+            const game = games[roomId];
+            if (game.players['P1'].socketId === socket.id || game.players['P2'].socketId === socket.id) {
+                delete games[roomId];
+                io.to(roomId).emit('gameOver', { message: 'Player disconnected, game over.' });
+            }
         
-       
+        }
     });
     
 });
