@@ -17,7 +17,8 @@ const playerSchema = new mongoose.Schema({
   gamesPlayed: {
     type: Number,
     default: 0
-  }
+  },
+  ownedGenerals: { type: [String], default: ['GW'] }  // GW is the default general for all users
 });
 
 // Pre-save middleware to hash password before saving it to the database

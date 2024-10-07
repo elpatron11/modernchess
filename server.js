@@ -96,6 +96,19 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/player/:username', async (req, res) => {
+    try {
+        const player = await Player.findOne({ username: req.params.username });
+        res.json({
+            username: player.username,
+            rating: player.rating,
+            gamesPlayed: player.gamesPlayed,
+            ownedGenerals: player.ownedGenerals  // Return owned generals
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 
 
@@ -235,6 +248,16 @@ async function updateGameResult(winnerUsername, loserUsername) {
     }
 }
 
+function logout() {
+    // Clear the username and other data from localStorage
+    localStorage.removeItem('username');
+    
+    // Hide user information and show the login form again
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('userInfo').style.display = 'none';
+    
+    alert('You have logged out successfully.');
+}
 
 
 io.on('connection', (socket) => {
@@ -245,6 +268,12 @@ io.on('connection', (socket) => {
         if (!data || !data.general || !data.username) {
             console.error('Invalid or no data received for general or username');
             socket.emit('error', { message: 'Invalid or no data received for general or username.' });
+            return;
+        }
+        const { username, general } = data;
+
+        if (!username) {
+            socket.emit('error', { message: "You must be logged in to join the game." });
             return;
         }
 

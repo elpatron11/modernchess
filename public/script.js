@@ -60,6 +60,8 @@ function login() {
                 Rating: ${data.rating}<br>
                 Games Played: ${data.gamesPlayed}
             `;
+            document.getElementById('logoutButton').style.display = 'block';
+            loadGeneralDropdown();  // Call this function after login success
         } else {
             alert('Login failed: ' + data.message);
         }
@@ -95,7 +97,58 @@ function register() {
     .catch(error => console.error('Error registering:', error));
 }
 
+window.onload = function() {
+    const username = localStorage.getItem('username');
+    
+    if (username) {
+        // Optional: You can check with the server if the username is still valid
+        fetch(`/player/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || !data.username) {
+                    // If the username is not valid, clear localStorage
+                    localStorage.removeItem('username');
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('userInfo').style.display = 'none';
+                } else {
+                    // If valid, display the user's information
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'block';
+                    document.getElementById('userInfo').innerHTML = `
+                        Username: ${data.username}<br>
+                        Rating: ${data.rating}<br>
+                        Games Played: ${data.gamesPlayed}
+                    `;
+                    
+                    // Optionally, show the logout button
+                    document.getElementById('logoutButton').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // If an error occurs (e.g., server down), clear localStorage and show the login form
+                console.error('Error validating user:', error);
+                localStorage.removeItem('username');
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('userInfo').style.display = 'none';
+            });
+    } else {
+        // If no username is in localStorage, show the login form
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('userInfo').style.display = 'none';
+    }
+};
 
+function logout() {
+    // Clear the username and other data from localStorage
+    localStorage.removeItem('username');
+    
+    // Hide user information and show the login form again
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('userInfo').style.display = 'none';
+    document.getElementById('logoutButton').style.display = 'none';
+    
+    alert('You have logged out successfully.');
+}
 
 
 function startMatchmaking() {
@@ -111,6 +164,11 @@ function joinGame() {
         backgroundSound.loop = true;
         backgroundSound.volume=0.1;
         backgroundSound.play();
+
+        if (!username) {
+            alert("Please log in before joining the game.");
+            return;
+        }
          // Ensure this ID matches your HTML element
     if (!general) {
         alert("Please select a general before joining.");
@@ -130,6 +188,25 @@ function saveGameState() {
     };
     localStorage.setItem('gameState', JSON.stringify(gameState));
 }
+
+function loadGeneralDropdown() {
+    const username = localStorage.getItem('username');
+    fetch(`/player/${username}`)
+        .then(response => response.json())
+        .then(player => {
+            const dropdown = document.getElementById('generalChoice');
+            dropdown.innerHTML = '';  // Clear previous options
+
+            player.ownedGenerals.forEach(general => {
+                const option = document.createElement('option');
+                option.value = general;
+                option.textContent = general;  // You can add fancier names or icons here
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching player data:', error));
+}
+
 
 // Save game state before the page unloads or on manual save
 window.addEventListener('beforeunload', saveGameState);
