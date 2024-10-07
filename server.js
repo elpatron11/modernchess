@@ -405,7 +405,7 @@ io.on('connection', (socket) => {
         }
     
         // Win condition: Opponent has no tower and no units left
-        if (!towerAlive && !unitsAlive) {
+        if (!towerAlive || !unitsAlive) {
             let winnerUsername = game.players[player].username;
             let loserUsername = game.players[opponent].username;
             
