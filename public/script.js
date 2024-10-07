@@ -326,18 +326,28 @@ socket.on('gameOver', async (data) => {
         youWin.play();  // Play winning sound
         alert('Congratulations! You won!');
         console.log('Congratulations! You won!'); // Use console log 
+      // Hide the leave button and show the join button after the game is over
+      document.getElementById('leaveGameButton').style.display = 'none';     
+ 
+      setTimeout(() => {
+          location.reload();
+      }, 8000);  // Delay to let the sound play
+        await updateGameResult(data.winner, data.loser);
+        
         
     } else if (playerUsername === loser) {
         loserSound.play();  // Play losing sound
         alert('You lost! Better luck next time!');
         console.log('You lost! Better luck next time!'); // Use console log for testing
-        
+             // Hide the leave button and show the join button after the game is over
+      document.getElementById('leaveGameButton').style.display = 'none';     
+         setTimeout(() => {
+           
+          location.reload();
+      }, 8000);  // Delay to let the sound play
+        await updateGameResult(data.winner, data.loser);
     }
-    await updateGameResult(data.winner, data.loser);
-    // Delay the reload to allow the sounds to play
-    setTimeout(() => {
-        location.reload();
-    }, 8000);  // Delay the reload by 3 seconds
+ 
 });
 
 let unitHasMoved = {};  // Track which units have moved this turn
@@ -681,7 +691,12 @@ socket.on('waitingForOpponent', (data) => {
 
 //Leave button
 document.getElementById('leaveGameButton').addEventListener('click', function() {
-    window.location.reload(); // Reloads the current document.
+    if (confirm('Are you sure you want to leave the game? You will lose the match and lose rating.')) {
+        socket.emit('leaveGame', { roomId: roomId, playerNumber: playerNumber });
+        // Hide the leave button once the player has left
+        document.getElementById('leaveGameButton').style.display = 'none';
+        
+    }
 });
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;

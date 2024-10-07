@@ -263,6 +263,34 @@ function logout() {
 io.on('connection', (socket) => {
     console.log('A player connected:', socket.id);
 
+    io.on('connection', (socket) => {
+        socket.on('leaveGame', (data) => {
+            const { roomId, playerNumber } = data;
+            const game = games[roomId];
+            if (!game) return;
+    
+            const opponent = playerNumber === 'P1' ? 'P2' : 'P1';
+            const winnerUsername = game.players[opponent].username;
+            const loserUsername = game.players[playerNumber].username;
+    
+            // Update game result and rating as the player left
+            updateGameResult(winnerUsername, loserUsername).then(() => {
+                // Notify both players about the game over
+                io.to(roomId).emit('gameOver', {
+                    message: `Player ${game.players[playerNumber].username} left the game. ${game.players[opponent].username} wins by default.`,
+                    winner: opponent,
+                    loser: playerNumber
+                });
+            }).catch(error => {
+                console.error('Failed to update game results:', error);
+                io.to(roomId).emit('error', { message: 'Failed to update game result.' });
+            });
+    
+            // Optionally, remove the game from the games list if the game is over
+            delete games[roomId];
+        });
+    });
+    
     socket.on('joinGame', (data) => {
         console.log("Received data for joinGame:", data);
         if (!data || !data.general || !data.username) {
