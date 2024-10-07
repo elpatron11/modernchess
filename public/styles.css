@@ -56,7 +56,7 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;  /* Shows a pointer cursor on hover */
-    width: 150px; /* Fixed width for the button */
+    width: 200px; /* Fixed width for the button */
     text-align: center; /* Center the text inside the button */
 }
 
