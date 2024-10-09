@@ -556,6 +556,11 @@ io.on('connection',(socket) => {
     });
     socket.on('makeMove', (moveData) => {
         let game = games[moveData.roomId];
+        if (!game) {
+            console.log("Game not found or may have ended:", moveData.roomId);
+            socket.emit('error', 'Game not found or may have ended.');
+            return;
+        }
     
         if (game.turn !== moveData.player) {
             socket.emit('notYourTurn');
