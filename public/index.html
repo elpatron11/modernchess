@@ -6,6 +6,7 @@
     <title>Chess Game</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
    <style>
         /* Basic table styling for the chessboard */
         table { border-collapse: collapse; }
@@ -27,6 +28,7 @@
    <!-- Example button for joining a game -->
 
    <button  onclick="joinGame()"  class="btn btn-primary">Buscar Partida</button>
+   <button class="shop-button" id="viewGeneralsButton">Shop</button> <!-- New button to view generals -->
     <div id="signs">
         <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
         
@@ -44,6 +46,7 @@
         <input type="password" id="password" placeholder="Password">
         <button onclick="register()">Register</button>
         <button onclick="login()">Login</button>
+        
         
 
        

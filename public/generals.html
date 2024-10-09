@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generals Store</title>
+    <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 300px;
+            margin: 15px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .owned {
+            color: green;
+            font-weight: bold;
+        }
+        .paypal-button {
+            margin-top: 10px;
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+        .paypal-button:hover {
+            background-color: #0056b3;
+        }
+        .back-button {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Available Generals</h1>
+<button class="back-button" id="backButton">Back to Home</button>
+
+<div id="generalContainer" class="container">
+    <!-- General cards will be dynamically added here -->
+</div>
+
+<script>
+    document.getElementById('backButton').addEventListener('click', function() {
+        window.location.href = '/';  // Redirects back to the home or main page
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('username'); // Get the logged-in user's username
+
+        if (!username) {
+            alert('Please log in to view your generals.');
+            return;
+        }
+
+        // Fetch general data from the server, including ownership
+        fetch(`/generals?username=${username}`)
+            .then(response => response.json())
+            .then(generals => {
+                const generalContainer = document.getElementById('generalContainer');
+
+                // Clear any existing content in the container
+                generalContainer.innerHTML = '';
+
+                generals.forEach(general => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+
+                    const img = document.createElement('img');
+                    img.src = `/resources/images/cards/${general.name}.png`;
+                    img.alt = general.name;
+
+                    const title = document.createElement('h3');
+                    title.textContent = `General ${general.name}`;
+
+                    card.appendChild(img);
+                    card.appendChild(title);
+
+                    if (general.owned) {
+                        // If the general is owned, display as owned
+                        const ownedText = document.createElement('p');
+                        ownedText.textContent = 'Owned';
+                        ownedText.classList.add('owned');
+                        card.appendChild(ownedText);
+                    } else {
+                        // Otherwise, show price and PayPal link
+                        const priceText = document.createElement('p');
+                        priceText.textContent = `Price: $${general.price}`;
+
+                        // Replace with your own PayPal link or payment service link
+                        const paypalLink = document.createElement('a');
+                        paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`;
+                        paypalLink.classList.add('paypal-button');
+                        paypalLink.textContent = 'Buy Now';
+
+                        card.appendChild(priceText);
+                        card.appendChild(paypalLink);
+                    }
+
+                    generalContainer.appendChild(card);
+                });
+            })
+            .catch(error => console.error('Error loading generals:', error));
+    });
+</script>
+
+</body>
+</html>

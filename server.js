@@ -84,12 +84,15 @@ app.post('/login', async (req, res) => {
         if (trimmedPassword !== player.password) {
             return res.status(400).json({ message: "Invalid credentials." });
         }
-
+        const generalUnlockMessage = await checkAndUnlockGeneral(username);
+        
         res.json({
             message: "Login successful",
             username: player.username,
             rating: player.rating,
-            gamesPlayed: player.gamesPlayed
+            gamesPlayed: player.gamesPlayed,
+            ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
+            generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -147,6 +150,90 @@ app.post('/update-game-result', async (req, res) => {
         res.status(500).json({ message: "Failed to update player stats: " + error.message });
     }
 });
+
+
+// Route to get all generals and ownership status
+app.get('/generals', async (req, res) => {
+    const username = req.query.username;
+    if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+    }
+
+    try {
+        const player = await Player.findOne({ username: username });
+        if (!player) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Define all available generals in the store
+        const allGenerals = [
+            { name: 'GW', price: 0 }, 
+            { name: 'GH', price: 10 },
+            { name: 'GA', price: 15 },
+            { name: 'GM', price: 20 }
+        ];
+
+        // Fetch owned generals for the user
+        const ownedGenerals = player.ownedGenerals || [];
+
+        // Ensure GW is included as a default, but don't add it twice if the user already owns it
+        if (!ownedGenerals.includes('GW')) {
+            ownedGenerals.push('GW');
+        }
+
+        // Mark the generals with ownership and avoid duplication
+        const generalsWithOwnership = allGenerals.map(general => ({
+            name: general.name,
+            price: general.price,
+            owned: ownedGenerals.includes(general.name)
+        }));
+
+        res.json(generalsWithOwnership);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching generals" });
+    }
+});
+
+
+
+
+
+// Function to check if user is eligible for a new general
+// Function to check and unlock generals based on games played
+async function checkAndUnlockGeneral(username) {
+    try {
+        const player = await Player.findOne({ username: username });
+        if (!player) {
+            return 'Player not found';
+        }
+
+        let unlockedGeneral = null;
+        const gamesPlayed = player.gamesPlayed;
+
+        // Example unlock conditions based on games played
+        if (gamesPlayed >= 50 && !player.ownedGenerals.includes('GA')) {
+            unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
+        }
+         else if (player.rating >= 1400 && !player.ownedGenerals.includes('GH')) {
+            unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
+        }
+        // If a new general is unlocked, add it to the player's ownedGenerals
+        if (unlockedGeneral) {
+            player.ownedGenerals.push(unlockedGeneral);
+            await player.save();
+            return `Congratulations! You've unlocked ${unlockedGeneral}.`;
+        }
+
+        return 'No new general unlocked';
+
+    } catch (error) {
+        console.error('Error unlocking generals:', error);
+        return 'Error unlocking generals';
+    }
+}
+
+
+
 
 
 // Helper function to randomly place terrain on a row
@@ -241,7 +328,7 @@ async function updateGameResult(winnerUsername, loserUsername) {
         // Save changes
         await winner.save();
         await loser.save();
-
+        
         console.log('Updated game results with adjusted rating logic.');
     } catch (error) {
         console.error('Failed to update game results:', error);
@@ -260,7 +347,7 @@ function logout() {
 }
 
 
-io.on('connection', (socket) => {
+io.on('connection',(socket) => {
     console.log('A player connected:', socket.id);
 
     socket.on('leaveGame', ({ roomId, playerNumber }) => {
@@ -268,6 +355,8 @@ io.on('connection', (socket) => {
         if (game) {
             const winner = playerNumber === 'P1' ? 'P2' : 'P1';
             const loser = playerNumber;
+
+           
     
             // Emit gameOver to both players
             io.to(roomId).emit('gameOver', {

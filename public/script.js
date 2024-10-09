@@ -53,6 +53,12 @@ function login() {
         if (data.message === "Login successful") {
             // Hide login form and show user details
             localStorage.setItem('username', data.username);  // Storing in local storage
+             
+            if (data.generalUnlockMessage) {
+            alert(data.generalUnlockMessage); // Notify the player about the unlocked general
+            loadGeneralDropdown();
+            }
+            
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('userInfo').style.display = 'block';
             document.getElementById('userInfo').innerHTML = `
@@ -197,7 +203,7 @@ function loadGeneralDropdown() {
     fetch(`/player/${username}`)
         .then(response => response.json())
         .then(playerData => {
-            const generals = playerData.generals || []; // Assume 'generals' is an array of owned generals
+            const generals = playerData.ownedGenerals || []; // Assume 'generals' is an array of owned generals
             
               // Add default General Warrior (GW) if not already included
               if (!generals.includes('GW')) {
@@ -335,6 +341,13 @@ socket.on('gameOver', async (data) => {
     console.log('playerNumber:', playerNumber);
     console.log('winner:', winner);
     console.log('loser:', loser);
+     // Update games played and check for unlocked generals
+     const winnerResult = await afterGameEnds(winner);
+     const loserResult = await afterGameEnds(loser);
+ 
+     // Send the result back to the client
+     io.to(winner.roomId).emit('generalUnlocked', { message: winnerResult });
+     io.to(loser.roomId).emit('generalUnlocked', { message: loserResult });
 
     const playerUsername = localStorage.getItem('username'); 
     alert(message);
@@ -366,6 +379,14 @@ socket.on('gameOver', async (data) => {
     resetGameState();
 });
 
+socket.on('generalUnlocked', (data) => {
+    if (data.message) {
+        alert(data.message); // Notify the player that they unlocked a new general
+    }
+});
+
+
+
 function resetGameState() {
     roomId = null;
     playerNumber = null;
@@ -376,6 +397,21 @@ function resetGameState() {
     previousAttacker = null;
     unitHasAttacked = {};
 }
+
+
+async function afterGameEnds(username) {
+    // Increment the games played
+    await Player.updateOne({ username: username }, { $inc: { gamesPlayed: 1 } });
+
+    // Check and unlock any new general for the player
+    const result = await checkAndUnlockGeneral(username);
+
+    // Notify the player if they unlocked a new general
+    console.log(result);
+}
+
+
+
 
 
 let unitHasMoved = {};  // Track which units have moved this turn
@@ -717,6 +753,14 @@ socket.on('waitingForOpponent', (data) => {
     statusDisplay.style.display = 'block';  // Make the status visible
 });
 
+// Event listener for the "View Generals" button
+document.getElementById('viewGeneralsButton').addEventListener('click', function() {
+    // Redirect to the generals page
+    window.location.href = '/generals.html'; // Adjust the path as needed
+});
+
+
+
 //Leave button
 document.getElementById('leaveGameButton').addEventListener('click', function() {
     if (confirm('Are you sure you want to leave the game? You will lose the match and lose rating.')) {
@@ -729,3 +773,5 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
 });
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
+
+
