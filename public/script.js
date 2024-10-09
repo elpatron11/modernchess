@@ -339,16 +339,7 @@ socket.on('notYourTurn', () => {
 socket.on('gameOver', async (data) => {
     const { message, winner, loser } = data;
     console.log('playerNumber:', playerNumber);
-    console.log('winner:', winner);
-    console.log('loser:', loser);
-     // Update games played and check for unlocked generals
-     const winnerResult = await afterGameEnds(winner);
-     const loserResult = await afterGameEnds(loser);
- 
-     // Send the result back to the client
-     io.to(winner.roomId).emit('generalUnlocked', { message: winnerResult });
-     io.to(loser.roomId).emit('generalUnlocked', { message: loserResult });
-
+    
     const playerUsername = localStorage.getItem('username'); 
     alert(message);
     if (playerUsername === winner) {
@@ -399,21 +390,6 @@ function resetGameState() {
     previousAttacker = null;
     unitHasAttacked = {};
 }
-
-
-async function afterGameEnds(username) {
-    // Increment the games played
-    await Player.updateOne({ username: username }, { $inc: { gamesPlayed: 1 } });
-
-    // Check and unlock any new general for the player
-    const result = await checkAndUnlockGeneral(username);
-
-    // Notify the player if they unlocked a new general
-    console.log(result);
-}
-
-
-
 
 
 let unitHasMoved = {};  // Track which units have moved this turn
