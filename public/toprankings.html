@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Rankings</title>
+    <style>
+        .btn {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        #rankingsTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #rankingsTable th, #rankingsTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #rankingsTable th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Top Player Rankings</h1>
+
+<!-- Button to go back to the index page -->
+<button class="btn" onclick="window.location.href='index.html'">Back to Home</button>
+
+<table id="rankingsTable">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Rating</th>
+            <th>Owned Generals</th>
+        </tr>
+    </thead>
+    <tbody id="rankingsBody">
+        <!-- Rankings will be dynamically added here -->
+    </tbody>
+</table>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/top-rankings')
+            .then(response => response.json())
+            .then(rankings => {
+                const rankingsBody = document.getElementById('rankingsBody');
+
+                rankings.forEach((player, index) => {
+                    const row = document.createElement('tr');
+                    const rankCell = document.createElement('td');
+                    const usernameCell = document.createElement('td');
+                    const ratingCell = document.createElement('td');
+                    const ownedGeneralsCell = document.createElement('td');
+
+                    rankCell.textContent = index + 1; // Rank starts at 1
+                    usernameCell.textContent = player.username;
+                    ratingCell.textContent = player.rating;
+                    ownedGeneralsCell.textContent = player.ownedGenerals.join(', ');
+
+                    row.appendChild(rankCell);       // Rank
+                    row.appendChild(usernameCell);   // Username
+                    row.appendChild(ratingCell);     // Rating
+                    row.appendChild(ownedGeneralsCell); // Owned Generals
+
+                    rankingsBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching rankings:', error);
+            });
+    });
+</script>
+
+</body>
+</html>

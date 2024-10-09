@@ -125,6 +125,11 @@ img {
     position: relative;
 }
 
+.btn{
+    font-weight: 300;
+    
+}
+
 
 .unit-image {
     width: 40px; /* Smaller width */
