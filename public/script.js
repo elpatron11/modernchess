@@ -387,6 +387,8 @@ socket.on('generalUnlocked', (data) => {
 
 
 
+
+
 function resetGameState() {
     roomId = null;
     playerNumber = null;
@@ -578,7 +580,7 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
     }
 
       //Mage can move 1 space in any direction
-      if (piece.startsWith('P1_M') || piece.startsWith('P2_M')) {
+      if (piece.startsWith('P1_M') || piece.startsWith('P2_M') || piece.startsWith('P2_GM') || piece.startsWith('P1_GM')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -636,8 +638,8 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
         return (rowDiff === 0 && colDiff <= 4) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 4);  // Vertical attack
     }
-     // Archer (A) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
-     if (piece.startsWith('P1_M') || piece.startsWith('P2_M')) {
+     // Mage attack logic: attack up to 2 spaces away in straight lines (no diagonal attacks)
+     if (piece.startsWith('P1_M') || piece.startsWith('P2_M')|| piece.startsWith('P1_GM') || piece.startsWith('P2_GM')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2);  // Vertical attack
     }
@@ -735,7 +737,9 @@ function getImageForUnit(unitType) {
         'P1_GH': '/resources/images/p1_gh.png',
         'P2_GH': '/resources/images/p2_gh.png',
         'P1_M': '/resources/images/p1_mage.png',
-        'P2_M': '/resources/images/p2_mage.png'
+        'P2_M': '/resources/images/p2_mage.png',
+        'P1_GM': '/resources/images/p1_gm.png',
+        'P2_GM': '/resources/images/p2_gm.png'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit

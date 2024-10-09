@@ -13,8 +13,8 @@ mongoose.connect(process.env.DB_URL, {
 const seedGenerals = async () => {
     const generals = [
         { name: 'GW', price: 0, maxSupply: Infinity, currentSupply: Infinity },
-        { name: 'GH', price: 10, maxSupply: 100, currentSupply: 100 },
-        { name: 'GA', price: 15, maxSupply: 50, currentSupply: 50 },
+        { name: 'GH', price: 5, maxSupply: 100, currentSupply: 100 },
+        { name: 'GA', price: 5, maxSupply: 50, currentSupply: 50 },
         { name: 'GM', price: 20, maxSupply: 10, currentSupply: 10 },
     ];
 

@@ -612,7 +612,9 @@ io.on('connection',(socket) => {
                 return 3;  // General Warrior deals 3 damage
             } else if (unit.startsWith('P1_GA') || unit.startsWith('P2_GA')) {
                 return 2;  // General Warrior deals 3 damage
-            }
+            } else if (unit.startsWith('P1_GM') || unit.startsWith('P2_GM')) {
+                return 4;  // General Warrior deals 3 damage
+            } 
             return 0;  // Default no damage for unrecognized units
         }
     
@@ -680,8 +682,34 @@ io.on('connection',(socket) => {
                
 
                // Mage always hits (no avoidance)
-               if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
+               if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                 hitChance = 1.0;  // Mages always hit (no avoidance)
+                
+                if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
+                    // Determine which player is attacking and get the corresponding tower position
+                    let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 3, col: 0 } : { row: 4, col: 7 };
+                    let tower = game.board[towerPosition.row][towerPosition.col];
+                
+                    // Log the state of the tower before attempting to heal
+                    console.log(`Tower at (${towerPosition.row}, ${towerPosition.col}):`, tower);
+                
+                    // Check that the tower exists, is a tower, and has HP that can be healed
+                    if (tower && (tower.unit === 'P1_T' || tower.unit === 'P2_T') && typeof tower.hp === 'number') {
+                        tower.hp += 2;  // Heal the tower by 2 HP
+                        console.log(`Healed tower at (${towerPosition.row}, ${towerPosition.col}) to ${tower.hp} HP`);
+                
+                        // Emit an update to all clients with the new game state
+                        io.to(moveData.roomId).emit('updateBoard', {
+                            board: game.board,
+                            turn: game.turn,
+                            message: `Tower healed for 2 HP by General Mage at (${towerPosition.row}, ${towerPosition.col}). New HP: ${tower.hp}`
+                        });
+                    } else {
+                        console.log(`No valid tower to heal at (${towerPosition.row}, ${towerPosition.col})`);
+                    }
+                }
+                
+                
             } else if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
                 // Specific avoidance logic for Archers attacking General Horse (GH)
                 if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
