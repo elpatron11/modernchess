@@ -370,7 +370,7 @@ socket.on('gameOver', async (data) => {
       }, 8000);  // Delay to let the sound play
        
     }
-    resetGameState();
+    
 });
 
 socket.on('generalUnlocked', (data) => {
