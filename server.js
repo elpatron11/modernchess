@@ -914,12 +914,30 @@ socket.on('emojiSelected', function(data) {
         for (const roomId in games) {
             const game = games[roomId];
             if (game.players['P1'].socketId === socket.id || game.players['P2'].socketId === socket.id) {
-                delete games[roomId];
-                io.to(roomId).emit('gameOver', { message: 'Player disconnected, game over.' });
+                const loser = game.players['P1'].socketId === socket.id ? 'P1' : 'P2';
+                const winner = loser === 'P1' ? 'P2' : 'P1';
+    
+                // Emit gameOver to both players
+                io.to(roomId).emit('gameOver', {
+                    message: `Player ${loser} disconnected. Player ${winner} wins by default.`,
+                    winner: game.players[winner].username,
+                    loser: game.players[loser].username
+                });
+    
+                // Perform the updateGameResult
+                updateGameResult(game.players[winner].username, game.players[loser].username)
+                    .then(() => {
+                        console.log('Game result updated successfully due to disconnection.');
+                        // Optionally remove the game after updating results
+                        delete games[roomId];
+                    })
+                    .catch((error) => {
+                        console.error('Failed to update game results:', error);
+                    });
             }
-        
         }
     });
+    
     
 });
 
