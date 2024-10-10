@@ -16,24 +16,26 @@
 <body>
 
     <button class="btn" onclick="window.location.href='toprankings.html'">View Top Rankings</button>
+    
     <div class="control-panel" id="control-Panel">
-    <div class="container text-center mt-4"></div>
-    <h3>Intelligent Generals</h3>
+    
+        <div class="container text-center mt-4"></div>
+         <h3>Intelligent Generals</h3>
 
-    <div class="my-3">
-    <label for="generalSelect">Pick General:</label>
-    <select id="generalChoice">
+        <div class="my-3">
+        <label for="generalSelect">Pick General:</label>
+        <select id="generalChoice">
+            
         
-       
-    </select>
-    </div>
-   <!-- Example button for joining a game -->
+        </select>
+        </div>
+    <!-- Example button for joining a game -->
 
-   <button  onclick="joinGame()"  class="btn btn-primary">Buscar Partida</button>
-   <button class="shop-button" id="viewGeneralsButton">Shop</button> <!-- New button to view generals -->
-    <div id="signs">
-        <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
-        
+    <button  onclick="joinGame()"  class="btn btn-primary">Buscar Partida</button>
+    <button class="shop-button" id="viewGeneralsButton">Shop</button> <!-- New button to view generals -->
+        <div id="signs">
+            <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
+            
           
     </div>  
 </div>
@@ -48,25 +50,27 @@
         <input type="password" id="password" placeholder="Password">
         <button onclick="register()">Register</button>
         <button onclick="login()">Login</button>
-        
-        
-
-       
+           
     </div>
 
-    <div id="turn-move"></div>   
-     <div id="turnInfo" class="alert alert-info mt-3" >Turn P1</div> 
-    <div id="turnCounterDisplay" class="alert alert-warning mt-3">Move: 0 </div>    
-    </div>  
-    <div id="gameContainer" class="d-flex justify-content-center mt-3">
+    <div id="gameContainer" class="d-flex flex-column align-items-center justify-content-center mt-3">
+        <!-- Game Board in the center -->
+        <table id="gameBoard"></table>
     
-     
-    <div id="unitDetails" style="display: none;">
-        <img id="unitImage" src="" alt="Unit Image" class="img-fluid">
+        <!-- Turn and counter information below the game board -->
+        <div id="infoContainer" class="mt-3">
+            <div id="opponentInfo" class="d-inline-block mr-3"></div>
+            <div id="turnInfo" class="alert alert-info d-inline-block mr-3">Turn: P1</div>
+            <div id="turnCounterDisplay" class="alert alert-warning d-inline-block">Move: 0</div>
+        </div>
+    
+        <!-- Unit details to the right of the game board -->
+        <div id="unitDetails" class="ml-3">
+            <img id="unitImage" src="" alt="Unit Image" class="img-fluid">
+        </div>
     </div>
-    <table id="gameBoard" >
-    </div>
-</div>
+    
+
     <audio id="missSound" src="resources/audio/swordMiss.mp3" ></audio>
     <audio id="backgroundSound" src="resources/audio/background.mp3" ></audio>
     <audio id="stepSound" src="resources/audio/step.mp3" ></audio>

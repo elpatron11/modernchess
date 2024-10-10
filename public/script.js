@@ -753,5 +753,3 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
 });
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
-
-
