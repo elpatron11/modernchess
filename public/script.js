@@ -267,6 +267,9 @@ socket.on('gameStart', (data) => {
     alert(`Game started! You are Player ${playerNumber}`);
     const statusDisplay = document.getElementById('statusDisplay');
     statusDisplay.style.display = 'none'; // Hide the status message
+       // Display opponent details
+       document.getElementById('opponentInfo').innerHTML = `
+       Opponent: ${data.opponentName}`;
 });
 
 
