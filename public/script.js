@@ -354,7 +354,7 @@ socket.on('gameOver', async (data) => {
       
       setTimeout(() => {
           location.reload();
-      }, 5000);  // Delay to let the sound play
+      }, 7000);  // Delay to let the sound play
         
         
         
@@ -364,10 +364,9 @@ socket.on('gameOver', async (data) => {
         console.log('You lost! Better luck next time!'); // Use console log for testing
              // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
-         setTimeout(() => {
-           
+                 
           location.reload();
-      }, 8000);  // Delay to let the sound play
+      
        
     }
     
@@ -747,6 +746,10 @@ document.getElementById('viewGeneralsButton').addEventListener('click', function
 document.getElementById('emojiPicker').addEventListener('click', function(event) {
     if (event.target.tagName === 'SPAN') {
         const emoji = event.target.textContent;
+        const playerDisplay = playerNumber === 'P1' ? 'emojiDisplayP1' : 'emojiDisplayP2';
+        
+        // Display the emoji in the player's own display area immediately
+        document.getElementById(playerDisplay).textContent = emoji; 
         // Include roomId in the data sent to the server
         socket.emit('emojiSelected', { emoji: emoji, roomId: roomId });  // Assuming 'roomId' is globally available or stored
     }
@@ -755,14 +758,11 @@ document.getElementById('emojiPicker').addEventListener('click', function(event)
 // When receiving an emoji from the server
 // When receiving an emoji from the server
 // When receiving an emoji from the server
+// Listen for emoji selections from the other player
 socket.on('receiveEmoji', function(data) {
+    // Determine the display area based on the player number
     const playerDisplay = data.player === 'P1' ? 'emojiDisplayP2' : 'emojiDisplayP1';
-    const displayElement = document.getElementById(playerDisplay);
-    if (displayElement) {
-        displayElement.textContent = data.emoji;  // Set emoji to display, replacing any previous one
-    } else {
-        console.error('Failed to find the display element for emojis');
-    }
+    document.getElementById(playerDisplay).textContent = data.emoji; // Display the received emoji
 });
 
 
