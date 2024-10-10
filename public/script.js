@@ -354,7 +354,7 @@ socket.on('gameOver', async (data) => {
       
       setTimeout(() => {
           location.reload();
-      }, 8000);  // Delay to let the sound play
+      }, 5000);  // Delay to let the sound play
         
         
         
@@ -650,6 +650,7 @@ function renderBoard() {
       document.getElementById('control-Panel').style.display = 'none';
       document.getElementById('leaveGameButton').style.display = 'block';
       // Show the game board or other game start related elements
+      document.getElementById('gameContainer').style.display = 'block';
       document.getElementById('gameBoard').style.display = 'block';
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
@@ -743,6 +744,29 @@ document.getElementById('viewGeneralsButton').addEventListener('click', function
 });
 
 
+document.getElementById('emojiPicker').addEventListener('click', function(event) {
+    if (event.target.tagName === 'SPAN') {
+        const emoji = event.target.textContent;
+        // Include roomId in the data sent to the server
+        socket.emit('emojiSelected', { emoji: emoji, roomId: roomId });  // Assuming 'roomId' is globally available or stored
+    }
+});
+// Listen for emoji selections from the other player
+// When receiving an emoji from the server
+// When receiving an emoji from the server
+// When receiving an emoji from the server
+socket.on('receiveEmoji', function(data) {
+    const playerDisplay = data.player === 'P1' ? 'emojiDisplayP2' : 'emojiDisplayP1';
+    const displayElement = document.getElementById(playerDisplay);
+    if (displayElement) {
+        displayElement.textContent = data.emoji;  // Set emoji to display, replacing any previous one
+    } else {
+        console.error('Failed to find the display element for emojis');
+    }
+});
+
+
+
 
 //Leave button
 document.getElementById('leaveGameButton').addEventListener('click', function() {
@@ -754,5 +778,10 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
         
     }
 });
+
+
+
+
+
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;

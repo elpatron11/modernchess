@@ -14,11 +14,12 @@ body {
 #loginForm {
     display: flex;
     flex-direction: column; /* Stack elements vertically */
+    padding-top: 20px;
     width: 200px; /* Adjust width as needed */
     margin: 0 auto; /* Center the form horizontally */
 }
 #loginForm input, #loginForm button {
-    margin-bottom: 2px; /* Add spacing between inputs and buttons */
+    margin-bottom: 1px; /* Add spacing between inputs and buttons */
     padding: 8px;
     font-size: 14px;
 }
@@ -156,9 +157,8 @@ img {
 
 
 #gameContainer {
-    display: flex;
-    justify-content: center;
-    align-items: start;  /* Aligns items at the start of the container vertically */
+    
+    display:none;
 }
 
 
@@ -220,7 +220,7 @@ img {
     padding: 10px 20px; /* Padding for the button */
     border: none; /* Remove border */
     border-radius: 5px; /* Rounded corners */
-    font-size: 16px; /* Font size */
+    font-size: 14px; /* Font size */
     cursor: pointer; /* Pointer cursor */
     display: flex; /* Flex for icon and text alignment */
     align-items: center; /* Center icon and text vertically */
@@ -236,6 +236,29 @@ img {
 .shop-button:hover {
     background-color: #45a049; /* Darker green on hover */
 }
+#emojiPicker span {
+    font-size: 30px;
+    padding: 5px;
+    display: inline-block;
+}
+
+.emoji-display {
+    font-size: 50px;
+    min-height: 50px;
+    width: 50px;    
+    margin-top: 10px;
+    display: flex;
+    text-align: center;
+    justify-content: center; /* Center the emojis inside the div */
+    align-items: center;
+}
+.emoji-displays {
+    display: flex;
+    justify-content: center;  /* Center the items horizontally */
+    align-items: center;      /* Align the items vertically in the middle */
+    gap: 10px;                /* Optional: Adds space between the two divs */
+}
+
 
 
 
@@ -246,11 +269,8 @@ img {
     }
 
     #gameContainer {
-        display: flex;
-        justify-content: center;
-        align-items: start;  /* Aligns items at the start of the container vertically */
+        display: none;
     }
-
     .board-cell {
         aspect-ratio: 1 / 1;  /* This maintains square cells */
         width: 55px;
@@ -330,9 +350,7 @@ img {
     }
 
     #gameContainer {
-        display: flex;
-        justify-content: center;
-        align-items: start;  /* Aligns items at the start of the container vertically */
+        display: none;
     }
 
     #gameBoard {
@@ -415,9 +433,7 @@ img {
     }
 
     #gameContainer {
-        display: flex;
-        justify-content: center;
-        align-items: start;  /* Aligns items at the start of the container vertically */
+        display: none;
     }
 
   
@@ -500,9 +516,8 @@ img {
     }
 
     #gameContainer {
-    display: flex;
-    justify-content: center;
-    align-items: start;  /* Aligns items at the start of the container vertically */
+        display: none;
+   
 }
 
     #gameBoard {

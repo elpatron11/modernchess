@@ -362,6 +362,16 @@ function logout() {
 io.on('connection',(socket) => {
     console.log('A player connected:', socket.id);
 
+ // Server-side (Node.js)
+// Handling emoji selection within a game room
+socket.on('emojiSelected', function(data) {
+    console.log('Emoji selected:', data);
+    // This ensures that the emoji is only sent to players in the same room
+    socket.to(data.roomId).emit('receiveEmoji', {
+        emoji: data.emoji,
+        player: socket.id  // or any identifier you use for the player
+    });
+});
     socket.on('leaveGame', ({ roomId, playerNumber }) => {
         const game = games[roomId];
         if (game) {
@@ -914,6 +924,8 @@ io.on('connection',(socket) => {
 });
 
 
+
+   
 
 
 
