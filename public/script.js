@@ -66,6 +66,7 @@ function login() {
                 Rating: ${data.rating}<br>
                 Games Played: ${data.gamesPlayed}
             `;
+            updateRatingImage(data.rating);
             document.getElementById('logoutButton').style.display = 'block';
             loadGeneralDropdown();  // Call this function after login success
         } else {
@@ -229,6 +230,35 @@ function loadGeneralDropdown() {
         });
 }
 
+// Example usage when you receive the player data
+socket.on('playerData', (data) => {
+    // Assuming data contains the rating
+    updateRatingImage(data.rating);
+    
+});
+
+function updateRatingImage(rating) {
+    const ratingImageContainer = document.getElementById('ratingImageContainer');
+    // Create an image element
+    const ratingImage = document.createElement('img');
+    ratingImage.id = 'ratingImage';  // Set an ID if needed for further reference
+    ratingImage.src = '';  // Set the source as needed
+    ratingImage.alt = 'Rating Badge';
+    ratingImage.style.display = 'none'; // Initially hide it if necessary
+    // Append the image to the container
+    ratingImageContainer.appendChild(ratingImage);
+    if (rating < 1350) {
+        ratingImage.src = '/resources/images/ranks/rank1.png'; // Path to your image for rating < 1350
+        ratingImage.style.display = 'block'; // Make the image visible
+    } else if (rating >= 1350 && rating < 1600) {
+        ratingImage.src = '/resources/images/ranks/rank2.png'; // Path to your image for rating between 1350 and 1600
+        ratingImage.style.display = 'block'; // Make the image visible
+    } else if (rating >= 1600) {
+        ratingImage.src = '/resources/images/ranks/rank3.png'; // Path to your image for rating >= 1600
+        ratingImage.style.display = 'block'; // Make the image visible
+    }
+
+}
 
 // Save game state before the page unloads or on manual save
 window.addEventListener('beforeunload', saveGameState);

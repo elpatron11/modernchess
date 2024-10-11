@@ -50,7 +50,7 @@
     <table id="gameBoard"></table>
 
     <!-- Turn and counter information below the game board -->
-    <div id="infoContainer" class="mt-3">
+    <div id="infoContainer"  class="mt-3">
        
         <div id="turnInfo" class="alert alert-info d-inline-block mr-3">Turn: P1</div>       
         <div id="turnCounterDisplay" class="alert alert-warning d-inline-block">Move: 0</div>
@@ -68,7 +68,11 @@
 
     <button id="leaveGameButton" style="display: none;">Leave Game</button>  
     <!-- User info -->
-    <div id="userInfo"   style="display: none;" class="container text-center mt-4"> </div>
+    <div id="userInfo"   style="display: none;" class="container text-center mt-4">
+     
+    </div>
+    <div id="ratingImageContainer" class="rating-badge"></div>  
+    
     <button id="logoutButton"  style="display: none;" onclick="logout()">Logout</button>
      <!-- HTML for registration form -->
      <div id="loginForm">
@@ -77,9 +81,9 @@
         <button onclick="register()">Register</button>
         <button onclick="login()">Login</button>
         
-
+        
     </div>
-
+        
 
         <!-- Unit details to the right of the game board -->
         <div id="unitDetails" class="ml-3">

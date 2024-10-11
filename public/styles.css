@@ -99,11 +99,8 @@ td {
     font-weight: bold;
 }
 img {
-    width: 30px; /* Smaller width */
-    height: 30px; /* Smaller height */
-    position: absolute;
-    top: 15px;  /* Adjust position to center the image */
-    left: 15px; /* Adjust position to center the image */
+    width: 60px; /* Smaller width */
+    height: 60px; /* Smaller height */
 }
 /* CSS styles for each terrain */
 .normal-terrain {
@@ -259,7 +256,12 @@ img {
     gap: 10px;                /* Optional: Adds space between the two divs */
 }
 
-
+#ratingImageContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+}
 
 
 @media (max-width: 768px) {
@@ -338,6 +340,11 @@ img {
         background-color: #0056b3;  /* Darker shade on hover */
     }
     
+    .rating-badge {
+        width: 100px;  /* Appropriate width */
+        height: auto;  /* Maintain aspect ratio */
+        position: relative;  /* Position relative to its normal position */
+    }
 }
 
 
