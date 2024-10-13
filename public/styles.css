@@ -263,6 +263,26 @@ img {
     width: 100px;
 }
 
+@keyframes blinkGreen {
+    from { background-color: green; }
+    to { background-color: transparent; }
+}
+
+@keyframes blinkRed {
+    from { background-color: red; }
+    to { background-color: transparent; }
+}
+
+.effect-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    pointer-events: none;  
+}
+
 
 @media (max-width: 768px) {
     #gameBoard {

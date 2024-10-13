@@ -333,7 +333,13 @@ socket.on('attackHit', (data) => {
     } else {
         dieSound.play();  // Play default attack sound
     }
-    
+    const overlay = document.getElementById('effectOverlay');
+    overlay.style.display = 'block';
+    overlay.style.animation = 'blinkRed 1s';
+    overlay.addEventListener('animationend', () => {
+        overlay.style.display = 'none';  // Hide after the animation
+        overlay.style.animation = '';     // Clear the animation
+    }, { once: true });
     //alert(message);
 });
 
@@ -360,6 +366,13 @@ socket.on('counterAttack', (message) => {
 // Handle missed attacks
 socket.on('attackMiss', (message) => {
     //alert(message);
+    const overlay = document.getElementById('effectOverlay');
+    overlay.style.display = 'block';
+    overlay.style.animation = 'blinkGreen 1s';
+    overlay.addEventListener('animationend', () => {
+        overlay.style.display = 'none';  // Hide after the animation
+        overlay.style.animation = '';     // Clear the animation
+    }, { once: true });
     playOnMiss();
 });
 
