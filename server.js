@@ -182,7 +182,9 @@ app.get('/generals', async (req, res) => {
             { name: 'GW', price: 0 }, 
             { name: 'GH', price: 10 },
             { name: 'GA', price: 15 },
-            { name: 'GM', price: 20 }
+            { name: 'GM', price: 20 },
+            { name: 'Barbarian', price: 10 },
+            { name: 'Paladin', price: 10 }
         ];
 
         // Fetch owned generals for the user
@@ -629,7 +631,11 @@ socket.on('emojiSelected', function(data) {
                 return 2;  // General Warrior deals 3 damage
             } else if (unit.startsWith('P1_GM') || unit.startsWith('P2_GM')) {
                 return 4;  // General Warrior deals 3 damage
-            } 
+            } else if (unit.startsWith('P1_Barbarian') || unit.startsWith('P2_Barbarian')) {
+                return 3;  // General Barbarian deals 3 damage
+            }else if (unit.startsWith('P1_Paladin') || unit.startsWith('P2_Paladin')) {
+                return 3;  // General Paladin deals 3 damage
+            }
             return 0;  // Default no damage for unrecognized units
         }
     
@@ -741,6 +747,10 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                     } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                         hitChance = 0.5;  // General Archer has a 50% chance to avoid
+                    } else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                        hitChance = 0.3;  // General barbarian 70% chance to avoid
+                    } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
+                        hitChance = 0.3;  // General barbarian 70% chance to avoid
                     }
                 }
             } else {
@@ -757,6 +767,10 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
                 } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                     hitChance = 0.5;  // General Archer has a 50% chance to avoid
+                } else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                    hitChance = 0.3;  // General barbarian 70% chance to avoid
+                }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
+                    hitChance = 0.3;  // General barbarian 70% chance to avoid
                 }
             
                             
@@ -817,7 +831,14 @@ socket.on('emojiSelected', function(data) {
                 }
             }
     
-            game.unitHasAttacked[attackingUnit] = true;  // Mark as attacked but allow further movement
+                            // If the attacking unit is a Barbarian, allow it to attack twice
+                if (attackingPiece.startsWith('P1_Barbarian') || attackingPiece.startsWith('P2_Barbarian')) {
+                    // Don't mark the Barbarian as having attacked after the first attack
+                    game.unitHasAttacked[attackingUnit] = false;
+                } else {
+                    // For other units, mark them as having attacked
+                    game.unitHasAttacked[attackingUnit] = true;
+}
         }
     
         // Move logic (if the target piece is empty, i.e., not attacking)

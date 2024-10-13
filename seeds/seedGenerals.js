@@ -16,6 +16,10 @@ const seedGenerals = async () => {
         { name: 'GH', price: 5, maxSupply: 100, currentSupply: 100 },
         { name: 'GA', price: 5, maxSupply: 50, currentSupply: 50 },
         { name: 'GM', price: 20, maxSupply: 10, currentSupply: 10 },
+        { name: 'Barbarian', price: 10, maxSupply: 10, currentSupply: 10 },
+        { name: 'Paladin', price: 10, maxSupply: 10, currentSupply: 10 }
+        
+
     ];
 
     try {

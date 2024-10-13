@@ -556,13 +556,15 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
 
     const piece = pieceData.unit;
 
-    // Warrior (W), General Warrior (GW), and Towers can't move
+    // Towers can't move
     if (piece.startsWith('P1_T') || piece.startsWith('P2_T')) {
         return false; // Towers can't move
     }
 
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') || 
-        piece.startsWith('P1_GW') || piece.startsWith('P2_GW')) {
+        piece.startsWith('P1_GW') || piece.startsWith('P2_GW') || 
+        piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian')  || 
+        piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -632,7 +634,8 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     // General Warrior (GW), Warrior (W), and Towers attack logic (adjacent pieces, 1 space away in any direction)
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
         piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||
-        piece.startsWith('P1_T') || piece.startsWith('P2_T')) {
+        piece.startsWith('P1_T') || piece.startsWith('P2_T') ||
+        piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -640,17 +643,28 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     if (piece.startsWith('P1_A') || piece.startsWith('P2_A')) {
         return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 3);  // Vertical attack
+               
     }
      //GENERAL Archer (GA) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
      if (piece.startsWith('P1_GA') || piece.startsWith('P2_GA')) {
         return (rowDiff === 0 && colDiff <= 4) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 4);  // Vertical attack
     }
+
+    
      // Mage attack logic: attack up to 2 spaces away in straight lines (no diagonal attacks)
      if (piece.startsWith('P1_M') || piece.startsWith('P2_M')|| piece.startsWith('P1_GM') || piece.startsWith('P2_GM')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2);  // Vertical attack
     }
+    // General Paladin can attack up to 2 spaces and in diagonal too.
+    if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
+        return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
+               (rowDiff === colDiff && rowDiff <= 3);  // Diagonal
+    }
+
+    
     // Horse (H) attack logic (adjacent pieces, 1 space away in any direction)
     if (piece.startsWith('P1_H') || piece.startsWith('P2_H')) {
         return rowDiff <= 1 && colDiff <= 1;
@@ -748,7 +762,11 @@ function getImageForUnit(unitType) {
         'P1_M': '/resources/images/p1_mage.png',
         'P2_M': '/resources/images/p2_mage.png',
         'P1_GM': '/resources/images/p1_gm.png',
-        'P2_GM': '/resources/images/p2_gm.png'
+        'P2_GM': '/resources/images/p2_gm.png',
+        'P1_Barbarian': '/resources/images/p1_Barbarian.png',  
+        'P2_Barbarian': '/resources/images/p2_Barbarian.png',
+        'P1_Paladin': '/resources/images/p1_Paladin.png',  
+        'P2_Paladin': '/resources/images/p2_Paladin.png'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
