@@ -20,6 +20,8 @@ const spell = document.getElementById('spell');
 const towerHit = document.getElementById('towerHit');
 const towerExplotion = document.getElementById('towerExplotion');
 const loserSound = document.getElementById('loserSound');
+const paladin = document.getElementById('paladin');
+const barbarian = document.getElementById('barbarian');
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -330,7 +332,16 @@ socket.on('attackHit', (data) => {
     // Check if the attacking piece is a Mage (P1_M or P2_M)
     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
         spell.play();  // Play mage attack sound if Mage is attacking
-    } else {
+   
+    }  else if(attackingPiece.startsWith('P1_Paladin') || attackingPiece.startsWith('P2_Paladin'))
+    {
+        paladin.play();
+    } else if(attackingPiece.startsWith('P1_Barbarian') || attackingPiece.startsWith('P2_Barbarian'))
+        {
+            barbarian.play();
+        }
+    
+    else {
         dieSound.play();  // Play default attack sound
     }
     const overlay = document.getElementById('effectOverlay');
