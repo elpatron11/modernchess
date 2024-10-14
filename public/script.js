@@ -617,9 +617,13 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
      if (piece.startsWith('P1_GA') || piece.startsWith('P2_GA')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
+    if (piece.startsWith('P1_Robinhood') || piece.startsWith('P2_Robinhood')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
 
       //Mage can move 1 space in any direction
-      if (piece.startsWith('P1_M') || piece.startsWith('P2_M') || piece.startsWith('P2_GM') || piece.startsWith('P1_GM')) {
+      if (piece.startsWith('P1_M') || piece.startsWith('P2_M') || piece.startsWith('P2_GM') 
+        || piece.startsWith('P1_GM')|| piece.startsWith('P2_Voldemort') || piece.startsWith('P1_Voldemort')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -675,6 +679,12 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
                (colDiff === 0 && rowDiff <= 3);  // Vertical attack
                
     }
+            //Robinhood
+    if (piece.startsWith('P1_Robinhood') || piece.startsWith('P2_Robinhood')) {
+        return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 3);  // Vertical attack
+               
+    }
      //GENERAL Archer (GA) attack logic: attack up to 3 spaces away in straight lines (no diagonal attacks)
      if (piece.startsWith('P1_GA') || piece.startsWith('P2_GA')) {
         return (rowDiff === 0 && colDiff <= 4) ||  // Horizontal attack
@@ -683,7 +693,8 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
 
     
      // Mage attack logic: attack up to 2 spaces away in straight lines (no diagonal attacks)
-     if (piece.startsWith('P1_M') || piece.startsWith('P2_M')|| piece.startsWith('P1_GM') || piece.startsWith('P2_GM')) {
+     if (piece.startsWith('P1_M') || piece.startsWith('P2_M')|| piece.startsWith('P1_GM') || piece.startsWith('P2_GM')
+        || piece.startsWith('P1_Voldemort') || piece.startsWith('P2_Voldemort')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2);  // Vertical attack
     }
@@ -798,7 +809,11 @@ function getImageForUnit(unitType) {
         'P1_Paladin': '/resources/images/p1_Paladin.png',  
         'P2_Paladin': '/resources/images/p2_Paladin.png',
         'P1_Orc': '/resources/images/p1_orc.png',  
-        'P2_Orc': '/resources/images/p2_orc.png'
+        'P2_Orc': '/resources/images/p2_orc.png',
+        'P1_Voldemort': '/resources/images/p1_voldemort.png',
+        'P2_Voldemort': '/resources/images/p2_voldemort.png',
+        'P1_Robinhood': '/resources/images/p1_robin.png',
+        'P2_Robinhood': '/resources/images/p2_robin.png'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit

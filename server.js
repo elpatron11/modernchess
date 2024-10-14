@@ -566,6 +566,8 @@ socket.on('emojiSelected', function(data) {
             });
         }
     });
+
+    let RobinhoodAttaackCounts = {};
     socket.on('makeMove', (moveData) => {
         let game = games[moveData.roomId];
         if (!game) {
@@ -629,7 +631,10 @@ socket.on('emojiSelected', function(data) {
                 return 3;  // General Warrior deals 3 damage
             } else if (unit.startsWith('P1_GA') || unit.startsWith('P2_GA')) {
                 return 2;  // General Warrior deals 3 damage
-            } else if (unit.startsWith('P1_GM') || unit.startsWith('P2_GM')) {
+            } else if (unit.startsWith('P1_Robinhood') || unit.startsWith('P2_Robinhood')) {
+                return 2;  // Robinhood deals 2 damage
+            }
+            else if (unit.startsWith('P1_GM') || unit.startsWith('P2_GM')) {
                 return 4;  // General Warrior deals 3 damage
             } else if (unit.startsWith('P1_Barbarian') || unit.startsWith('P2_Barbarian')) {
                 return 3;  // General Barbarian deals 3 damage
@@ -637,6 +642,8 @@ socket.on('emojiSelected', function(data) {
                 return 3;  // General Paladin deals 3 damage
             }else if (unit.startsWith('P1_Orc') || unit.startsWith('P2_Orc')) {
                 return 4;  // General Paladin deals 3 damage
+            }else if (unit.startsWith('P1_Voldemort') || unit.startsWith('P2_Voldemort')) {
+                return 4;  // General Warrior deals 3 damage
             }
             return 0;  // Default no damage for unrecognized units
         }
@@ -705,13 +712,15 @@ socket.on('emojiSelected', function(data) {
                
 
                // Mage always hits (no avoidance)
-               if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
+               if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')
+                || attackingPiece.startsWith('P1_Voldemort') || attackingPiece.startsWith('P2_Voldemort')) {
                         if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
                             hitChance = 0.00;  // General Orc avoids Mages attacks 100% of the time
                         }
                         else{
                         hitChance = 1.0;  // Mages always hit (no avoidance)
                         }
+                        //To heal the tower
                 if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                     // Determine which player is attacking and get the corresponding tower position
                     let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 3, col: 0 } : { row: 4, col: 7 };
@@ -753,7 +762,10 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                     } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                         hitChance = 0.5;  // General Archer has a 50% chance to avoid
-                    } else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                    }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
+                        hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
+                    }
+                     else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
                         hitChance = 0.3;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                         hitChance = 0.3;  // General barbarian 70% chance to avoid
@@ -779,14 +791,54 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
                 } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                     hitChance = 0.5;  // General Archer has a 50% chance to avoid
-                } else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
+                    hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
+                }
+                 else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
                     hitChance = 0.3;  // General barbarian 70% chance to avoid
                 }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                     hitChance = 0.3;  // General barbarian 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
                     hitChance = 0.25;  // General Orc 70% chance to avoid
                 }
-            
+                
+                //Darkmage converts after it dies
+                if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort') ) {
+                    console.log(`Mage ${targetPiece} defeated by ${attackingPiece}`);
+                
+                    // Get the team prefix from the attacking unit
+                    let teamPrefix = attackingPiece.substring(0, 3); // This gets "P1_" or "P2_"
+                
+                    // Determine the new team prefix based on the current one
+                    let newTeamPrefix = (teamPrefix === 'P1_') ? 'P2_' : 'P1_';
+                
+                    // Change the team of the attacking unit
+                    let newUnit = newTeamPrefix + attackingPiece.substring(3); // Changes "P1_H" to "P2_H" or vice versa
+                
+                                        // Update the attacking unit on the board
+                        game.board[from.row][from.col].unit = newUnit;
+                       console.log(`Converted ${attackingPiece} to ${newUnit}`);
+                                          
+                    
+                    }
+
+                    if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood') )
+                    {
+                        if (RobinhoodAttaackCounts[attackingPiece]) {
+                            RobinhoodAttaackCounts[attackingPiece]++;
+                            console.log("Archer chance", RobinhoodAttaackCounts[attackingPiece])
+                    }
+                        else{
+                            RobinhoodAttaackCounts[attackingPiece] = 1;
+                        }
+                        if (RobinhoodAttaackCounts[attackingPiece] % 3 === 0) {
+                            hitChance = 1.0;  // 100% hit chance on every third attack
+                            console.log("Archer should 1 hit now", RobinhoodAttaackCounts[attackingPiece] )
+                            RobinhoodAttaackCounts[attackingPiece] = 0;
+                            
+                        
+                        }
+                    }
                             
                         
                     // Ignore avoidance if attacking from red terrain
