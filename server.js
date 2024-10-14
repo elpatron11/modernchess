@@ -635,6 +635,8 @@ socket.on('emojiSelected', function(data) {
                 return 3;  // General Barbarian deals 3 damage
             }else if (unit.startsWith('P1_Paladin') || unit.startsWith('P2_Paladin')) {
                 return 3;  // General Paladin deals 3 damage
+            }else if (unit.startsWith('P1_Orc') || unit.startsWith('P2_Orc')) {
+                return 4;  // General Paladin deals 3 damage
             }
             return 0;  // Default no damage for unrecognized units
         }
@@ -704,8 +706,12 @@ socket.on('emojiSelected', function(data) {
 
                // Mage always hits (no avoidance)
                if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
-                hitChance = 1.0;  // Mages always hit (no avoidance)
-                
+                        if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                            hitChance = 0.00;  // General Orc avoids Mages attacks 100% of the time
+                        }
+                        else{
+                        hitChance = 1.0;  // Mages always hit (no avoidance)
+                        }
                 if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                     // Determine which player is attacking and get the corresponding tower position
                     let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 3, col: 0 } : { row: 4, col: 7 };
@@ -751,9 +757,15 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.3;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                         hitChance = 0.3;  // General barbarian 70% chance to avoid
+                    } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                        hitChance = 0.3;  // General Orc 70% chance to avoid
                     }
-                }
-            } else {
+                       // Ignore avoidance if attacking from red terrain
+                    if (fromTerrain === 'red' && !isTower) {
+                        hitChance = 1.0;
+                    }
+                } 
+            }    else {
                 // Avoidance logic for regular units
                 if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                     hitChance = 0.5;  // Horse has a 50% chance to avoid
@@ -771,14 +783,16 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.3;  // General barbarian 70% chance to avoid
                 }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                     hitChance = 0.3;  // General barbarian 70% chance to avoid
+                } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                    hitChance = 0.25;  // General Orc 70% chance to avoid
                 }
             
                             
                         
                     // Ignore avoidance if attacking from red terrain
-                    if (fromTerrain === 'red' && !isTower) {
+                if (fromTerrain === 'red' && !isTower) {
                         hitChance = 1.0;
-                    }
+                }
                     if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                         const attackingTower = game.board[from.row][from.col];
             

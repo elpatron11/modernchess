@@ -588,7 +588,8 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') || 
         piece.startsWith('P1_GW') || piece.startsWith('P2_GW') || 
         piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian')  || 
-        piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
+        piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin') || 
+        piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc') ) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -659,7 +660,8 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
         piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||
         piece.startsWith('P1_T') || piece.startsWith('P2_T') ||
-        piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian')) {
+        piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian') ||
+        piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -790,7 +792,9 @@ function getImageForUnit(unitType) {
         'P1_Barbarian': '/resources/images/p1_Barbarian.png',  
         'P2_Barbarian': '/resources/images/p2_Barbarian.png',
         'P1_Paladin': '/resources/images/p1_Paladin.png',  
-        'P2_Paladin': '/resources/images/p2_Paladin.png'
+        'P2_Paladin': '/resources/images/p2_Paladin.png',
+        'P1_Orc': '/resources/images/p1_orc.png',  
+        'P2_Orc': '/resources/images/p2_orc.png'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
