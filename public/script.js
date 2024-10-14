@@ -22,6 +22,7 @@ const towerExplotion = document.getElementById('towerExplotion');
 const loserSound = document.getElementById('loserSound');
 const paladin = document.getElementById('paladin');
 const barbarian = document.getElementById('barbarian');
+const orc = document.getElementById('orc');
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -340,7 +341,10 @@ socket.on('attackHit', (data) => {
         {
             barbarian.play();
         }
-    
+    else if(attackingPiece.startsWith('P1_Orc') || attackingPiece.startsWith('P2_Orc'))
+            {
+                orc.play();
+            }
     else {
         dieSound.play();  // Play default attack sound
     }
