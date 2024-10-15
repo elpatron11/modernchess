@@ -184,7 +184,10 @@ app.get('/generals', async (req, res) => {
             { name: 'GA', price: 15 },
             { name: 'GM', price: 20 },
             { name: 'Barbarian', price: 10 },
-            { name: 'Paladin', price: 10 }
+            { name: 'Paladin', price: 10 },
+            { name: 'Voldemort', price: 10 },
+            { name: 'Orc', price: 10 },
+            { name: 'Robinhood', price: 10 }
         ];
 
         // Fetch owned generals for the user
