@@ -646,7 +646,7 @@ socket.on('emojiSelected', function(data) {
             }else if (unit.startsWith('P1_Orc') || unit.startsWith('P2_Orc')) {
                 return 4;  // General Paladin deals 3 damage
             }else if (unit.startsWith('P1_Voldemort') || unit.startsWith('P2_Voldemort')) {
-                return 4;  // General Warrior deals 3 damage
+                return 4;  // GeneralVoldemort deals 4 damage
             }
             return 0;  // Default no damage for unrecognized units
         }
@@ -723,6 +723,31 @@ socket.on('emojiSelected', function(data) {
                         else{
                         hitChance = 1.0;  // Mages always hit (no avoidance)
                         }
+
+                         //Darkmage converts after it dies
+                if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort')) {
+                    console.log(`Mage ${targetPiece} defeated by ${attackingPiece}`);
+                
+                    // Get the team prefix from the attacking unit
+                    let teamPrefix = attackingPiece.substring(0, 3); // This gets "P1_" or "P2_"
+                
+                    // Determine the new team prefix based on the current one
+                    let newTeamPrefix = (teamPrefix === 'P1_') ? 'P2_' : 'P1_';
+                
+                    // Change the team of the attacking unit
+                    let newUnit = newTeamPrefix + attackingPiece.substring(3); // Changes "P1_H" to "P2_H" or vice versa
+                
+                                        // Update the attacking unit on the board
+                        if(newUnit.startsWith('P1_T') || newUnit.startsWith('P2_T')) {
+                            console.log("this is a tower cant be converted")
+                        } 
+                        else{              
+                        game.board[from.row][from.col].unit = newUnit;
+                       console.log(`Converted ${attackingPiece} to ${newUnit}`);
+                       io.to(moveData.roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);    }              
+                    
+                    }
+
                         //To heal the tower
                 if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                     // Determine which player is attacking and get the corresponding tower position
@@ -779,6 +804,30 @@ socket.on('emojiSelected', function(data) {
                     if (fromTerrain === 'red' && !isTower) {
                         hitChance = 1.0;
                     }
+
+                     //Darkmage converts after it dies
+                     if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort')) {
+                        console.log(`Mage ${targetPiece} defeated by ${attackingPiece}`);
+                    
+                        // Get the team prefix from the attacking unit
+                        let teamPrefix = attackingPiece.substring(0, 3); // This gets "P1_" or "P2_"
+                    
+                        // Determine the new team prefix based on the current one
+                        let newTeamPrefix = (teamPrefix === 'P1_') ? 'P2_' : 'P1_';
+                    
+                        // Change the team of the attacking unit
+                        let newUnit = newTeamPrefix + attackingPiece.substring(3); // Changes "P1_H" to "P2_H" or vice versa
+                    
+                                            // Update the attacking unit on the board
+                            if(newUnit.startsWith('P1_T') || newUnit.startsWith('P2_T')) {
+                                console.log("this is a tower cant be converted")
+                            } 
+                            else{              
+                            game.board[from.row][from.col].unit = newUnit;
+                           console.log(`Converted ${attackingPiece} to ${newUnit}`);
+                           io.to(moveData.roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);    }              
+                        
+                        }
                 } 
             }    else {
                 // Avoidance logic for regular units
@@ -806,7 +855,7 @@ socket.on('emojiSelected', function(data) {
                 }
                 
                 //Darkmage converts after it dies
-                if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort') ) {
+                if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort')) {
                     console.log(`Mage ${targetPiece} defeated by ${attackingPiece}`);
                 
                     // Get the team prefix from the attacking unit
@@ -819,9 +868,13 @@ socket.on('emojiSelected', function(data) {
                     let newUnit = newTeamPrefix + attackingPiece.substring(3); // Changes "P1_H" to "P2_H" or vice versa
                 
                                         // Update the attacking unit on the board
+                        if(newUnit.startsWith('P1_T') || newUnit.startsWith('P2_T')) {
+                            console.log("this is a tower cant be converted")
+                        } 
+                        else{              
                         game.board[from.row][from.col].unit = newUnit;
                        console.log(`Converted ${attackingPiece} to ${newUnit}`);
-                       io.to(moveData.roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);                  
+                       io.to(moveData.roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);    }              
                     
                     }
 
