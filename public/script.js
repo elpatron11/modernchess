@@ -23,6 +23,8 @@ const loserSound = document.getElementById('loserSound');
 const paladin = document.getElementById('paladin');
 const barbarian = document.getElementById('barbarian');
 const orc = document.getElementById('orc');
+const robin = document.getElementById('robin');
+const voldemort = document.getElementById('voldemort');
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -345,6 +347,10 @@ socket.on('attackHit', (data) => {
             {
                 orc.play();
             }
+    else if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood'))
+                {
+                    robin.play();
+                }
     else {
         dieSound.play();  // Play default attack sound
     }
@@ -378,6 +384,11 @@ socket.on('counterAttack', (message) => {
     alert(message);
 });
 
+// Handle counter-attack result
+socket.on('unitConvert', (message) => {
+    voldemort.play();
+    alert(message);
+});
 // Handle missed attacks
 socket.on('attackMiss', (message) => {
     //alert(message);

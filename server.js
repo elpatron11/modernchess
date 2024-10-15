@@ -821,7 +821,7 @@ socket.on('emojiSelected', function(data) {
                                         // Update the attacking unit on the board
                         game.board[from.row][from.col].unit = newUnit;
                        console.log(`Converted ${attackingPiece} to ${newUnit}`);
-                                          
+                       io.to(moveData.roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);                  
                     
                     }
 
