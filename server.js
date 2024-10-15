@@ -180,14 +180,14 @@ app.get('/generals', async (req, res) => {
         // Define all available generals in the store
         const allGenerals = [
             { name: 'GW', price: 0 }, 
-            { name: 'GH', price: 10 },
-            { name: 'GA', price: 15 },
-            { name: 'GM', price: 20 },
+            { name: 'GH', price: 5 },
+            { name: 'GA', price: 5 },
+            { name: 'GM', price: 5 },
             { name: 'Barbarian', price: 10 },
             { name: 'Paladin', price: 10 },
-            { name: 'Voldemort', price: 10 },
+            { name: 'Voldemort', price: 15 },
             { name: 'Orc', price: 10 },
-            { name: 'Robinhood', price: 10 }
+            { name: 'Robinhood', price: 15 }
         ];
 
         // Fetch owned generals for the user
