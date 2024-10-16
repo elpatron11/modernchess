@@ -9,6 +9,8 @@ let actionCount = 0; // Track 2 actions per turn
 let previousAttacker = null;  // Track previous attacker to prevent two attacks from the same unit
 let unitHasAttacked = {};  // Track which units have attacked in this turn
 const backgroundSound = document.getElementById('backgroundSound');
+const emojiSound = document.getElementById('emoji');
+const emojiSound2 = document.getElementById('emoji2');
 const missSound = document.getElementById('missSound');
 const stepSound = document.getElementById('stepSound');
 const dieSound = document.getElementById('dieSound');
@@ -300,10 +302,16 @@ socket.on('gameStart', (data) => {
     
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
-    if (data.playerNumber === data.turn) {
-        document.getElementById('gameBoard').style.borderColor = 'red';
+    if (data.turn === 'P1') {
+        // Logic to make the border red or any other indicator
+        document.getElementById('turnInfo').style.background = 'green';
+        document.getElementById('turnInfo').style.color = 'red';
+       
     } else {
-        document.getElementById('gameBoard').style.borderColor = 'blue';
+        // Logic to revert the border color or change to another color
+        document.getElementById('turnInfo').style.background = 'black';
+        document.getElementById('turnInfo').style.color = 'red';
+      
     }
    
     const statusDisplay = document.getElementById('statusDisplay');
@@ -324,14 +332,14 @@ socket.on('updateBoard', (data) => {
     document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
-        document.getElementById('gameBoard').style.borderColor = 'red';
-        document.getElementById('turnInfo').style.color = 'green';
-        console.log('p1turn')
+        document.getElementById('turnInfo').style.background = 'green';
+        document.getElementById('turnInfo').style.color = 'red';
+       
     } else {
         // Logic to revert the border color or change to another color
-        document.getElementById('gameBoard').style.borderColor = 'blue';
-        document.getElementById('turnInfo').style.color = 'black';
-        console.log('p2turn')
+        document.getElementById('turnInfo').style.background = 'black';
+        document.getElementById('turnInfo').style.color = 'red';
+      
     }
 });
 
@@ -480,33 +488,7 @@ let unitHasMoved = {};  // Track which units have moved this turn
 
 function onClick(row, col) {
     console.log(`Clicked cell: (${row}, ${col})`);
-    const unit = board[row][col].unit;
-    if (unit) {
-        document.getElementById('unitImage').src = getImageForUnit(unit);
-        document.getElementById('unitDetails').style.display = 'block';
-    } else {
-        document.getElementById('unitDetails').style.display = 'none';
-    }
-
-    // Function to return the image path for a given unit type
-    function getImageForUnit(unitType) {
-        const unitImages = {
-            'P1_W': '/resources/images/tutorial/Pawn.jpg',
-            'P2_W': '/resources/images/tutorial/Pawn.jpg',
-            'P1_H': '/resources/images/tutorial/horse_p1.jpg',
-            'P2_H': '/resources/images/tutorial/horse_p1.jpg',
-            'P1_M': '/resources/images/tutorial/mage.jpg',
-            'P2_M': '/resources/images/tutorial/mage.jpg',
-            'P1_A': '/resources/images/tutorial/Archer.jpg',
-            'P2_A': '/resources/images/tutorial/Archer.jpg',
-
-            // Add more units as needed
-        };
-        return unitImages[unitType] || '/resources/images/archer_p1.png';  // Default image if unit type is not found
-    }
-
-
-    // Deselect previous selected piece (if any)
+       // Deselect previous selected piece (if any)
     if (selectedPiece) {
         const previousSelectedCell = document.querySelector('.selected-cell');
         if (previousSelectedCell) {
@@ -883,6 +865,7 @@ document.getElementById('emojiPicker').addEventListener('click', function(event)
         
         // Display the emoji in the player's own display area immediately
         document.getElementById(playerDisplay).textContent = emoji; 
+        emojiSound.play();
         // Include roomId in the data sent to the server
         socket.emit('emojiSelected', { emoji: emoji, roomId: roomId });  // Assuming 'roomId' is globally available or stored
     }
@@ -896,6 +879,7 @@ socket.on('receiveEmoji', function(data) {
     // Determine the display area based on the player number
     const playerDisplay = data.player === 'P1' ? 'emojiDisplayP2' : 'emojiDisplayP1';
     document.getElementById(playerDisplay).textContent = data.emoji; // Display the received emoji
+    emojiSound2.play();
 });
 
 

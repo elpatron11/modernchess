@@ -154,8 +154,9 @@ img {
 
 
 #gameContainer {
-    
-    display:none;
+    flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
+        display: none;
 }
 
 
@@ -164,7 +165,7 @@ img {
 #unitImage {
     display: flex;
     justify-content: center;
-    width: 300px;
+    width: 100px;
     height:300px;  /* Maintains the aspect ratio of the image */
     position: absolute;
 }
@@ -291,6 +292,8 @@ img {
     }
 
     #gameContainer {
+        flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
         display: none;
     }
     .board-cell {
@@ -327,8 +330,8 @@ img {
     }
 
     #unitImage {
-        width: 150px;
-        height: 150px;  /* Maintains the aspect ratio of the image */
+        width: 100px;
+        height: 300px;  /* Maintains the aspect ratio of the image */
     }
     .control-panel {
         padding: 5px 20px;
@@ -366,12 +369,23 @@ img {
         position: relative;  /* Position relative to its normal position */
     }
 
-    #gameBoard {
-        border: 3px solid black; /* Default border color */
-        transition: border-color 0.3s ease; /* Smooth transition for the border color change */
+  
+    #unitDetails {
+        display: none;
+        position: fixed;  /* Position relative to the viewport */
+        top: 10px;       /* 10px from the top of the viewport */
+        left: 10px;      /* 10px from the left of the viewport */
+        width: 300px;    /* Set a specific width */
+        height: auto;    /* Height adjusts based on content */
+       
+        padding: 10px;   /* Padding inside the box */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
+        z-index: 1050;   /* High z-index to ensure it's above other elements */
     }
     
  
+
+
 }
 
 
@@ -384,6 +398,8 @@ img {
     }
 
     #gameContainer {
+        flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
         display: none;
     }
 
@@ -412,6 +428,22 @@ img {
         top: 1px;  /* Adjust position to center the image */
         left: 1px; /* Adjust position to center the image */
     }
+
+    
+    #unitDetails {
+        display: none;
+        position: fixed;  /* Position relative to the viewport */
+        top: 10px;       /* 10px from the top of the viewport */
+        left: 10px;      /* 10px from the left of the viewport */
+        width: 300px;    /* Set a specific width */
+        height: auto;    /* Height adjusts based on content */
+       
+        padding: 10px;   /* Padding inside the box */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
+        z-index: 1050;   /* High z-index to ensure it's above other elements */
+    }
+    
+    
     .tower-hp {
         font-size: 10px;  /* Adjust this value to your preferred size */
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
@@ -419,8 +451,8 @@ img {
         display: block; /* Ensure the label is a block-level element */
     }
     #unitImage {
-        width: 150px;
-        height: 150px;  /* Maintains the aspect ratio of the image */
+        width: 100px;
+        height: 300px;  /* Maintains the aspect ratio of the image */
     }
 
     .control-panel {
@@ -467,7 +499,10 @@ img {
     }
 
     #gameContainer {
+        flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
         display: none;
+        
     }
 
   
@@ -501,8 +536,8 @@ img {
          display: block; /* Ensure the label is a block-level element */
     }
     #unitImage {
-        width: 100px;
-        height: 100px;  /* Maintains the aspect ratio of the image */
+        width: 80px;
+        height: 250px;  /* Maintains the aspect ratio of the image */
     }
 
     .control-panel {
@@ -550,6 +585,8 @@ img {
     }
 
     #gameContainer {
+        flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
         display: none;
    
 }
@@ -584,8 +621,8 @@ img {
         color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
     }
     #unitImage {
-        width: 100px;
-        height: 100px;  /* Maintains the aspect ratio of the image */
+        width: 80px;
+        height: 250px;  /* Maintains the aspect ratio of the image */
     }
     .control-panel {
         padding: 5px 20px;
