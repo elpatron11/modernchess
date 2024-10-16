@@ -228,12 +228,15 @@ async function checkAndUnlockGeneral(username) {
         const gamesPlayed = player.gamesPlayed;
 
         // Example unlock conditions based on games played
-        if (gamesPlayed >= 50 && !player.ownedGenerals.includes('GA')) {
+        if (player.rating >= 1300 && !player.ownedGenerals.includes('GA')) {
             unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
         }
          else if (player.rating >= 1350 && !player.ownedGenerals.includes('GH')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
+        }else if (player.rating >= 1450 && !player.ownedGenerals.includes('GM')) {
+            unlockedGeneral = 'GM';  // Unlock General Horse after 10 games
         }
+
         // If a new general is unlocked, add it to the player's ownedGenerals
         if (unlockedGeneral) {
             player.ownedGenerals.push(unlockedGeneral);
@@ -977,6 +980,8 @@ socket.on('emojiSelected', function(data) {
         }
     
         game.actionCount++;
+        // Emit an event to both players about the turn change
+        
     
         // End the turn after two actions
         if (game.actionCount >= 2) {

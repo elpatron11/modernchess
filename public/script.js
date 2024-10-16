@@ -300,6 +300,12 @@ socket.on('gameStart', (data) => {
     
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
+    if (data.playerNumber === data.turn) {
+        document.getElementById('gameBoard').style.borderColor = 'red';
+    } else {
+        document.getElementById('gameBoard').style.borderColor = 'blue';
+    }
+   
     const statusDisplay = document.getElementById('statusDisplay');
     statusDisplay.style.display = 'none'; // Hide the status message
        // Display opponent details
@@ -316,12 +322,19 @@ socket.on('updateBoard', (data) => {
     unitHasAttacked = {};  // Reset attack tracking after turn switch
     renderBoard();
     document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
+    if (data.turn === 'P1') {
+        // Logic to make the border red or any other indicator
+        document.getElementById('gameBoard').style.borderColor = 'red';
+        document.getElementById('turnInfo').style.color = 'green';
+        console.log('p1turn')
+    } else {
+        // Logic to revert the border color or change to another color
+        document.getElementById('gameBoard').style.borderColor = 'blue';
+        document.getElementById('turnInfo').style.color = 'black';
+        console.log('p2turn')
+    }
 });
 
-// Listen for the turn counter update from the server
-socket.on('updateTurnCounter', (turnCounter) => {
-    document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
-});
 // Listen for the turn counter update from the server
 socket.on('updateTurnCounter', (turnCounter) => {
     document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
@@ -489,7 +502,7 @@ function onClick(row, col) {
 
             // Add more units as needed
         };
-        return unitImages[unitType] || '/path/to/default.png';  // Default image if unit type is not found
+        return unitImages[unitType] || '/resources/images/archer_p1.png';  // Default image if unit type is not found
     }
 
 
@@ -729,6 +742,20 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     return false;
 }
 
+function updateTurnDisplay(turn) {
+    const gameBoard = document.getElementById('gameBoard');
+
+    if (turn === 'P1') {
+        gameBoard.classList.add('player1Turn');
+        gameBoard.classList.remove('player2Turn');
+    } else if (turn === 'P2') {
+        gameBoard.classList.add('player2Turn');
+        gameBoard.classList.remove('player1Turn');
+    }
+}
+
+
+
 // End the turn
 function endTurn() {
     actionCount = 0;  // Reset the action count for the next turn
@@ -805,8 +832,8 @@ function getImageForUnit(unitType) {
         'P2_A': '/resources/images/p2_a.png',
         'P1_GW': '/resources/images/p1_gp.png',  // Example: General Warrior image for Player 1
         'P2_GW': '/resources/images/p2_gp.png',  // Example: General Warrior image for Player 2
-        'P1_T': '/resources/images/p1_t.png',        // Example: Tower 1 image
-        'P2_T': '/resources/images/p2_t.png',         // Example: Tower 2 image
+        'P1_T': '/resources/images/p1_t1.png',        // Example: Tower 1 image
+        'P2_T': '/resources/images/p2_t2.png',         // Example: Tower 2 image
         'P1_GA': '/resources/images/p1_ga.png',
         'P2_GA': '/resources/images/p2_ga.png',
         'P1_GH': '/resources/images/p1_gh.png',
