@@ -797,11 +797,11 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                     }
                      else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                        hitChance = 0.3;  // General barbarian 70% chance to avoid
+                        hitChance = 0.25;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                         hitChance = 0.3;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                        hitChance = 0.3;  // General Orc 70% chance to avoid
+                        hitChance = 0.25;  // General Orc 75% chance to avoid
                     }
                        // Ignore avoidance if attacking from red terrain
                     if (fromTerrain === 'red' && !isTower) {
@@ -850,7 +850,7 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                 }
                  else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                    hitChance = 0.3;  // General barbarian 70% chance to avoid
+                    hitChance = 0.25;  // General barbarian 70% chance to avoid
                 }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                     hitChance = 0.3;  // General barbarian 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {

@@ -153,11 +153,6 @@ img {
 }
 
 
-#gameContainer {
-    flex: 1;
-        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
-        display: none;
-}
 
 
 
