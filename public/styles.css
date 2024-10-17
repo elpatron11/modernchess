@@ -285,6 +285,20 @@ img {
     display: none;  /* This will hide it by default on all screens */
 }
 
+.custom-alert {
+    position: fixed;  /* Positioned relative to the viewport */
+    left: 50%;        /* Center the alert horizontally */
+    top: 20%;         /* Distance from the top */
+    transform: translate(-50%, -50%); /* Ensure it's centered */
+    width: auto;      /* Auto width based on content */
+    padding: 20px;    /* Padding around the text */
+    background-color: white; /* Background color */
+    border: 1px solid black; /* Border */
+    z-index: 1000;    /* Makes sure it's on top of other content */
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.5); /* Shadow for a bit of depth */
+    text-align: center; /* Center the text */
+}
+
 @media (max-width: 768px) {
     #gameBoard {
         width: 100%;

@@ -529,19 +529,15 @@ socket.on('emojiSelected', function(data) {
             let loserUsername = game.players[opponent].username;
             
             console.log(`Game over! Winner: ${winnerUsername}, Loser: ${loserUsername}`);
-            
-            // Update the game result and emit the gameOver event
-            updateGameResult(winnerUsername, loserUsername).then(() => {
-                io.to(roomId).emit('gameOver', {
-                    message: `Player ${player} wins!`,
-                    winner: winnerUsername,
-                    loser: loserUsername
-                });
-            }).catch(error => {
-                console.error('Failed to update game results:', error);
-                io.to(roomId).emit('error', { message: 'Failed to update game result.' });
+            io.to(roomId).emit('gameOver', {
+                message: `Player ${player} wins!`,
+                winner: winnerUsername,
+                loser: loserUsername
             });
-    
+
+      
+            //delete games[roomId];
+            console.log("deleted room?`")
             return true;  // Game over, return true
         }
     
@@ -697,17 +693,7 @@ socket.on('emojiSelected', function(data) {
                         } else {
                             io.to(moveData.roomId).emit('gameOver', { message: `Player ${winnerUsername} wins!`, winner: winnerUsername,
                                 loser: loserUsername });
-                            updateGameResult(winnerUsername, loserUsername).then(() => {
-                                io.to(moveData.roomId).emit('gameOver', { 
-                                    message: `Player ${winnerUsername} wins!`, 
-                                    winner: winnerUsername,
-                                    loser: loserUsername 
-                                });
-                                
-                            }).catch(error => {
-                                console.error('Failed to update game results:', error);
-                                io.to(moveData.roomId).emit('error', { message: 'Failed to update game result.' });
-                            });
+                       
                         }
                      } else {
                     io.to(moveData.roomId).emit('towerDamaged', `Tower ${targetPiece} is damaged! Remaining HP: ${tower.hp}`);
@@ -1060,13 +1046,13 @@ socket.on('emojiSelected', function(data) {
             console.log(`Player ${socket.id} removed from matchmaking queue.`);
         }
         
-        // Iterate through games to find any game the disconnected player was part of
+        // Check if the player was part of any ongoing game
         for (const roomId in games) {
             const game = games[roomId];
-            
-            // Check if the game has a winner set, if so, skip processing the disconnect as game ending
-            if (game.winner) {
-                console.log(`Game ${roomId} already has a winner. No action needed on disconnect.`);
+    
+            // Skip processing if the game has already been concluded
+            if (game.gameConcluded) {
+                console.log(`Game ${roomId} already concluded. No action needed on disconnect.`);
                 continue; // Skip to the next game if this one is already concluded
             }
     
@@ -1081,8 +1067,8 @@ socket.on('emojiSelected', function(data) {
                     loser: game.players[loser].username
                 });
     
-                // Update the game object to reflect the end state
-                game.winner = winner; // Mark the winner in the game state
+                // Mark the game as concluded to prevent further actions affecting the result
+                game.gameConcluded = true;
     
                 // Perform the updateGameResult
                 updateGameResult(game.players[winner].username, game.players[loser].username)
@@ -1097,6 +1083,7 @@ socket.on('emojiSelected', function(data) {
             }
         }
     });
+    
     
     
     

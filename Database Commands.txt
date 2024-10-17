@@ -28,3 +28,6 @@ db.players.updateMany(
         );
 
 
+
+to restart players in data base:
+db.players.deleteMany({})

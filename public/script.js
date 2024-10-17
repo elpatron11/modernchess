@@ -437,7 +437,8 @@ socket.on('gameOver', async (data) => {
    // alert(message);
     if (playerUsername === winner) {
         youWin.play();  // Play winning sound
-        alert('Congratulations! You won!');
+        // Example usage:
+        showAlert('You Win!! Good Job', 5000);   
         console.log('Congratulations! You won!'); // Use console log 
       // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
@@ -450,12 +451,15 @@ socket.on('gameOver', async (data) => {
         
     } else if (playerUsername === loser) {
         loserSound.play();  // Play losing sound
-        alert('You lost! Better luck next time!');
+        //alert('You lost! Better luck next time!');
+        showAlert('You Lose!! Try Again', 5000);   
         console.log('You lost! Better luck next time!'); // Use console log for testing
              // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
-                 
-          location.reload();
+      
+      setTimeout(() => {
+        location.reload();
+    }, 3000);  // Delay to let the sound play
       
        
     }
@@ -469,7 +473,15 @@ socket.on('generalUnlocked', (data) => {
 });
 
 
+function showAlert(message, duration = 3000) {
+    const alertBox = document.getElementById('customAlert');
+    alertBox.style.display = 'block';
+    alertBox.children[0].textContent = message;  // Assuming the message paragraph is the first child
 
+    setTimeout(() => {
+        alertBox.style.display = 'none';
+    }, duration);
+}
 
 
 function resetGameState() {
