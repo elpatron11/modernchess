@@ -434,7 +434,7 @@ socket.on('gameOver', async (data) => {
     console.log('playerNumber:', playerNumber);
     
     const playerUsername = localStorage.getItem('username'); 
-    alert(message);
+   // alert(message);
     if (playerUsername === winner) {
         youWin.play();  // Play winning sound
         alert('Congratulations! You won!');
@@ -755,6 +755,7 @@ function renderBoard() {
       document.getElementById('leaveGameButton').style.display = 'block';
       // Show the game board or other game start related elements
       document.getElementById('gameContainer').style.display = 'block';
+      document.getElementById('infoContainer').style.display = 'block';
       document.getElementById('gameBoard').style.display = 'block';
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';

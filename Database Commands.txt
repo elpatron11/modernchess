@@ -1,0 +1,30 @@
+//to add generals:
+db.players.updateOne(
+{username:"probando"},
+{$addToSet:{ownedGenerals:{$each:["Voldemort"]}}}
+);
+
+
+//To update something like rating:
+db.players.updateOne(
+{username:"probando"},
+{$set:{rating:1400}}
+);
+
+
+
+//To decrease rating by 25 if its 1400 or highers
+db.players.updateMany(
+            { rating: { $gte: 1400 } },  // Condition: rating is 1400 or more
+            { $inc: { rating: -25 } }   // Action: decrement rating by 25
+        )
+
+
+//to increase by 25 if rating is 1175 or less
+
+db.players.updateMany(
+            { rating: { $lte: 1175 } },  // Condition: rating is 1175 or less
+            { $inc: { rating: 25 } }     // Action: increment rating by 25
+        );
+
+

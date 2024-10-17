@@ -1059,8 +1059,17 @@ socket.on('emojiSelected', function(data) {
         if (initialQueueLength !== matchmakingQueue.length) {
             console.log(`Player ${socket.id} removed from matchmaking queue.`);
         }
+        
+        // Iterate through games to find any game the disconnected player was part of
         for (const roomId in games) {
             const game = games[roomId];
+            
+            // Check if the game has a winner set, if so, skip processing the disconnect as game ending
+            if (game.winner) {
+                console.log(`Game ${roomId} already has a winner. No action needed on disconnect.`);
+                continue; // Skip to the next game if this one is already concluded
+            }
+    
             if (game.players['P1'].socketId === socket.id || game.players['P2'].socketId === socket.id) {
                 const loser = game.players['P1'].socketId === socket.id ? 'P1' : 'P2';
                 const winner = loser === 'P1' ? 'P2' : 'P1';
@@ -1071,6 +1080,9 @@ socket.on('emojiSelected', function(data) {
                     winner: game.players[winner].username,
                     loser: game.players[loser].username
                 });
+    
+                // Update the game object to reflect the end state
+                game.winner = winner; // Mark the winner in the game state
     
                 // Perform the updateGameResult
                 updateGameResult(game.players[winner].username, game.players[loser].username)
@@ -1085,6 +1097,8 @@ socket.on('emojiSelected', function(data) {
             }
         }
     });
+    
+    
     
     
 });

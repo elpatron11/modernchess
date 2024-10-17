@@ -269,6 +269,8 @@ img {
     to { background-color: transparent; }
 }
 
+
+
 .effect-overlay {
     position: fixed;
     top: 0;
@@ -279,6 +281,9 @@ img {
     pointer-events: none;  
 }
 
+#infoContainer {
+    display: none;  /* This will hide it by default on all screens */
+}
 
 @media (max-width: 768px) {
     #gameBoard {
@@ -365,19 +370,9 @@ img {
     }
 
   
-    #unitDetails {
+    #infoContainer{
         display: none;
-        position: fixed;  /* Position relative to the viewport */
-        top: 10px;       /* 10px from the top of the viewport */
-        left: 10px;      /* 10px from the left of the viewport */
-        width: 300px;    /* Set a specific width */
-        height: auto;    /* Height adjusts based on content */
-       
-        padding: 10px;   /* Padding inside the box */
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
-        z-index: 1050;   /* High z-index to ensure it's above other elements */
     }
-    
  
 
 
@@ -481,6 +476,7 @@ img {
     }
 
   
+
     
 }
 
@@ -564,6 +560,13 @@ img {
     button:hover {
         background-color: #0056b3;  /* Darker shade on hover */
     }
+    
+    #gameContainer {
+        flex: 1;
+        min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
+        display: none;
+   
+}
     
 
 }
