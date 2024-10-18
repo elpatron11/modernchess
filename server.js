@@ -770,11 +770,11 @@ socket.on('emojiSelected', function(data) {
                 } else {
                     // Regular avoidance logic for Archers hitting other units
                     if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
-                        hitChance = 0.5;  // Horse has a 50% chance to avoid
+                        hitChance = 0.7;  // Horse has a 50% chance to avoid
                     } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                        hitChance = 0.4;  // Warrior has a 60% chance to avoid
+                        hitChance = 0.6;  // Warrior has a 60% chance to avoid
                     } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
-                        hitChance = 0.75;  // Archers have a 25% chance to avoid
+                        hitChance = 0.8;  // Archers have a 25% chance to avoid
                     } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                         hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                     } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
@@ -821,11 +821,11 @@ socket.on('emojiSelected', function(data) {
             }    else {
                 // Avoidance logic for regular units
                 if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
-                    hitChance = 0.5;  // Horse has a 50% chance to avoid
+                    hitChance = 0.7;  // Horse has a 50% chance to avoid
                 } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                    hitChance = 0.4;  // Warrior has a 60% chance to avoid
+                    hitChance = 0.6;  // Warrior has a 60% chance to avoid
                 } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
-                    hitChance = 0.75;  // Archers have a 25% chance to avoid
+                    hitChance = 0.8;  // Archers have a 25% chance to avoid
                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                     hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                 } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
