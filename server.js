@@ -217,7 +217,7 @@ app.get('/generals', async (req, res) => {
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
-schedule.scheduleJob('0 16,18,20,22,24 * * *', function() {
+schedule.scheduleJob('37 20 * * *', function() {
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
