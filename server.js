@@ -22,7 +22,7 @@ const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbHost = process.env.DB_HOST;
 const schedule = require('node-schedule');
-let countdown = 0; // 2 hours in seconds
+let countdown = 10; // 2 hours in seconds
 
 
 mongoose.connect(process.env.DB_URL, {
