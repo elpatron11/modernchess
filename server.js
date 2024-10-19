@@ -21,6 +21,8 @@ const Player = require('./models/Player'); // Ensure the path is correct
 const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbHost = process.env.DB_HOST;
+const schedule = require('node-schedule');
+let countdown = 0; // 2 hours in seconds
 
 
 mongoose.connect(process.env.DB_URL, {
@@ -211,7 +213,25 @@ app.get('/generals', async (req, res) => {
     }
 });
 
-
+//game Clock
+// Schedule the countdown to reset every 2 hours at specific times
+schedule.scheduleJob('0 16,18,20,22,24 * * *', function() {
+    console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
+    countdown = 7200; // reset countdown
+    io.emit('countdown', { countdown });
+  });
+ // const job = schedule.scheduleJob('05* * * *', function() {
+  //  console.log('The answer to life, the universe, and everything!');
+ // });
+  
+  // Decrement the countdown every second and emit the updated time
+  setInterval(() => {
+    if (countdown > 0) {
+      countdown--;
+      io.emit('countdown', { countdown });
+    }
+  }, 1000);
+  
 
 
 
@@ -369,6 +389,7 @@ function logout() {
 
 io.on('connection',(socket) => {
     console.log('A player connected:', socket.id);
+    socket.emit('countdown', { countdown });
 
  // Server-side (Node.js)
 // Handling emoji selection within a game room

@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Rankings</title>
     <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
         .btn {
             margin: 20px;
             padding: 10px 20px;
@@ -13,23 +24,31 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 200px;
+            margin: 20px auto; /* Center the button */
         }
         .btn:hover {
             background-color: #0056b3;
         }
         #rankingsTable {
-            width: 100%;
+            width: 80%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin: 20px auto; /* Center table */
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1); /* Subtle shadow for depth */
         }
         #rankingsTable th, #rankingsTable td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
         #rankingsTable th {
             background-color: #4CAF50;
             color: white;
+        }
+        #rankingsTable tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
     </style>
 </head>

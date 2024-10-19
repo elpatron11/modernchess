@@ -244,6 +244,17 @@ socket.on('playerData', (data) => {
     
 });
 
+socket.on('countdown', function(data) {
+    document.getElementById('timerDisplay').textContent = formatTime(data.countdown);
+  });
+
+  function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}:${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+  
 function updateRatingImage(rating) {
     const ratingImageContainer = document.getElementById('ratingImageContainer');
     // Create an image element

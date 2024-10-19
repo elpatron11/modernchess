@@ -301,6 +301,14 @@ img {
     color: gold
 }
 
+
+#timerDisplay {
+    color: red; /* Sets the text color to red */
+    font-size: 30px; /* Sets the font size to 30 pixels */
+    font-weight: bold; /* Makes the font bold */
+    text-align: center; /* Centers the text */
+}
+
 @media (max-width: 768px) {
     #gameBoard {
         width: 100%;
