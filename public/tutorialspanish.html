@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vídeo de YouTube incrustado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .video-container {
+            width: 100%;
+            position: relative;
+            padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .content {
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .link-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <!-- Reemplazar "VIDEO_ID" con el ID real del vídeo de YouTube -->
+        <iframe src="https://www.youtube.com/embed/xgdGpwWEJf4?si=5fHseSBpBmTEmznp" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div class="link-container">
+        <!-- Enlace al documento de Google -->
+        <a href="https://docs.google.com/document/d/1pbMLMUTnrttuVVGfSte1qOBIiYM554v19EY9vQDeWqo/edit?tab=t.0#heading=h.gdm5jc63sr7o" target="_blank">Leer más en el Documento del Tutorial del Juego</a>
+    </div>
+</body>
+</html>

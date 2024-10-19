@@ -1,15 +1,21 @@
 to fix:
 to enter game both user cannot be the same
+done
 
 limit the amount of acc you can register by ip
 
+
 when match ends try to reappear button to find match
+done
 
 if a player leaves the match before it ends reduce their ranking by 100
+done
 
 show username and rating of opponent
+done
 
 Print how many points you won or loss
+
 
 database to be able to add or remove generals and then be able to select them on screen.
 
