@@ -71,7 +71,8 @@ function login() {
             document.getElementById('userInfo').innerHTML = `
                 Username: ${data.username}<br>
                 Rating: ${data.rating}<br>
-                Games Played: ${data.gamesPlayed}
+                Games Played: ${data.gamesPlayed}<br>
+                Balance:$${data.balance}.00 
             `;
             updateRatingImage(data.rating);
             document.getElementById('logoutButton').style.display = 'block';
@@ -132,7 +133,8 @@ window.onload = function() {
                     document.getElementById('userInfo').innerHTML = `
                         Username: ${data.username}<br>
                         Rating: ${data.rating}<br>
-                        Games Played: ${data.gamesPlayed}
+                        Games Played: ${data.gamesPlayed}<br>
+                        Balance: $${data.balance}.00
                     `;
                     
                     // Optionally, show the logout button
@@ -265,13 +267,13 @@ function updateRatingImage(rating) {
     ratingImage.style.display = 'none'; // Initially hide it if necessary
     // Append the image to the container
     ratingImageContainer.appendChild(ratingImage);
-    if (rating < 1350) {
+    if (rating < 1300) {
         ratingImage.src = '/resources/images/ranks/rank1.png'; // Path to your image for rating < 1350
         ratingImage.style.display = 'block'; // Make the image visible
-    } else if (rating >= 1350 && rating < 1600) {
+    } else if (rating >= 1300 && rating < 1400) {
         ratingImage.src = '/resources/images/ranks/rank2.png'; // Path to your image for rating between 1350 and 1600
         ratingImage.style.display = 'block'; // Make the image visible
-    } else if (rating >= 1600) {
+    } else if (rating >= 1400) {
         ratingImage.src = '/resources/images/ranks/rank3.png'; // Path to your image for rating >= 1600
         ratingImage.style.display = 'block'; // Make the image visible
     }

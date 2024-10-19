@@ -22,7 +22,7 @@ const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbHost = process.env.DB_HOST;
 const schedule = require('node-schedule');
-let countdown = 10; // 2 hours in seconds
+let countdown = 0; // 2 hours in seconds
 
 
 mongoose.connect(process.env.DB_URL, {
@@ -94,6 +94,7 @@ app.post('/login', async (req, res) => {
             rating: player.rating,
             gamesPlayed: player.gamesPlayed,
             ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
+            balance: player.balance,
             generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
     } catch (error) {
@@ -108,7 +109,8 @@ app.get('/player/:username', async (req, res) => {
             username: player.username,
             rating: player.rating,
             gamesPlayed: player.gamesPlayed,
-            ownedGenerals: player.ownedGenerals  // Return owned generals
+            ownedGenerals: player.ownedGenerals,  // Return owned generals
+            balance: player.balance
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

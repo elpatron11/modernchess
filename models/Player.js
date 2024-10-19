@@ -41,7 +41,12 @@ const playerSchema = new mongoose.Schema({
     default: 0
   },
   ownedGenerals: { type: [String], default: ['GW'] },
-    // GW is the default general for all users
+  
+  balance: {
+    type: Number,
+    default: 0
+  }
+  
 
     
 

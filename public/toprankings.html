@@ -50,6 +50,11 @@
         #rankingsTable tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+        .money-icon {
+            width: 20px; /* Adjust the size as needed */
+            height: 20px; /* Adjust the size as needed */
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -66,6 +71,7 @@
             <th>Username</th>
             <th>Rating</th>
             <th>Owned Generals</th>
+            <th>Reward</th>
         </tr>
     </thead>
     <tbody id="rankingsBody">
@@ -86,16 +92,26 @@
                     const usernameCell = document.createElement('td');
                     const ratingCell = document.createElement('td');
                     const ownedGeneralsCell = document.createElement('td');
+                    const moneyIconCell = document.createElement('td');
 
                     rankCell.textContent = index + 1; // Rank starts at 1
                     usernameCell.textContent = player.username;
                     ratingCell.textContent = player.rating;
                     ownedGeneralsCell.textContent = player.ownedGenerals.join(', ');
 
+                    // Add a money icon to the top three players
+                    if (index < 3) {
+                        const moneyIcon = document.createElement('img');
+                        moneyIcon.src = 'resources/images/moneyicon.jpg'; // Specify the path to your money icon image
+                        moneyIcon.className = 'money-icon';
+                        moneyIconCell.appendChild(moneyIcon);
+                    }
+
                     row.appendChild(rankCell);       // Rank
                     row.appendChild(usernameCell);   // Username
                     row.appendChild(ratingCell);     // Rating
                     row.appendChild(ownedGeneralsCell); // Owned Generals
+                    row.appendChild(moneyIconCell);  // Money Icon Cell
 
                     rankingsBody.appendChild(row);
                 });
