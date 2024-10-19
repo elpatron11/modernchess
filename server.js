@@ -783,11 +783,11 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                     }
                      else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                        hitChance = 0.25;  // General barbarian 70% chance to avoid
+                        hitChance = 0.2;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
-                        hitChance = 0.3;  // General barbarian 70% chance to avoid
+                        hitChance = 0.25;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                        hitChance = 0.25;  // General Orc 75% chance to avoid
+                        hitChance = 0.2;  // General Orc 75% chance to avoid
                     }
                        // Ignore avoidance if attacking from red terrain
                     if (fromTerrain === 'red' && !isTower) {
@@ -836,11 +836,11 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                 }
                  else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                    hitChance = 0.25;  // General barbarian 70% chance to avoid
+                    hitChance = 0.2;  // General barbarian 70% chance to avoid
                 }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
-                    hitChance = 0.3;  // General barbarian 70% chance to avoid
+                    hitChance = 0.25;  // General barbarian 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                    hitChance = 0.25;  // General Orc 70% chance to avoid
+                    hitChance = 0.2;  // General Orc 70% chance to avoid
                 }
                 
                 //Darkmage converts after it dies
@@ -928,7 +928,7 @@ socket.on('emojiSelected', function(data) {
                     // General Warrior counter-attack logic
                     if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                         const counterRoll = Math.random();
-                        if (counterRoll <= 0.3) {  // 30% chance to counter-attack
+                        if (counterRoll <= 0.4) {  // 40% chance to counter-attack
                             console.log(`Counter-attack! ${attackingPiece} is removed.`);
                             game.board[from.row][from.col].unit = '';  // Remove the attacking piece
                             io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
