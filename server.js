@@ -772,7 +772,7 @@ socket.on('emojiSelected', function(data) {
                     if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                         hitChance = 0.7;  // Horse has a 50% chance to avoid
                     } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                        hitChance = 0.6;  // Warrior has a 60% chance to avoid
+                        hitChance = 0.5;  // Warrior has a 60% chance to avoid
                     } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
                         hitChance = 0.8;  // Archers have a 25% chance to avoid
                     } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
@@ -823,7 +823,7 @@ socket.on('emojiSelected', function(data) {
                 if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                     hitChance = 0.7;  // Horse has a 50% chance to avoid
                 } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                    hitChance = 0.6;  // Warrior has a 60% chance to avoid
+                    hitChance = 0.5;  // Warrior has a 60% chance to avoid
                 } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
                     hitChance = 0.8;  // Archers have a 25% chance to avoid
                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
