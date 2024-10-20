@@ -47,6 +47,13 @@ li {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+.btn-big-bold {
+    padding: 10px 30px; /* Increased padding for a larger button */
+    font-size: 15px; /* Increased font size for bigger text */
+    font-weight: bold; /* Make the text bolder */
+    width: auto; /* Adjusted from a fixed width to auto to accommodate longer text */
+    background-color: red;
+}
 
 #opponentInfo{
     background-color: #f44336;
