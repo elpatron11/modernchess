@@ -12,11 +12,16 @@ db.players.updateOne(
 );
 
 
+//To update all rating:
+db.players.updateMany({},
+{$set:{rating:1200}}
+);
+
 
 //To decrease rating by 25 if its 1400 or highers
 db.players.updateMany(
-            { rating: { $gte: 1400 } },  // Condition: rating is 1400 or more
-            { $inc: { rating: -25 } }   // Action: decrement rating by 25
+            { rating: { $gte: 1225 } },  // Condition: rating is 1400 or more          
+  { $inc: { rating: -25 } }   // Action: decrement rating by 25
         )
 
 
@@ -31,3 +36,8 @@ db.players.updateMany(
 
 to restart players in data base:
 db.players.deleteMany({})
+
+
+
+
+
