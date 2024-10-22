@@ -217,12 +217,12 @@ app.get('/generals', async (req, res) => {
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
-schedule.scheduleJob('26 02 * * *', function() { //6pm server time
+schedule.scheduleJob('01 23 * * *', function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
       // Reset all player ratings to 1200 at 6pm server time
-      db.players.updateMany({}, { $set: { rating: 1200 } })
+      Player.updateMany({}, { $set: { rating: 1200 } })
       .then(result => {
           console.log('Ratings reset for all players:', result);
       })
