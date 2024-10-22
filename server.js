@@ -217,10 +217,18 @@ app.get('/generals', async (req, res) => {
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
-schedule.scheduleJob('02 23 * * *', function() { //6pm server time
+schedule.scheduleJob('23 01 * * *', function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
+      // Reset all player ratings to 1200 at 6pm server time
+      db.players.updateMany({}, { $set: { rating: 1200 } })
+      .then(result => {
+          console.log('Ratings reset for all players:', result);
+      })
+      .catch(err => {
+          console.error('Error resetting player ratings:', err);
+      });
   });
  // const job = schedule.scheduleJob('05* * * *', function() {
   //  console.log('The answer to life, the universe, and everything!');
@@ -255,7 +263,7 @@ async function checkAndUnlockGeneral(username) {
         }
          else if (player.rating >= 1350 && !player.ownedGenerals.includes('GH')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
-        }else if (player.rating >= 1450 && !player.ownedGenerals.includes('GM')) {
+        }else if (player.rating >= 1400 && !player.ownedGenerals.includes('GM')) {
             unlockedGeneral = 'GM';  // Unlock General Horse after 10 games
         }
 
@@ -346,10 +354,12 @@ async function updateGameResult(winnerUsername, loserUsername) {
         let ratingChange = 0;
         const ratingDifference = winner.rating - loser.rating;
 
-        if (ratingDifference >= 150) {
+        if (ratingDifference >= 100) {
             ratingChange = 0; // No points gained for the winner
-        } else if (ratingDifference >= 100) {
+        }else if (ratingDifference >= 50) {
             ratingChange = 10; // Minimal points gained for the winner
+        }  else if (ratingDifference >= 25) {
+            ratingChange = 25; // Minimal points gained for the winner
         } else if (ratingDifference < 0) {
             ratingChange = 50; // Big gain for the winner when beating a higher-rated player
         } else {
