@@ -396,6 +396,21 @@ socket.on('attackHit', (data) => {
         overlay.style.animation = '';     // Clear the animation
     }, { once: true });
     //alert(message);
+       // Handle image replacement for the target unit
+       const [unitType, targetRow, targetCol] = targetPiece.split('_');  // Assuming targetPiece format includes these details
+       const targetCellImg = document.querySelector(`#cell-${targetRow}-${targetCol} img`);
+   
+       if (targetCellImg) {
+           const originalSrc = targetCellImg.src;  // Store the original image source
+           targetCellImg.src = 'resources/images/animation/hit-animation.gif';  // Set to hit animation GIF
+   
+           // Revert to the original image after the animation (e.g., 3 seconds)
+           setTimeout(() => {
+               targetCellImg.src = originalSrc;
+           }, 3000);
+       } else {
+           console.error("No image found for target cell", targetRow, targetCol);
+       }
 });
 
 // Handle tower damaged event

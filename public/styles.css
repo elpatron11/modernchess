@@ -130,19 +130,22 @@ img {
 }
 /* CSS styles for each terrain */
 .normal-terrain {
-    background-image: url('resources/images/terrain5.png');
+    background-image: url('resources/images/terrain12.gif');
     background-size: cover;
 }
 
 .water-terrain {
-    background-image: url('resources/images/terrain2.png');
+    background-image: url('resources/images/terrain9.gif');
     background-size: cover;
 }
 
 .red-terrain {
-    background-image: url('resources/images/terrain3.png');
+    background-image: url('resources/images/terrain13.gif');
     background-size: cover;
 }
+
+
+
 
 .board-cell {
     width: 60px;  /* Adjust based on your game board size */
