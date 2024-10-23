@@ -974,7 +974,19 @@ socket.on('emojiSelected', function(data) {
                 } else {
                     console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                     io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
-    
+                    const defenderimg = game.board[to.row][to.col].unit
+                    game.board[to.row][to.col].unit = 'miss';
+                        // Set a timeout to revert back or clear after animation
+                        setTimeout(() => {
+                           // game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
+                            game.board[to.row][to.col].unit = defenderimg;
+                            io.to(moveData.roomId).emit('updateBoard', {
+                                board: game.board,
+                                terrain: game.terrain,
+                                turn: game.turn,
+                            });
+                         }, 2000); // 3 seconds for the hit animation
+
                     // General Warrior counter-attack logic
                     if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                         const counterRoll = Math.random();

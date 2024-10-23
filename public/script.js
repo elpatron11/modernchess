@@ -862,7 +862,8 @@ function getImageForUnit(unitType) {
         'P1_Robinhood': '/resources/images/p1_robin.png',
         'P2_Robinhood': '/resources/images/p2_robin.png',
         'explosion': '/resources/images/animation/rip.gif',
-        'warhit': '/resources/images/animation/explosion.gif'
+        'warhit': '/resources/images/animation/explosion.gif',
+        'miss': '/resources/images/animation/miss.gif'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
