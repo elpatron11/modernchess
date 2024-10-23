@@ -947,15 +947,40 @@ socket.on('emojiSelected', function(data) {
                 console.log(hitRoll);
                 if (hitRoll <= hitChance) {
                     console.log(`Attack hit! ${targetPiece} is removed.`);
+                    const attackerimg = game.board[from.row][from.col].unit;
+                    const defenderimg = game.board[to.row][to.col].unit;
+
+                    if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M'))
+                    {
+                        game.board[to.row][to.col].unit = 'magehit';  // replace the target piece
+                        if (attackingPiece.startsWith('P1_M')){
+                            game.board[from.row][from.col].unit = 'p1mageattack';
+                        }
+                        else{
+                            game.board[from.row][from.col].unit = 'p2mageattack';
+                        }
+                    }
+                    else if(attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A'))
+                    {
+                        game.board[to.row][to.col].unit = 'archerhit';  // replace the target piece
+                        if (attackingPiece.startsWith('P1_A')){
+                            game.board[from.row][from.col].unit = 'archerattack';
+                        }
+                        else{
+                            game.board[from.row][from.col].unit = 'archerattack';
+                        }
+                        
+                    }
+
+                    else{
+                    game.board[to.row][to.col].unit = 'explosion';  // replace defender img
                     
-                    game.board[to.row][to.col].unit = 'explosion';  // Remove the target piece
-                    const attackerimg = game.board[from.row][from.col].unit
                     game.board[from.row][from.col].unit = 'warhit';
                     io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece: attackingPiece,
                         targetRow: to.row,  // Also useful for a miss to possibly show an effect
                         targetCol: to.col,
                          unitDied: true });
-                        
+                    }  
                          // Set a timeout to revert back or clear after animation
                          setTimeout(() => {
                             game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
@@ -966,7 +991,7 @@ socket.on('emojiSelected', function(data) {
                                 turn: game.turn,
                             });
                          }, 3000); // 3 seconds for the hit animation
-    
+                        
                     if (checkWinCondition(game, game.turn, moveData.roomId)) {
                         io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
                         return;
@@ -974,7 +999,7 @@ socket.on('emojiSelected', function(data) {
                 } else {
                     console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                     io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
-                    const defenderimg = game.board[to.row][to.col].unit
+                    const defenderimg = game.board[to.row][to.col].unit;
                     game.board[to.row][to.col].unit = 'miss';
                         // Set a timeout to revert back or clear after animation
                         setTimeout(() => {

@@ -9,6 +9,8 @@ let actionCount = 0; // Track 2 actions per turn
 let previousAttacker = null;  // Track previous attacker to prevent two attacks from the same unit
 let unitHasAttacked = {};  // Track which units have attacked in this turn
 const backgroundSound = document.getElementById('backgroundSound');
+const start = document.getElementById('start');
+const letsgo = document.getElementById('letsgo');
 const emojiSound = document.getElementById('emoji');
 const emojiSound2 = document.getElementById('emoji2');
 const missSound = document.getElementById('missSound');
@@ -178,10 +180,7 @@ function startMatchmaking() {
 function joinGame() {
         const username = localStorage.getItem('username'); 
         const general = document.getElementById('generalChoice').value;
-        backgroundSound.loop = true;
-        backgroundSound.volume=0.1;
-        backgroundSound.play();
-
+        letsgo.play();
         if (!username) {
             alert("Please log in before joining the game.");
             return;
@@ -312,7 +311,10 @@ socket.on('gameStart', (data) => {
     playerNumber = data.playerNumber;
     turn = data.turn || 'P1'; // Assuming the game always starts with Player 1
     actionCount = 0;
-    
+    backgroundSound.loop = true;
+    backgroundSound.volume=0.1;
+    backgroundSound.play();
+    start.play();
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
     if (data.turn === 'P1') {
@@ -863,7 +865,14 @@ function getImageForUnit(unitType) {
         'P2_Robinhood': '/resources/images/p2_robin.png',
         'explosion': '/resources/images/animation/rip.gif',
         'warhit': '/resources/images/animation/explosion.gif',
-        'miss': '/resources/images/animation/miss.gif'
+        'miss': '/resources/images/animation/miss.gif',
+        'magehit': '/resources/images/animation/magehit2.gif',
+        'p2mageattack': '/resources/images/animation/p2mageattack.gif',
+        'p1mageattack': '/resources/images/animation/p1mageattack.gif',
+        'archerhit': '/resources/images/animation/archerhit2.gif',
+        'archerattack': '/resources/images/animation/archerattack.gif'
+
+
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
