@@ -165,9 +165,9 @@ img {
 .unit-image {
     width: 40px; /* Smaller width */
     height: 40px; /* Smaller height */
-    position: absolute;
-    top: 10px;  /* Adjust position to center the image */
-    left: 10px; /* Adjust position to center the image */
+    top: 50%;  /* Center vertically */
+    left: 50%;  /* Center horizontally */
+   
     object-fit: cover;  /* This will cover the area without distorting the ratio */
 }
 

@@ -864,7 +864,7 @@ function getImageForUnit(unitType) {
         'P1_Robinhood': '/resources/images/p1_robin.png',
         'P2_Robinhood': '/resources/images/p2_robin.png',
         'explosion': '/resources/images/animation/rip.gif',
-        'warhit': '/resources/images/animation/explosion.gif',
+        'warhit': '/resources/images/animation/hit.gif',
         'miss': '/resources/images/animation/miss.gif',
         'magehit': '/resources/images/animation/magehit2.gif',
         'p2mageattack': '/resources/images/animation/p2mageattack.gif',
