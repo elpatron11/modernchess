@@ -870,7 +870,8 @@ function getImageForUnit(unitType) {
         'p2mageattack': '/resources/images/animation/p2mageattack.gif',
         'p1mageattack': '/resources/images/animation/p1mageattack.gif',
         'archerhit': '/resources/images/animation/archerhit2.gif',
-        'archerattack': '/resources/images/animation/archerattack.gif'
+        'archerattack': '/resources/images/animation/archerattack.gif',
+        'towerdestroyed': '/resources/images/animation/towerdestroyed.gif'
 
 
         // Add other units as needed

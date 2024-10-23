@@ -712,8 +712,8 @@ socket.on('emojiSelected', function(data) {
                 console.log(loserUsername)
                 if (tower.hp <= 0) {
                     console.log(`Tower ${targetPiece} is destroyed!`);
-                    game.board[to.row][to.col].unit = '';  // Remove the tower from the board
-                
+                    game.board[to.row][to.col].unit = 'towerdestroyed';  // Remove the tower from the board
+                    
                     // Determine winner and loser based on current player's turn
                     // Suppose you determine the winner and loser based on some game logic
                         // Suppose you determine the winner and loser based on some game logic
@@ -933,7 +933,7 @@ socket.on('emojiSelected', function(data) {
                             // Check if attacking tower is destroyed due to HP loss
                             if (attackingTower.hp <= 0) {
                                 console.log(`Tower ${attackingPiece} is destroyed!`);
-                                game.board[from.row][from.col].unit = '';  // Remove the attacking tower from the board
+                                game.board[from.row][from.col].unit = 'towerdestroyed';  // Remove the attacking tower from the board
                                 io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed. `);
                                 io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} Lose!`)
                                 
@@ -1079,7 +1079,12 @@ socket.on('emojiSelected', function(data) {
 
                    // Check if Player 1's tower is destroyed
                    if (p1Tower.hp <= 0) {
-                       game.board[3][0].unit = '';  // Remove the tower from the board
+                       game.board[3][0].unit = 'towerdestroyed';  // Remove the tower from the board
+                       io.to(moveData.roomId).emit('updateBoard', {
+                                board: game.board,
+                                terrain: game.terrain,
+                                turn: game.turn,
+                            });
                        io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
                        io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
                        if (checkWinCondition(game, 'P2',moveData.roomId)) {
@@ -1097,10 +1102,15 @@ socket.on('emojiSelected', function(data) {
 
                    // Check if Player 2's tower is destroyed
                    if (p2Tower.hp <= 0) {
-                       game.board[4][7].unit = '';  // Remove the tower from the board
+                       game.board[4][7].unit = 'towerdestroyed';  // Remove the tower from the board
                        io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
                        io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
-                        // Check for game over, as Player 1 would win
+                       io.to(moveData.roomId).emit('updateBoard', {
+                        board: game.board,
+                        terrain: game.terrain,
+                        turn: game.turn,
+                    });                       
+                       // Check for game over, as Player 1 would win
                         if (checkWinCondition(game, 'P1',moveData.roomId)) {
                          io.to(moveData.roomId).emit('gameOver', 'Player 1 wins!');
                             return;
