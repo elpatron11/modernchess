@@ -364,8 +364,8 @@ socket.on('updateTurnCounter', (turnCounter) => {
 
 // Handle attack result
 socket.on('attackHit', (data) => {
-    const { message, attackingPiece } = data;  // Correctly extract data properties
-
+    const { message, attackingPiece, targetPiece,  targetRow, targetCol, unitDied} = data;  // Correctly extract data properties
+    console.log(targetRow, targetCol);
     // Check if the attacking piece is a Mage (P1_M or P2_M)
     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
         spell.play();  // Play mage attack sound if Mage is attacking
@@ -397,22 +397,8 @@ socket.on('attackHit', (data) => {
     }, { once: true });
     //alert(message);
        // Handle image replacement for the target unit
-       const [unitType, targetRow, targetCol] = targetPiece.split('_');  // Assuming targetPiece format includes these details
-       const targetCellImg = document.querySelector(`#cell-${targetRow}-${targetCol} img`);
-   
-       if (targetCellImg) {
-           const originalSrc = targetCellImg.src;  // Store the original image source
-           targetCellImg.src = 'resources/images/animation/hit-animation.gif';  // Set to hit animation GIF
-   
-           // Revert to the original image after the animation (e.g., 3 seconds)
-           setTimeout(() => {
-               targetCellImg.src = originalSrc;
-           }, 3000);
-       } else {
-           console.error("No image found for target cell", targetRow, targetCol);
-       }
-});
-
+      
+   });
 // Handle tower damaged event
 socket.on('towerDamaged', (message) => {
     //alert(message);  // You can display this message or update a UI element to show the tower's health.
@@ -805,7 +791,7 @@ function renderBoard() {
         for (let col = 0; col < board[row].length; col++) {
             const td = document.createElement('td');
             td.classList.add('board-cell');
-
+            td.id = `cell-${row}-${col}`;  // Assign ID in the format `cell-row-col`
             const terrainType = board[row][col].terrain;  // Get terrain type
             const unitType = board[row][col].unit;  // Get unit type
 
@@ -874,7 +860,9 @@ function getImageForUnit(unitType) {
         'P1_Voldemort': '/resources/images/p1_voldemort.png',
         'P2_Voldemort': '/resources/images/p2_voldemort.png',
         'P1_Robinhood': '/resources/images/p1_robin.png',
-        'P2_Robinhood': '/resources/images/p2_robin.png'
+        'P2_Robinhood': '/resources/images/p2_robin.png',
+        'explosion': '/resources/images/animation/rip.gif',
+        'warhit': '/resources/images/animation/explosion.gif'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
