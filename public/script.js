@@ -871,9 +871,9 @@ function getImageForUnit(unitType) {
         'p1mageattack': '/resources/images/animation/p1mageattack.gif',
         'archerhit': '/resources/images/animation/archerhit2.gif',
         'archerattack': '/resources/images/animation/archerattack.gif',
-        'towerdestroyed': '/resources/images/animation/towerdestroyed.gif'
-
-
+        'towerdestroyed': '/resources/images/animation/towerdestroyed.gif',
+        'counterattack': '/resources/images/animation/counterattack.gif',
+        'gahit': '/resources/images/animation/gahit.gif'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit

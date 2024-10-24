@@ -781,14 +781,14 @@ socket.on('emojiSelected', function(data) {
                 
                     // Check that the tower exists, is a tower, and has HP that can be healed
                     if (tower && (tower.unit === 'P1_T' || tower.unit === 'P2_T') && typeof tower.hp === 'number') {
-                        tower.hp += 2;  // Heal the tower by 2 HP
+                        tower.hp += 4;  // Heal the tower by 2 HP
                         console.log(`Healed tower at (${towerPosition.row}, ${towerPosition.col}) to ${tower.hp} HP`);
                 
                         // Emit an update to all clients with the new game state
                         io.to(moveData.roomId).emit('updateBoard', {
                             board: game.board,
                             turn: game.turn,
-                            message: `Tower healed for 2 HP by General Mage at (${towerPosition.row}, ${towerPosition.col}). New HP: ${tower.hp}`
+                            message: `Tower healed for 4 HP by General Mage at (${towerPosition.row}, ${towerPosition.col}). New HP: ${tower.hp}`
                         });
                     } else {
                         console.log(`No valid tower to heal at (${towerPosition.row}, ${towerPosition.col})`);
@@ -816,11 +816,11 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                     }
                      else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                        hitChance = 0.2;  // General barbarian 70% chance to avoid
+                        hitChance = 0.15;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
-                        hitChance = 0.25;  // General barbarian 70% chance to avoid
+                        hitChance = 0.2;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                        hitChance = 0.2;  // General Orc 75% chance to avoid
+                        hitChance = 0.15;  // General Orc 75% chance to avoid
                     }
                        // Ignore avoidance if attacking from red terrain
                     if (fromTerrain === 'red' && !isTower) {
@@ -869,11 +869,11 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
                 }
                  else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                    hitChance = 0.2;  // General barbarian 70% chance to avoid
+                    hitChance = 0.15;  // General barbarian 70% chance to avoid
                 }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
-                    hitChance = 0.25;  // General barbarian 70% chance to avoid
+                    hitChance = 0.20;  // General barbarian 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                    hitChance = 0.2;  // General Orc 70% chance to avoid
+                    hitChance = 0.15;  // General Orc 70% chance to avoid
                 }
                 
                 //Darkmage converts after it dies
@@ -970,7 +970,17 @@ socket.on('emojiSelected', function(data) {
                             game.board[from.row][from.col].unit = 'archerattack';
                         }
                         
-                    }
+                    }else if(attackingPiece.startsWith('P1_GA') || attackingPiece.startsWith('P2_GA'))
+                        {
+                            game.board[to.row][to.col].unit = 'gahit';  // replace the target piece
+                            if (attackingPiece.startsWith('P1_A')){
+                                game.board[from.row][from.col].unit = 'archerattack';
+                            }
+                            else{
+                                game.board[from.row][from.col].unit = 'archerattack';
+                            }
+                            
+                        }
 
                     else{
                     game.board[to.row][to.col].unit = 'explosion';  // replace defender img
@@ -1017,9 +1027,20 @@ socket.on('emojiSelected', function(data) {
                         const counterRoll = Math.random();
                         if (counterRoll <= 0.4) {  // 40% chance to counter-attack
                             console.log(`Counter-attack! ${attackingPiece} is removed.`);
-                            game.board[from.row][from.col].unit = '';  // Remove the attacking piece
+                            game.board[from.row][from.col].unit = 'counterattack';  // Remove the attacking piece
                             io.to(moveData.roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
-    
+                            setTimeout(() => {
+                                // game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
+                                game.board[from.row][from.col].unit = ''; 
+                                 io.to(moveData.roomId).emit('updateBoard', {
+                                     board: game.board,
+                                     terrain: game.terrain,
+                                     turn: game.turn,
+                                 });
+                              }, 2000); // 3 seconds for the hit animation
+
+
+
                             if (checkWinCondition(game, game.turn === 'P1' ? 'P2' : 'P1', moveData.roomId)) {
                                 io.to(moveData.roomId).emit('gameOver', `Player ${game.turn === 'P1' ? 'P2' : 'P1'} wins!`);
                                 return;
