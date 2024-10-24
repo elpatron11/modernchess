@@ -30,6 +30,7 @@ const barbarian = document.getElementById('barbarian');
 const orc = document.getElementById('orc');
 const robin = document.getElementById('robin');
 const voldemort = document.getElementById('voldemort');
+const archerkill = document.getElementById('archerkill');
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -270,7 +271,7 @@ function updateTimerDisplay(seconds) {
 //when turn switches 60 sec timer resets
 socket.on('turnSwitched', (data) => {
     clearInterval(countdownTimer);
-    document.getElementById('playerturn123').textContent = `It's now ${data.newTurn}'s turn`;
+   // document.getElementById('playerturn123').textContent = `It's now ${data.newTurn}'s turn`;
 });
 
 socket.on('countdown', function(data) {
@@ -411,6 +412,10 @@ socket.on('attackHit', (data) => {
             {
                 orc.play();
             }
+     else if(attackingPiece.startsWith('P1_GA') || attackingPiece.startsWith('P2_GA'))
+                {
+                    archerkill.play();
+                }
     else if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood'))
                 {
                     robin.play();

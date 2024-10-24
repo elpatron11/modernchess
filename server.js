@@ -1026,12 +1026,12 @@ socket.on('emojiSelected', function(data) {
                     else{
                     game.board[to.row][to.col].unit = 'explosion';  // replace defender img
                     
-                    game.board[from.row][from.col].unit = 'warhit';
+               
+                    }  
                     io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece: attackingPiece,
                         targetRow: to.row,  // Also useful for a miss to possibly show an effect
                         targetCol: to.col,
                          unitDied: true });
-                    }  
                          // Set a timeout to revert back or clear after animation
                          setTimeout(() => {
                             game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
