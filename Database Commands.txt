@@ -5,6 +5,14 @@ db.players.updateOne(
 );
 
 
+to replace everyones general to another one.
+db.players.updateMany(
+    { "ownedGenerals": "GW" }, // Filter: matches documents where 'ownedGenerals' includes 'GW'
+    { "$set": { "ownedGenerals.$[element]": "Paladin" } }, // Update: replaces 'GW' with 'NewGeneral'
+    { "arrayFilters": [{ "element": "GW" }] } // ArrayFilters: specifies the condition for array elements to update
+);
+
+
 //To update something like rating:
 db.players.updateOne(
 {username:"probando"},
