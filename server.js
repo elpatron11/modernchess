@@ -356,14 +356,14 @@ async function updateGameResult(winnerUsername, loserUsername) {
 
         if (ratingDifference >= 100) {
             ratingChange = 0; // No points gained for the winner
-        }else if (ratingDifference >= 50) {
-            ratingChange = 10; // Minimal points gained for the winner
+        }else if (ratingDifference >= 40) {
+            ratingChange = 0; // Minimal points gained for the winner
         }  else if (ratingDifference >= 25) {
-            ratingChange = 25; // Minimal points gained for the winner
+            ratingChange = 10; // Minimal points gained for the winner
         } else if (ratingDifference < 0) {
-            ratingChange = 50; // Big gain for the winner when beating a higher-rated player
+            ratingChange = 25; // Big gain for the winner when beating a higher-rated player
         } else {
-            ratingChange = 25; // Moderate gain when players are closely rated
+            ratingChange = 15; // Moderate gain when players are closely rated
         }
 
         // Apply rating changes
