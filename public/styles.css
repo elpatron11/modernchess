@@ -55,6 +55,11 @@ li {
     background-color: red;
 }
 
+#timerDisplay1{
+ 
+ font:#f4f4f4;
+}
+
 #opponentInfo{
     background-color: #f44336;
 }
@@ -166,8 +171,7 @@ img {
     width: 40px; /* Smaller width */
     height: 40px; /* Smaller height */
     top: 50%;  /* Center vertically */
-    left: 50%;  /* Center horizontally */
-   
+    left: 50%;  /* Center horizontally */   
     object-fit: cover;  /* This will cover the area without distorting the ratio */
 }
 
@@ -234,7 +238,7 @@ img {
     padding: 15px; /* Add some padding for spacing inside the box */
 }
 #userInfo p {
-    margin-bottom: 10px; /* Add some space between paragraphs */
+    margin-bottom: 5px; /* Add some space between paragraphs */
 }
 /* Responsive styles for smaller screens */
 

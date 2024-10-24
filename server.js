@@ -22,8 +22,8 @@ const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbHost = process.env.DB_HOST;
 const schedule = require('node-schedule');
-let countdown = 0; // 2 hours in seconds
-
+let countdown = 0; // counter for event timer.
+const gameTimers = {}; // Stores timers for each game
 
 mongoose.connect(process.env.DB_URL, {
     useNewUrlParser: true,
@@ -258,12 +258,12 @@ async function checkAndUnlockGeneral(username) {
         const gamesPlayed = player.gamesPlayed;
 
         // Example unlock conditions based on games played
-        if (player.rating >= 1300 && !player.ownedGenerals.includes('GA')) {
+        if (player.rating >= 1220 && !player.ownedGenerals.includes('GA')) {
             unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
         }
-         else if (player.rating >= 1350 && !player.ownedGenerals.includes('GH')) {
+         else if (player.rating >= 1250 && !player.ownedGenerals.includes('GH')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
-        }else if (player.rating >= 1400 && !player.ownedGenerals.includes('GM')) {
+        }else if (player.rating >= 1300 && !player.ownedGenerals.includes('GM')) {
             unlockedGeneral = 'GM';  // Unlock General Horse after 10 games
         }
 
@@ -282,9 +282,37 @@ async function checkAndUnlockGeneral(username) {
     }
 }
 
-
-
-
+// Start or reset a game timer
+function startTurnTimer(roomId, currentPlayer) {
+    if (gameTimers[roomId]) {
+        clearTimeout(gameTimers[roomId]); // Clear the existing timer
+    }
+    gameTimers[roomId] = setTimeout(() => {
+        console.log(`Player ${currentPlayer} timed out.`);
+        switchTurn(roomId);
+        
+    }, 30000); // 60 seconds for each turn
+     // Emit an event to start the client-side timer
+     io.to(roomId).emit('startTimer');
+}
+// Switch turns
+function switchTurn(roomId) {
+    const game = games[roomId];
+    if (!game) return;
+    game.unitHasAttacked = {};  // Reset attack tracking
+    game.unitHasMoved = 0;  // Reset movement tracking
+    game.turn = game.turn === 'P1' ? 'P2' : 'P1'; // Toggle turn
+    game.actionCount = 0; // Reset action count for new turn
+    io.to(roomId).emit('turnSwitched', { newTurn: game.turn });
+    io.to(roomId).emit('updateBoard', {
+        board: game.board,
+        terrain: game.terrain,
+        turn: game.turn,
+    });
+    io.to(roomId).emit('updateTurnCounter', turnCounter);
+    startTurnTimer(roomId, game.turn); // Start timer for the new player's turn
+    console.log(`Turn switched to ${game.turn}`);
+}
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
@@ -516,6 +544,7 @@ socket.on('emojiSelected', function(data) {
                     opponentNumber: 'P2',
                     playerName: games[roomId].players.P1.username,
                     opponentName: games[roomId].players.P2.username
+                    
                 });
                 opponent.emit('gameStart', {
                     roomId,
@@ -525,6 +554,7 @@ socket.on('emojiSelected', function(data) {
                     playerName: games[roomId].players.P2.username,
                     opponentName: games[roomId].players.P1.username
                 });
+                startTurnTimer(roomId, games[roomId].turn);
             } else {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
                 matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
@@ -1074,15 +1104,17 @@ socket.on('emojiSelected', function(data) {
         }
     
         game.actionCount++;
+        console.log(game.actionCount);
         // Emit an event to both players about the turn change
         
     
         // End the turn after two actions
         if (game.actionCount >= 2) {
-            game.turn = game.turn === 'P1' ? 'P2' : 'P1';
-            game.actionCount = 0;
-            game.unitHasAttacked = {};  // Reset attack tracking
-            game.unitHasMoved = {};  // Reset movement tracking
+            //game.turn = game.turn === 'P1' ? 'P2' : 'P1';
+           // game.actionCount = 0;
+           
+            switchTurn(moveData.roomId); // Switch turns after 2 actions
+          
         }
            // Increment the turn counter (full turn is 2 actions per player)
            turnCounter++;
