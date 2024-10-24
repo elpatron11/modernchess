@@ -25,6 +25,7 @@ const towerHit = document.getElementById('towerHit');
 const towerExplotion = document.getElementById('towerExplotion');
 const loserSound = document.getElementById('loserSound');
 const paladin = document.getElementById('paladin');
+const paladinmove = document.getElementById('paladinmove');
 const barbarian = document.getElementById('barbarian');
 const orc = document.getElementById('orc');
 const robin = document.getElementById('robin');
@@ -269,7 +270,7 @@ function updateTimerDisplay(seconds) {
 //when turn switches 60 sec timer resets
 socket.on('turnSwitched', (data) => {
     clearInterval(countdownTimer);
-    document.getElementById('timerDisplay').textContent = `It's now ${data.newTurn}'s turn`;
+    document.getElementById('playerturn123').textContent = `It's now ${data.newTurn}'s turn`;
 });
 
 socket.on('countdown', function(data) {
@@ -371,7 +372,7 @@ socket.on('updateBoard', (data) => {
     actionCount = 0;  // Reset action count after turn switch
     unitHasAttacked = {};  // Reset attack tracking after turn switch
     renderBoard();
-    document.getElementById('turnInfo').textContent = `It's ${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
+    document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
         document.getElementById('turnInfo').style.background = 'green';
@@ -393,7 +394,7 @@ socket.on('updateTurnCounter', (turnCounter) => {
 
 // Handle attack result
 socket.on('attackHit', (data) => {
-    const { message, attackingPiece, targetPiece,  targetRow, targetCol, unitDied} = data;  // Correctly extract data properties
+    const { message, attackingPiece,  targetRow, targetCol} = data;  // Correctly extract data properties
     console.log(targetRow, targetCol);
     // Check if the attacking piece is a Mage (P1_M or P2_M)
     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M')) {
@@ -702,7 +703,10 @@ function makeMove(from, to) {
         horseMoveSound.play();  // Play horse move sound
     } else if (movingPiece.startsWith('P1_M') || movingPiece.startsWith('P2_M')) {
         mageMove.play();  // Play mage move sound
-    } else {
+    } else if (movingPiece.startsWith('P1_Paladin') || movingPiece.startsWith('P2_Paladin')) {
+        paladinmove.play();  // Play mage move sound
+    }
+     else {
         stepSound.play();  // Play regular move sound for all other units
     }
 
@@ -900,7 +904,10 @@ function getImageForUnit(unitType) {
         'archerattack': '/resources/images/animation/archerattack.gif',
         'towerdestroyed': '/resources/images/animation/towerdestroyed.gif',
         'counterattack': '/resources/images/animation/counterattack.gif',
-        'gahit': '/resources/images/animation/gahit.gif'
+        'gahit': '/resources/images/animation/gahit.gif',
+        'paladinhit': '/resources/images/animation/paladinhit.gif',
+        'paladinattack': '/resources/images/animation/paladinattack.gif',
+        'paladin2attack': '/resources/images/animation/paladin2attack.gif'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit

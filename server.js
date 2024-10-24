@@ -1000,7 +1000,18 @@ socket.on('emojiSelected', function(data) {
                             game.board[from.row][from.col].unit = 'archerattack';
                         }
                         
-                    }else if(attackingPiece.startsWith('P1_GA') || attackingPiece.startsWith('P2_GA'))
+                    } else if(attackingPiece.startsWith('P1_Paladin') || attackingPiece.startsWith('P2_Paladin'))
+                        {
+                            game.board[to.row][to.col].unit = 'paladinhit';  // replace the target piece
+                            if (attackingPiece.startsWith('P1_Paladin')){
+                                game.board[from.row][from.col].unit = 'paladinattack';
+                            }
+                            else{
+                                game.board[from.row][from.col].unit = 'paladin2attack';
+                            }
+                            
+                        }
+                    else if(attackingPiece.startsWith('P1_GA') || attackingPiece.startsWith('P2_GA'))
                         {
                             game.board[to.row][to.col].unit = 'gahit';  // replace the target piece
                             if (attackingPiece.startsWith('P1_A')){
