@@ -354,10 +354,10 @@ async function updateGameResult(winnerUsername, loserUsername) {
         let ratingChange = 0;
         const ratingDifference = winner.rating - loser.rating;
 
-        if (ratingDifference >= 100) {
+        if (ratingDifference >= 50) {
             ratingChange = 0; // No points gained for the winner
         }else if (ratingDifference >= 40) {
-            ratingChange = 0; // Minimal points gained for the winner
+            ratingChange = 5; // Minimal points gained for the winner
         }  else if (ratingDifference >= 25) {
             ratingChange = 10; // Minimal points gained for the winner
         } else if (ratingDifference < 0) {
