@@ -258,13 +258,11 @@ async function checkAndUnlockGeneral(username) {
         const gamesPlayed = player.gamesPlayed;
 
         // Example unlock conditions based on games played
-        if (player.rating >= 1220 && !player.ownedGenerals.includes('GA')) {
+        if (player.rating >= 1230 && !player.ownedGenerals.includes('GA')) {
             unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
         }
          else if (player.rating >= 1250 && !player.ownedGenerals.includes('GH')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
-        }else if (player.rating >= 1300 && !player.ownedGenerals.includes('GM')) {
-            unlockedGeneral = 'GM';  // Unlock General Horse after 10 games
         }
 
         // If a new general is unlocked, add it to the player's ownedGenerals
@@ -830,6 +828,7 @@ socket.on('emojiSelected', function(data) {
                 // Specific avoidance logic for Archers attacking General Horse (GH)
                 if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
                     hitChance = 0.00;  // General Horse avoids Archer attacks 100% of the time
+                    alert("Arrows dont hit this general/Las flechas no le dan");
                 } else {
                     // Regular avoidance logic for Archers hitting other units
                     if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
@@ -892,7 +891,7 @@ socket.on('emojiSelected', function(data) {
                 } else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                     hitChance = 0.2;  // General Warrior has a 20% chance to avoid
                 } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                    hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
+                    hitChance = 0.25;  // General Horse has a 70% chance to avoid against normal units
                 } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                     hitChance = 0.5;  // General Archer has a 50% chance to avoid
                 }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
