@@ -40,7 +40,7 @@ const playerSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  ownedGenerals: { type: [String], default: ['Paladin'] },
+  ownedGenerals: { type: [String], default: ['Paladin','Voldemort'] },
   
   balance: {
     type: Number,
