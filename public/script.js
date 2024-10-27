@@ -396,6 +396,17 @@ socket.on('updateBoard', (data) => {
     }
 });
 
+// Client-side: Handling the lock state
+socket.on('lockGame', function(lock) {
+    if (lock) {
+        document.getElementById('gameBoard').style.pointerEvents = 'none'; // Disable clicks
+        document.getElementById('gameBoard').style.opacity = '0.5'; // Optional: change opacity to indicate disabled state
+    } else {
+        document.getElementById('gameBoard').style.pointerEvents = 'auto'; // Enable clicks
+        document.getElementById('gameBoard').style.opacity = '1'; // Restore opacity
+    }
+});
+
 // Listen for the turn counter update from the server
 socket.on('updateTurnCounter', (turnCounter) => {
     document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
@@ -825,6 +836,7 @@ function endTurn() {
 function renderBoard() {
       // Hide the control panel
       document.getElementById('control-Panel').style.display = 'none';
+      document.getElementById('generalImage').style.display = 'none';
       document.getElementById('leaveGameButton').style.display = 'block';
       // Show the game board or other game start related elements
       document.getElementById('gameContainer').style.display = 'block';

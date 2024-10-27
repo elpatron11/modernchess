@@ -1027,14 +1027,20 @@ socket.on('emojiSelected', function(data) {
                     
                
                     }  
+    
+                    
                     io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece: attackingPiece,
                         targetRow: to.row,  // Also useful for a miss to possibly show an effect
                         targetCol: to.col,
                          unitDied: true });
+                         // Server-side: Lock the game when the animation starts
+                         io.to(moveData.roomId).emit('lockGame', true);
+
                          // Set a timeout to revert back or clear after animation
                          setTimeout(() => {
                             game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
                             game.board[from.row][from.col].unit = attackerimg;
+                            io.to(moveData.roomId).emit('lockGame', false); //unlock game 
                             io.to(moveData.roomId).emit('updateBoard', {
                                 board: game.board,
                                 terrain: game.terrain,
