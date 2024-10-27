@@ -28,33 +28,40 @@
         
     </div>
     <!-- Timer display container -->
-    
+    <div class="content-container">
     <div class="control-panel" id="control-Panel">
     
         <div class="container text-center mt-4"></div>
-         <h3>Generals</h3>
+        
          <a href="tutorial.html" target="_blank" class="btn btn-info">Game Tutorial</a>
          <a href="tutorialspanish.html" target="_blank" class="btn btn-info">Espanol</a>
-        <div class="my-3">
-        <label for="generalSelect">Pick General:</label>
-        <select id="generalChoice">
-            
-        
-        </select>
+       
+         <div class="generals-section">
+            <h3>Generals</h3>
+            <select id="generalChoice">
+                <!-- Options will be dynamically added here -->
+            </select>
+           
         </div>
+          
+            
+                
     <!-- Example button for joining a game -->
-
-    <button  onclick="joinGame()"  class="btn btn-primary">PLAY</button>
-    <button class="shop-button" id="viewGeneralsButton">Generals</button> <!-- New button to view generals -->
+    <div class="user-controls">
+        <button onclick="joinGame()" id="playButton" class="btn btn-primary">PLAY</button>
+        <button class="shop-button" id="viewGeneralsButton">Generals</button>
         <div id="signs">
             <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
-            
-          
+                     
     </div>  
+    </div>
+     
 </div>
+<img id="generalImage" src="" alt="Selected General" style="width: 300px; height: auto; display: block; margin-top: 10px;">
 
 <div id="gameContainer" >
     <!-- Game Board in the center -->
+    
     <table id="gameBoard"></table>
 
     <!-- Turn and counter information below the game board -->
@@ -76,7 +83,7 @@
 
     
 
-
+    <div id= "userInfo"></div>
     <button id="leaveGameButton" style="display: none;">Leave Game</button>  
     <!-- User info -->
     <div id="userInfo"   style="display: none;" class="container text-center mt-4">
@@ -94,7 +101,7 @@
         
         
     </div>
-        
+</div>     
     <div class="container text-center mt-4" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
         <h4>Rating Prizes/Premios</h4>
         <p>Every day at 8:00pm EST, the clock starts. When it gets to 0, the top players will make money:</p>

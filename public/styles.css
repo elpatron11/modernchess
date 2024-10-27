@@ -135,9 +135,34 @@ img {
 }
 /* CSS styles for each terrain */
 .normal-terrain {
+    position: relative;
     background-image: url('resources/images/terrain5.png');
     background-size: cover;
+    filter: brightness(1.1) contrast(1.2) saturate(1.3);
 }
+
+.user-controls {
+    width: 100%; /* Full width */
+    display: flex;
+    justify-content: space-evenly; /* Evenly space buttons */
+}
+
+.content-container {
+    display: flex;
+    flex-direction: column; /* Align children vertically */
+    align-items: center; /* Center-align children for a neat layout */
+    padding: 20px;
+    margin-top: 20px;
+}
+.generals-section {
+    margin-bottom: 20px; /* Add space between sections */
+}
+.normal-terrain {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    border: 1px solid #ddd;
+}
+
+
 
 .water-terrain {
     background-image: url('resources/images/terrain9.gif');
@@ -159,6 +184,15 @@ img {
     text-align: center;
     vertical-align: middle;
     position: relative;
+    background-size: cover;
+   
+    transform-origin: center;
+    border: 1px solid #000; /* Add borders for clarity */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+.board-cell:hover {
+    transform: rotateX(45deg) rotateY(0deg) rotateZ(45deg) scale(1.1); /* Slightly enlarge on hover */
+    z-index: 10; /* Ensure it rises above other cells */
 }
 
 .btn{
@@ -229,6 +263,16 @@ img {
     background-color: #d32f2f; /* Darker red on hover for visual feedback */
 }
 
+.userInfo{
+    display: block;
+    width: 100%; /* Full width to avoid squeezing */
+    background-color: #f4f4f4;
+    padding: 15px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
 #userInfo{
     color:#d32f2f;
     font-weight: bold;
@@ -254,6 +298,8 @@ img {
     align-items: center; /* Center icon and text vertically */
     justify-content: center; /* Center content */
     transition: background-color 0.3s ease; /* Smooth hover effect */
+    width: 100px;
+    height: 50px;
     
 }
 
@@ -265,6 +311,12 @@ img {
 .shop-button:hover {
     background-color: #45a049; /* Darker green on hover */
 }
+
+#playButton{
+    width: 150px;
+    height: 50px;
+}
+
 #emojiPicker span {
     font-size: 30px;
     padding: 5px;

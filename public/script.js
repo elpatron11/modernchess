@@ -234,6 +234,15 @@ function loadGeneralDropdown() {
                 option.textContent = `General ${general}`; // Adjust label format as needed
                 generalDropdown.appendChild(option);
             });
+
+
+              // Set the initial image
+              generalImage.src = `/resources/images/dropdown/${generals[0]}.png`; // Adjust the path as necessary
+
+              // Add an event listener to change image on selection
+              generalDropdown.addEventListener('change', function() {
+                  generalImage.src = `resources/images/dropdown/${this.value}.png`; // Update the image source based on the selected value
+              });
         })
         .catch(error => {
             console.error('Error fetching player data:', error);
