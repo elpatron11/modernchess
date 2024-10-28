@@ -31,6 +31,7 @@ const orc = document.getElementById('orc');
 const robin = document.getElementById('robin');
 const voldemort = document.getElementById('voldemort');
 const archerkill = document.getElementById('archerkill');
+let terrainType2 = 0;
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -353,6 +354,8 @@ socket.on('gameStart', (data) => {
     backgroundSound.volume=0.1;
     backgroundSound.play();
     start.play();
+    terrainType2 = Math.random();
+    console.log(terrainType2);
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
     if (data.turn === 'P1') {
@@ -860,7 +863,13 @@ function renderBoard() {
             } else if (terrainType === 'red') {
                 td.classList.add('red-terrain');
             } else {
-                td.classList.add('normal-terrain');
+                  // Randomly apply one of the two normal terrain classes
+                  if (terrainType2 < 0.5) {
+                    
+                    td.classList.add('normal-terrain');  // Apply first normal terrain class
+                } else {
+                    td.classList.add('normal1-terrain');  // Apply second normal terrain class
+                }
             }
 
             // Display unit image based on unit type, including tower health
