@@ -180,7 +180,10 @@ img {
     background-size: cover;
 }
 
-
+#freeGenerals img{
+    width: 200px;
+    height: 200px;
+}
 
 
 .board-cell {
