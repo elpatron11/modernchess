@@ -795,7 +795,7 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
-               (rowDiff === colDiff && rowDiff <= 3);  // Diagonal
+               (rowDiff === colDiff && rowDiff <= 2);  // Diagonal
     }
 
     
