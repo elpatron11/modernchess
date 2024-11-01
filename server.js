@@ -453,7 +453,7 @@ function addMobToBoard(board) {
 // Set up the timer to add mobs every 10 seconds
 setInterval(() => {
     // Assuming 'games' is your object storing all game instances
-   if(isMassiveMode=true){
+   if(isMassiveMode == true){
     Object.values(games).forEach(game => {
         if (game.board) {  // Ensure there is a board to modify
             addMobToBoard(game.board);
@@ -507,6 +507,7 @@ function moveZombies(board) {
 
 // Timer to move zombies every 2 or 3 seconds
 setInterval(() => {
+    if(isMassiveMode == true){
     Object.values(games).forEach(game => {
         if (game.board) { // Ensure there is a board to modify
             moveZombies(game.board);
@@ -517,7 +518,7 @@ setInterval(() => {
             });
             
         }
-    });
+    });}
     console.log("Zombies moved");
 }, 5000); // Every 2 seconds, can adjust to 3000 for 3 seconds
 
