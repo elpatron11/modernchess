@@ -14,6 +14,8 @@ const BOARD_SIZE = 8;
 let turnCounter = 0;
 // Store the game state and rooms
 const games = {};
+let isMassiveMode = false;
+
 let matchmakingQueue = [];
 //const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
@@ -370,6 +372,239 @@ function createGameBoard() {
 }
 
 
+function createGameBoard2() {
+    const board = Array(12).fill(null).map(() =>
+        Array(12).fill(null).map(() => ({ terrain: 'normal', unit: '' })) // Separate terrain and unit
+    );
+
+    isMassiveMode = true;
+    // Add Towers for Player 1 and Player 2
+    board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
+    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
+
+    // Randomly place water and red terrain on rows 2-5
+    for (let row = 2; row <= 5; row++) {
+        const waterCount = Math.floor(Math.random() * 3) + 1;  // Random 1-3 water tiles
+        const redCount = Math.floor(Math.random() * 2);  // Random 0-4 red tiles
+
+        placeRandomTerrain(board, row, 'water', waterCount);
+        placeRandomTerrain(board, row, 'red', redCount);
+    }
+    
+    // Function to place mobs
+    function placeMobs(board) {
+        const mobProperties = { spawnRate: 0.05, health: 100 };  // Adjust mob spawn rate and health as needed
+        board.forEach((row, rowIndex) => {
+            row.forEach((cell, colIndex) => {
+                if (Math.random() < mobProperties.spawnRate && cell.unit === '') { // Ensure the cell is empty
+                    cell.unit = 'mob';
+                    const saveCell = cell.unit;
+                    cell.health = mobProperties.health;
+                
+
+                }
+                
+            });
+        });
+    }
+    placeMobs(board);
+
+
+    return board;
+}
+
+// Function to add a mob to a random position on the board
+function addMobToBoard(board) {
+    // Define possible mob types
+    //const mobTypes = ['mob', 'mob2', 'mob3'];
+    const mobTypes = ['mob', 'archeranimation'];
+    // Randomly select a mob type
+    const mobType = mobTypes[Math.floor(Math.random() * mobTypes.length)];
+    // Find a random empty position on the board
+    let emptyFound = false;
+    let attempts = 0;
+    while (!emptyFound && attempts < 100) {  // Prevents an infinite loop
+        let randRow = Math.floor(Math.random() * board.length);
+        let randCol = Math.floor(Math.random() * board[0].length);
+        if (!board[randRow][randCol].unit) {  // Check if the cell is empty
+            
+            board[randRow][randCol].unit = mobType;  // Place the mob
+            emptyFound = true;
+        }
+        attempts++;
+    }
+}
+
+
+// Set up the timer to add mobs every 10 seconds
+setInterval(() => {
+    // Assuming 'games' is your object storing all game instances
+   if(isMassiveMode=true){
+    Object.values(games).forEach(game => {
+        if (game.board) {  // Ensure there is a board to modify
+            addMobToBoard(game.board);
+        }
+    }); }
+    console.log("Mobs added to all games");
+}, 10000); 
+
+
+// 10000 milliseconds = 10 seconds
+
+
+
+
+function moveZombies(board) {
+    const directions = [
+        { dx: -1, dy: 0 }, { dx: 1, dy: 0 }, // Left, Right
+        { dx: 0, dy: -1 }, { dx: 0, dy: 1 }  // Up, Down
+    ];
+
+    const newBoard = JSON.parse(JSON.stringify(board)); // Clone board to avoid immediate conflicts
+
+    board.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            if (cell.unit.startsWith('mob') || cell.unit.startsWith('archeranimation')) { // Check if it's a zombie
+                const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                const newRow = rowIndex + randomDirection.dx;
+                const newCol = colIndex + randomDirection.dy;
+
+                // Check boundaries and if the new position is free
+                if (newRow >= 0 && newRow < board.length && newCol >= 0 && newCol < board[0].length &&
+                    !newBoard[newRow][newCol].unit) {
+                    // Move zombie to the new position on the newBoard
+                    newBoard[newRow][newCol].unit = cell.unit;
+                    newBoard[rowIndex][colIndex].unit = ''; // Clear old position
+                }
+            }
+        });
+    });
+
+    // Copy back the new board states to the original board
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[i].length; j++) {
+            board[i][j].unit = newBoard[i][j].unit;
+        }
+    }
+}
+
+// Timer to move zombies every 2 or 3 seconds
+setInterval(() => {
+    Object.values(games).forEach(game => {
+        if (game.board) { // Ensure there is a board to modify
+            moveZombies(game.board);
+             // Emit an event to all players in the game to update the board
+             io.to(game.roomId).emit('updateBoard2', { 
+                board: game.board,
+                terrain: game.terrain
+            });
+            
+        }
+    });
+    console.log("Zombies moved");
+}, 5000); // Every 2 seconds, can adjust to 3000 for 3 seconds
+
+
+
+function processMobs(board) {
+    // Helper function to extract unit type
+    function getUnitType(unitIdentifier) {
+        if (!unitIdentifier) return '';
+        if (unitIdentifier === "archeranimation")
+            return "archeranimation"
+        else if (unitIdentifier.startsWith("P1_Paladin"))
+            return "Paladin"
+         else if (unitIdentifier.startsWith("P1_Barbarian"))
+            return "Barbarian"
+        else if (unitIdentifier.startsWith("P1_Orc"))
+            return "Orc"
+        else if (unitIdentifier.startsWith("P1_GW"))
+            return "GW"
+         else if (unitIdentifier.startsWith("P1_GM"))
+            return "GM"
+         else if (unitIdentifier.startsWith("P1_Voldemort"))
+            return "Voldemort"
+         else if (unitIdentifier.startsWith("P1_Robinhood"))
+            return "Robinhood"
+         else if (unitIdentifier.startsWith("P1_GA"))
+            return "GA"
+           else if (unitIdentifier.startsWith("P1_GH"))
+            return "GH"
+        else
+            return "mob"
+
+
+    }
+
+    // Function to get nearby cells based on unit type and attack range
+    function getAttackRangeCells(x, y, unitType) {
+        let range = unitType === 'archeranimation' ? 3 : 1;  // archeranimation attacks 3 cells away
+        let cells = [];
+        if (unitType === 'archeranimation') {
+            // Add vertical and horizontal cells within 3 spaces for archeranimation
+            for (let i = 1; i <= range; i++) {
+                cells.push({x: x - i, y: y}, {x: x + i, y: y}, {x: x, y: y - i}, {x: x, y: y + i});
+            }
+        } else {
+            // Default 1 cell around for zombies
+            cells = [
+                { x: x - 1, y: y }, { x: x + 1, y: y },
+                { x: x, y: y - 1 }, { x: x, y: y + 1 }
+            ];
+        }
+        return cells.filter(pos => pos.x >= 0 && pos.x < board.length && pos.y >= 0 && pos.y < board[0].length);
+    }
+
+    // Iterate over each cell in the board
+    board.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            if (cell.unit === 'mob' || cell.unit.startsWith('archeranimation')) {
+                const unitType = getUnitType(cell.unit);
+                // Get potential targets based on unit type and its attack range
+                const attackCells = getAttackRangeCells(rowIndex, colIndex, unitType);
+                attackCells.forEach(pos => {
+                    const target = board[pos.x][pos.y];
+                    // Check if there is a player unit in the attack cell
+                    if (target.unit && target.unit.startsWith('P')) {
+                        console.log(`${unitType} at (${rowIndex},${colIndex}) attacks ${getUnitType(target.unit)} at (${pos.x},${pos.y})`);
+                        // Simulate attack
+                        let hitChance = determineHitChance(getUnitType(target.unit));
+                        if (Math.random() < hitChance) {
+                            target.health = target.health ? target.health - 10 : 0; // Apply damage
+                            if (target.health <= 0) {
+                                target.unit = ''; // Remove the player unit if health drops to zero or below
+                                console.log(`Player ${getUnitType(target.unit)} at (${pos.x},${pos.y}) defeated by ${unitType}!`);
+                            }
+                        } else {
+                            console.log(`${unitType} attack on ${getUnitType(target.unit)} at (${pos.x},${pos.y}) missed!`);
+                        }
+                    }
+                });
+            }
+        });
+    });
+}
+
+// Helper function to determine hit chances based on unit types
+function determineHitChance(unitType) {
+    switch (unitType) {
+        case 'Paladin': return 0.2;
+        case 'Barbarian': return 0.15;
+        case 'GA': return 0.5;
+        case 'Robinhood': return 0.4;
+        case 'Voldermort': return 1;
+        case 'GM': return 1;
+        case 'GH': return 0.3;
+        case 'Orc': return 0.15;
+        case 'GW': return 0.2;
+        case 'mob': return 0.2;
+        case 'archeranimation': return 0.75;
+        default: return 1.0;
+    }
+}
+
+
+
 async function updateGameResult(winnerUsername, loserUsername) {
     try {
         const winner = await Player.findOne({ username: winnerUsername });
@@ -567,6 +802,76 @@ socket.on('emojiSelected', function(data) {
         }
     });
 
+    socket.on('joinGame2', (data) => {
+        console.log("Received data for joinMassiveGame:", data);
+        if (!data || !data.general || !data.username) {
+            console.error('Invalid or no data received for general or username');
+            socket.emit('error', { message: 'Invalid or no data received for general or username.' });
+            return;
+        }
+    
+        const { username, general } = data;
+    
+        if (!username) {
+            socket.emit('error', { message: "You must be logged in to join the game." });
+            return;
+        }
+    
+        // Global game ID for all players in the massive version
+        let globalGameId = 'globalGameRoom'; // A fixed ID for the global game room
+        if (!games[globalGameId]) {
+            // If the global game does not exist, create it
+            games[globalGameId] = {
+                players: {},
+                generals: {},
+                board: createGameBoard2(), // Initialize the board when the first player joins,
+                isMassiveMode: true,
+                mob: {}
+
+            };
+            console.log("Global game board created.");
+        }
+    
+        // Add player to the global game if not already added
+        if (!games[globalGameId].players[socket.id]) {
+            games[globalGameId].players[socket.id] = {
+                username: username,
+                general: general,
+                socketId: socket.id
+            };
+            games[globalGameId].generals[socket.id] = general;
+            
+            // Place the general on the board in an empty position
+            let position = getRandomPositionForGeneral(games[globalGameId].board);
+            games[globalGameId].board[position.row][position.col].unit = `P1_${general}_${socket.id}`; // Ensure you adapt the naming based on your needs
+    
+            // Send the board and player info to the new player
+            socket.join(globalGameId);
+            socket.emit('gameStart2', {
+                roomId: globalGameId,
+                board: games[globalGameId].board,
+                playerNumber: socket.id, // This is just an identifier now
+                playerName: username,
+                generals: games[globalGameId].generals
+            });
+    
+            console.log(`Player ${username} added to the global game.`);
+        } else {
+            console.error('Player is already in the global game.');
+            socket.emit('error', 'You are already in the global game.');
+        }
+    });
+    
+    function getRandomPositionForGeneral(board) {
+        let row, col;
+        do {
+            row = Math.floor(Math.random() * board.length);
+            col = Math.floor(Math.random() * board[0].length);
+        } while (board[row][col].unit !== '');  // Ensure the position is empty
+        return { row, col };
+    }
+    
+
     function checkWinCondition(game, player, roomId) {
         const opponent = player === 'P1' ? 'P2' : 'P1';
         let towerAlive = false;
@@ -640,12 +945,12 @@ socket.on('emojiSelected', function(data) {
             socket.emit('error', 'Game not found or may have ended.');
             return;
         }
-    
+        if (game.isMassiveMode !== true){
         if (game.turn !== moveData.player) {
             socket.emit('notYourTurn');
             return;
         }
-    
+    }
         const { from, to } = moveData.move;
         const attackingPiece = game.board[from.row][from.col].unit;
         const targetPiece = game.board[to.row][to.col].unit;
@@ -659,13 +964,13 @@ socket.on('emojiSelected', function(data) {
         }
     
         const attackingUnit = `${from.row},${from.col}`;
-    
+        if(isMassiveMode== false){
         // Check if the unit already attacked this turn but allow movement after attack
         if (game.unitHasAttacked[attackingUnit] && targetPiece) {
             socket.emit('invalidAction', 'This unit has already attacked this turn.');
             return;
         }
-    
+      
         // Check if the unit has already moved twice
         if (game.unitHasMoved[attackingUnit] >= 2 && !targetPiece) {
             socket.emit('invalidAction', 'This unit has already moved twice this turn.');
@@ -677,7 +982,7 @@ socket.on('emojiSelected', function(data) {
             socket.emit('invalidAction', 'You cannot attack your own tower!');
             return;
         }
-        
+    }
   
 
         // Helper function to calculate damage based on unit type
@@ -1112,14 +1417,14 @@ socket.on('emojiSelected', function(data) {
         if (!targetPiece) {
             game.board[to.row][to.col].unit = game.board[from.row][from.col].unit;
             game.board[from.row][from.col].unit = '';
-    
-            // Track the number of moves for the unit
+            if(isMassiveMode== false){
+               // Track the number of moves for the unit
             if (!game.unitHasMoved[attackingUnit]) {
                 game.unitHasMoved[attackingUnit] = 1;
             } else {
                 game.unitHasMoved[attackingUnit] += 1;
             }
-        }
+        
     
         game.actionCount++;
         console.log(game.actionCount);
@@ -1134,6 +1439,9 @@ socket.on('emojiSelected', function(data) {
             switchTurn(moveData.roomId); // Switch turns after 2 actions
           
         }
+        }
+        
+    }
            // Increment the turn counter (full turn is 2 actions per player)
            turnCounter++;
            io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);
@@ -1164,7 +1472,7 @@ socket.on('emojiSelected', function(data) {
                     }
                    }
                }
-
+            
                // Reduce HP for Player 2's tower
                if (p2Tower.unit === 'P2_T' && p2Tower.hp > 1) {
                    p2Tower.hp -= 1;
@@ -1204,9 +1512,169 @@ socket.on('emojiSelected', function(data) {
     });
     
 
+
+
+
+
+
+    socket.on('makeMove2', (moveData) => {
+        let game = games[moveData.roomId];
+        const { from, to } = moveData.move;
+        const attackingPiece = game.board[from.row][from.col].unit;
+        const targetPiece = game.board[to.row][to.col].unit;
+        const fromTerrain = game.board[from.row][from.col].terrain;
+        const destination = game.board[to.row][to.col].terrain;
+        
+          // Prevent movement onto water terrain
+          if (destination === 'water' && !targetPiece.startsWith('P1_T') && !targetPiece.startsWith('P2_T')) {
+            socket.emit('invalidAction', 'You cannot move onto water terrain.');
+            return;
+        }
+    
+        const attackingUnit = `${from.row},${from.col}`;
+        
+
+        
+
+
+//-------------------------------ATTACK LOGIC------------------------------
+
+   
+ // Handle attacks
+ if (targetPiece) {
+
+    console.log(`Player ${moveData.player} attacking ${targetPiece} at (${to.row}, ${to.col})`);
+   
+           let isTower = false;
+           let hitChance = 1.0;
+         //  let damage = getUnitDamage(attackingPiece);  // Get damage based on unit type
+   
+     if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')
+               || attackingPiece.startsWith('P1_Voldemort') || attackingPiece.startsWith('P2_Voldemort')) {
+                       if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                           hitChance = 0.00;  // General Orc avoids Mages attacks 100% of the time
+                       }
+                       else{
+                       hitChance = 1.0;  // Mages always hit (no avoidance)
+                       }
+                    }
+
+else {
+               if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                   hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+               } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                   hitChance = 0.25;  // General Horse has a 70% chance to avoid against normal units
+               } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
+                   hitChance = 0.5;  // General Archer has a 50% chance to avoid
+               }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
+                   hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
+               }
+                else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                   hitChance = 0.15;  // General barbarian 70% chance to avoid
+               }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
+                   hitChance = 0.20;  // General barbarian 70% chance to avoid
+               } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                   hitChance = 0.15;  // General Orc 70% chance to avoid
+               }
+    } 
+
+
+// Ignore avoidance if attacking from red terrain
+               if (fromTerrain === 'red' && !isTower) {
+                       hitChance = 1.0;
+               }
+
+
+ const hitRoll = Math.random();
+               console.log(hitRoll);
+               if (hitRoll <= hitChance) {
+                   console.log(`Attack hit! ${targetPiece} is removed.`);
+                   const attackerimg = game.board[from.row][from.col].unit;
+                   const defenderimg = game.board[to.row][to.col].unit;
+
+       io.to(moveData.roomId).emit('attackHit', { message: `Attack hit! ${targetPiece} is removed.`, attackingPiece: attackingPiece,
+                       targetRow: to.row,  // Also useful for a miss to possibly show an effect
+                       targetCol: to.col,
+                        unitDied: true });
+
+     game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
+
+ io.to(moveData.roomId).emit('updateBoard2', {
+                               board: game.board,
+                               terrain: game.terrain,
+                               
+                           });
+
+                        }
+        else {
+                console.log(`Attack missed! ${targetPiece} avoided the hit.`);
+                io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
+                //const defenderimg = game.board[to.row][to.col].unit;
+               // game.board[to.row][to.col].unit = 'miss';
+                io.to(moveData.roomId).emit('updateBoard2', {
+                               board: game.board,
+                               terrain: game.terrain
+                               
+             });
+            }
+        }
+
+
+
+
+
+
+
+
+
+        
+        
+//--------------------------------------------------------      
+        
+        // Move logic (if the target piece is empty, i.e., not attacking)
+         if (!targetPiece) {
+            game.board[to.row][to.col].unit = game.board[from.row][from.col].unit;
+            game.board[from.row][from.col].unit = '';
+                
+            game.actionCount++;
+
+        console.log(game.actionCount);
+        io.to(moveData.roomId).emit('updateBoard2', {
+            board: game.board,
+            terrain: game.terrain
+            
+        });
+        // Emit an event to both players about the turn change
+        }
+
+         
+         // Set up the timer to add mobs every  seconds
+            setInterval(() => {
+                processMobs(game.board);
+                io.to(game.roomId).emit('updateBoard2', { 
+                    board: game.board,
+                    terrain: game.terrain
+                });
+                
+                 // Process mob attacks every4 sec
+                 
+        }, 5000);  // .5 sec to update game regularly
+       
+        setInterval(() => {
+        io.to(moveData.roomId).emit('updateBoard2', { 
+            board: game.board,
+            terrain: game.terrain
+        });
+        }, 3000);  // .5 sec to update game regularly
+    
+    });
+//------------------------------------------------------------------------------------------
+
+
+
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);
-    
+        if(isMassiveMode !==true){
         // Remove from matchmaking queue
         const initialQueueLength = matchmakingQueue.length;
         matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
@@ -1249,7 +1717,11 @@ socket.on('emojiSelected', function(data) {
                         console.error('Failed to update game results:', error);
                     });
             }
+                
+        
         }
+    }
+
     });
     
     
