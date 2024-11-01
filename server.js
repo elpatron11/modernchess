@@ -393,7 +393,7 @@ function createGameBoard2() {
     
     // Function to place mobs
     function placeMobs(board) {
-        const mobProperties = { spawnRate: 0.05, health: 100 };  // Adjust mob spawn rate and health as needed
+        const mobProperties = { spawnRate: 0.02, health: 100 };  // Adjust mob spawn rate and health as needed
         board.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
                 if (Math.random() < mobProperties.spawnRate && cell.unit === '') { // Ensure the cell is empty
@@ -409,31 +409,45 @@ function createGameBoard2() {
     }
     placeMobs(board);
 
-
+    
     return board;
 }
 
-// Function to add a mob to a random position on the board
 function addMobToBoard(board) {
     // Define possible mob types
-    //const mobTypes = ['mob', 'mob2', 'mob3'];
     const mobTypes = ['mob', 'archeranimation'];
+
+    // Count existing mobs on the board
+    let currentMobCount = 0;
+    board.forEach(row => {
+        row.forEach(cell => {
+            if (cell.unit === 'mob' || cell.unit === 'archeranimation') {
+                currentMobCount++;
+            }
+        });
+    });
+
+    // Only add a mob if there are fewer than 20 on the board
+    if (currentMobCount >= 20) return;
+
     // Randomly select a mob type
     const mobType = mobTypes[Math.floor(Math.random() * mobTypes.length)];
-    // Find a random empty position on the board
     let emptyFound = false;
     let attempts = 0;
+
+    // Find a random empty position on the board
     while (!emptyFound && attempts < 100) {  // Prevents an infinite loop
         let randRow = Math.floor(Math.random() * board.length);
         let randCol = Math.floor(Math.random() * board[0].length);
+
         if (!board[randRow][randCol].unit) {  // Check if the cell is empty
-            
             board[randRow][randCol].unit = mobType;  // Place the mob
             emptyFound = true;
         }
         attempts++;
     }
 }
+
 
 
 // Set up the timer to add mobs every 10 seconds
@@ -443,10 +457,13 @@ setInterval(() => {
     Object.values(games).forEach(game => {
         if (game.board) {  // Ensure there is a board to modify
             addMobToBoard(game.board);
+            addMobToBoard(game.board);
+            addMobToBoard(game.board);
+           
         }
     }); }
     console.log("Mobs added to all games");
-}, 10000); 
+}, 12000); 
 
 
 // 10000 milliseconds = 10 seconds
