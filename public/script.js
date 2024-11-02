@@ -1092,7 +1092,7 @@ function updateBoardCells() {
             } else if (terrainType === 'red') {
                 td.classList.add('red-terrain');
             } else {               
-                    td.classList.add('normal-terrain');
+                    td.classList.add('normal1-terrain');
                 }
 
             // Update unit image or clear the previous one
@@ -1131,12 +1131,12 @@ function updateBoardCells() {
 
 
 function getImageForUnitMassive(unitIdentifier) {
-    // Split the identifier into parts
+    // Split the identifier into parts and remove the last part (socket ID)
     let parts = unitIdentifier.split('_');
-    // The unit type will be in the second last position if the last part is the socket ID
-    let unitType = parts.slice(0, -1).join('_');  // This joins back the parts except the last one
-    console.log(unitType, "this is the source");
-    return `/path/to/images/${unitType}.png`; // Path to the image based on unit type
+    let unitType = parts.slice(0, -1).join('_'); // Joins back the parts except the last one
+
+    // Call getImageForUnit with the modified unitType to get the correct path
+    return getImageForUnit(unitType);
 }
 
 // Helper function to return the image path for a given unit type

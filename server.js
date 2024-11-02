@@ -373,18 +373,25 @@ function createGameBoard() {
 
 
 function createGameBoard2() {
-    const board = Array(12).fill(null).map(() =>
-        Array(12).fill(null).map(() => ({ terrain: 'normal', unit: '' })) // Separate terrain and unit
+    const board = Array(10).fill(null).map(() =>
+        Array(10).fill(null).map(() => ({ terrain: 'normal', unit: '' })) // Separate terrain and unit
     );
+    board.forEach(row => {
+        row.forEach(cell => {
+            if (cell.unit) {
+                cell.hp = 3;  // Initialize each unit with 3 HP
+            }
+        });
+    });
 
     isMassiveMode = true;
     // Add Towers for Player 1 and Player 2
-    board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
-    board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
+   // board[3][0] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
+   // board[4][7] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
-    for (let row = 2; row <= 5; row++) {
-        const waterCount = Math.floor(Math.random() * 3) + 1;  // Random 1-3 water tiles
+    for (let row = 0; row <= 9; row++) {
+        const waterCount = Math.floor(Math.random() * 2) + 1;  // Random 1-3 water tiles
         const redCount = Math.floor(Math.random() * 2);  // Random 0-4 red tiles
 
         placeRandomTerrain(board, row, 'water', waterCount);
@@ -393,15 +400,13 @@ function createGameBoard2() {
     
     // Function to place mobs
     function placeMobs(board) {
-        const mobProperties = { spawnRate: 0.02, health: 100 };  // Adjust mob spawn rate and health as needed
+        const mobProperties = { spawnRate: 0.02, hp: 3 };  // Adjust mob spawn rate and health as needed
         board.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
                 if (Math.random() < mobProperties.spawnRate && cell.unit === '') { // Ensure the cell is empty
                     cell.unit = 'mob';
                     const saveCell = cell.unit;
-                    cell.health = mobProperties.health;
-                
-
+                    cell.hp = mobProperties.hp;
                 }
                 
             });
@@ -428,7 +433,7 @@ function addMobToBoard(board) {
     });
 
     // Only add a mob if there are fewer than 20 on the board
-    if (currentMobCount >= 20) return;
+    if (currentMobCount >= 10) return;
 
     // Randomly select a mob type
     const mobType = mobTypes[Math.floor(Math.random() * mobTypes.length)];
@@ -453,7 +458,7 @@ function addMobToBoard(board) {
 // Set up the timer to add mobs every 10 seconds
 setInterval(() => {
     // Assuming 'games' is your object storing all game instances
-   if(isMassiveMode == true){
+   if(isMassiveMode === true){
     Object.values(games).forEach(game => {
         if (game.board) {  // Ensure there is a board to modify
             addMobToBoard(game.board);
@@ -507,7 +512,7 @@ function moveZombies(board) {
 
 // Timer to move zombies every 2 or 3 seconds
 setInterval(() => {
-    if(isMassiveMode == true){
+    if(isMassiveMode === true){
     Object.values(games).forEach(game => {
         if (game.board) { // Ensure there is a board to modify
             moveZombies(game.board);
@@ -588,8 +593,8 @@ function processMobs(board) {
                         // Simulate attack
                         let hitChance = determineHitChance(getUnitType(target.unit));
                         if (Math.random() < hitChance) {
-                            target.health = target.health ? target.health - 10 : 0; // Apply damage
-                            if (target.health <= 0) {
+                            target.hp = target.hp ? target.hp - 1 : 0; // Apply damage
+                            if (target.hp <= 0) {
                                 target.unit = ''; // Remove the player unit if health drops to zero or below
                                 console.log(`Player ${getUnitType(target.unit)} at (${pos.x},${pos.y}) defeated by ${unitType}!`);
                             }
@@ -982,7 +987,7 @@ socket.on('emojiSelected', function(data) {
         }
     
         const attackingUnit = `${from.row},${from.col}`;
-        if(isMassiveMode== false){
+        if(isMassiveMode === false){
         // Check if the unit already attacked this turn but allow movement after attack
         if (game.unitHasAttacked[attackingUnit] && targetPiece) {
             socket.emit('invalidAction', 'This unit has already attacked this turn.');
@@ -1435,7 +1440,7 @@ socket.on('emojiSelected', function(data) {
         if (!targetPiece) {
             game.board[to.row][to.col].unit = game.board[from.row][from.col].unit;
             game.board[from.row][from.col].unit = '';
-            if(isMassiveMode== false){
+            if(isMassiveMode === false){
                // Track the number of moves for the unit
             if (!game.unitHasMoved[attackingUnit]) {
                 game.unitHasMoved[attackingUnit] = 1;
@@ -1603,7 +1608,7 @@ else {
                }
 
 
- const hitRoll = Math.random();
+                const hitRoll = Math.random();
                console.log(hitRoll);
                if (hitRoll <= hitChance) {
                    console.log(`Attack hit! ${targetPiece} is removed.`);
@@ -1615,15 +1620,23 @@ else {
                        targetCol: to.col,
                         unitDied: true });
 
-     game.board[to.row][to.col].unit = ''; // Clear or revert depending on your game logic
 
- io.to(moveData.roomId).emit('updateBoard2', {
-                               board: game.board,
-                               terrain: game.terrain,
-                               
-                           });
+  // Reduce HP of target piece
+            if (!game.board[to.row][to.col].hp) game.board[to.row][to.col].hp = 3;  // Ensure HP is set
+            game.board[to.row][to.col].hp -= 1;
 
-                        }
+            // Check if HP is 0 after hit
+            if (game.board[to.row][to.col].hp <= 0) {
+                console.log(`Unit ${targetPiece} at (${to.row}, ${to.col}) has been defeated.`);
+                game.board[to.row][to.col].unit = '';  // Remove the unit from the board
+
+                io.to(moveData.roomId).emit('updateBoard2', {
+                    board: game.board,
+                    terrain: game.terrain,
+                    message: `${targetPiece} defeated!`
+                });
+            } 
+        }
         else {
                 console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                 io.to(moveData.roomId).emit('attackMiss', `Attack missed! ${targetPiece} avoided the hit.`);
@@ -1676,7 +1689,7 @@ else {
                 
                  // Process mob attacks every4 sec
                  
-        }, 5000);  // .5 sec to update game regularly
+        }, 10000);  // .5 sec to update game regularly
        
         setInterval(() => {
         io.to(moveData.roomId).emit('updateBoard2', { 
