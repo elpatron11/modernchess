@@ -32,8 +32,6 @@ const robin = document.getElementById('robin');
 const voldemort = document.getElementById('voldemort');
 const archerkill = document.getElementById('archerkill');
 let terrainType2 = 0;
-
-let isMassiveMode = false; //is massive mode is false by default
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -198,25 +196,6 @@ function joinGame() {
 
     socket.emit('joinGame', {username:username, general: general });
 }
-
-function joinGame2() {
-    const username = localStorage.getItem('username'); 
-    const general = document.getElementById('generalChoice').value;
-   
-    letsgo.play();
-    if (!username) {
-        alert("Please log in before joining the game.");
-        return;
-    }
-     // Ensure this ID matches your HTML element
-if (!general) {
-    alert("Please select a general before joining.");
-    return;
-}
-
-socket.emit('joinGame2', {username:username, general: general });
-}
-
 // Function to save the game state to localStorage
 function saveGameState() {
     const gameState = {
@@ -399,38 +378,6 @@ socket.on('gameStart', (data) => {
 });
 
 
-socket.on('gameStart2', (data) => {
-    roomId = data.roomId;
-    board = data.board;
-    playerNumber = data.playerNumber; // This will be the socket ID in this setup
-    actionCount = 0;
-    isMassiveMode = true; // Flag to identify the game mode as "massive"
-    backgroundSound.loop = true;
-    backgroundSound.volume = 0.1;
-    backgroundSound.play();
-    start.play();
-    terrainType2 = Math.random(); // If terrain types are randomized in some visual way
-    console.log(terrainType2);
-
-    renderBoard(); // Ensure this function is adapted to render a board suitable for multiple players
-
-    alert(`Game started! You are connected as ${data.playerName}.`);
-
-    const turnInfo = document.getElementById('turnInfo');
-    turnInfo.style.background = 'green'; // You might want to adjust or remove this based on your game's design
-    turnInfo.style.color = 'white';
-    turnInfo.textContent = 'Welcome to the Massive Game!';
-
-    const statusDisplay = document.getElementById('statusDisplay');
-    statusDisplay.style.display = 'none'; // Hide the status message
-
-    // Instead of opponent details, maybe list other player stats or general game info
-    document.getElementById('opponentInfo').innerHTML = 'All players are here!';
-});
-
-
-
-
 // Update the board state after a move
 socket.on('updateBoard', (data) => {
     board = data.board;
@@ -438,7 +385,6 @@ socket.on('updateBoard', (data) => {
     actionCount = 0;  // Reset action count after turn switch
     unitHasAttacked = {};  // Reset attack tracking after turn switch
     renderBoard();
-    
     document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
@@ -451,16 +397,6 @@ socket.on('updateBoard', (data) => {
         document.getElementById('turnInfo').style.color = 'red';
       
     }
-});
-
-
-
-// Update the board state after a move
-socket.on('updateBoard2', (data) => {
-    board = data.board;
-   
-    updateBoardCells();
-   
 });
 
 // Client-side: Handling the lock state
@@ -806,27 +742,6 @@ function makeMove(from, to) {
     selectedPiece = null;  // Deselect after the move
 }
 
-// Make a move for massive map and notify the server
-function makeMove2(from, to) {
-    socket.emit('makeMove2', { roomId, player: playerNumber, move: { from, to } });
-    const movingPiece = board[from.row][from.col].unit;
-
-    // Check if the moving piece is a Horse or Mage
-    if (movingPiece.startsWith('P1_H') || movingPiece.startsWith('P2_H') || movingPiece.startsWith('P1_GH') || movingPiece.startsWith('P2_GH')) {
-        horseMoveSound.play();  // Play horse move sound
-    } else if (movingPiece.startsWith('P1_M') || movingPiece.startsWith('P2_M')) {
-        mageMove.play();  // Play mage move sound
-    } else if (movingPiece.startsWith('P1_Paladin') || movingPiece.startsWith('P2_Paladin')) {
-        paladinmove.play();  // Play mage move sound
-    }
-     else {
-        stepSound.play();  // Play regular move sound for all other units
-    }
-
-
-    selectedPiece = null;  // Deselect after the move
-}
-
 // Validate if the attack is valid
 function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
     const rowDiff = Math.abs(toRow - fromRow);
@@ -920,94 +835,6 @@ function endTurn() {
     socket.emit('endTurn', { roomId, player: playerNumber });
 }
 
-
-//-----------------------------------Massive on click function for move and attack-------------------------------------
-function onClickMassive(row, col) {
-    console.log(`Clicked cell: (${row}, ${col})`);
-
-    // Handle unit selection and deselection logic
-    const piece = board[row][col].unit;
-    console.log(`Clicked piece: ${piece}`);
-    const from = selectedPiece;
-    const to = { row, col };
-   
-
-    if (selectedPiece) {
-        
-            // If the same cell is clicked again, deselect it
-            if (selectedPiece.row === row && selectedPiece.col === col) {
-                console.log("Deselecting the unit");
-                deselectUnit(row, col);
-                return;  // Exit the function
-            }
-
-
-        // If a piece is already selected and the clicked cell has a unit from the opposite team, initiate an attack
-        if (piece && !isPlayerUnit(piece, socket.id)) {
-            if (isValidAttack(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
-             console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
-              makeMove2(selectedPiece, { row, col });
-        }}
-        // If the clicked cell is empty or has the player's own unit, move or re-select
-        else if (!piece || isPlayerUnit(piece, socket.id)){
-            // Move logic or reselection of own unit
-            if (isValidMove(board[selectedPiece.row][selectedPiece.col], selectedPiece.row, selectedPiece.col, row, col)) {
-                console.log(`Moving from (${selectedPiece.row}, ${selectedPiece.col}) to (${row}, ${col})`);
-                makeMove2(selectedPiece, { row, col });
-            } else {
-                console.log(`Invalid move from (${selectedPiece.row}, ${selectedPiece.col}) to (${row}, ${col})`);
-            }
-        }
-
-        // Deselect the previously selected cell
-        const previousSelectedCell = document.querySelector('.selected-cell');
-        if (previousSelectedCell) {
-            previousSelectedCell.classList.remove('selected-cell');
-        }
-    }
-
-    // If the clicked cell has the player's unit and it wasn't the source of an attack/move, select it
-        if (!selectedPiece && isPlayerUnit(piece, socket.id))  {
-            selectedPiece = { row, col };
-            console.log(`Selected piece: ${piece} at (${row}, ${col})`);
-
-            // Add selected-cell class to the selected square
-            const selectedCell = document.querySelector(`tr:nth-child(${row + 1}) td:nth-child(${col + 1})`);
-            selectedCell.classList.add('selected-cell');
-        }
-    else {
-        // Deselect the piece
-        selectedPiece = null;
-    }
-}
-
-function deselectUnit(row, col) {
-    selectedPiece = null;
-    const selectedCell = document.querySelector(`tr:nth-child(${row + 1}) td:nth-child(${col + 1})`);
-    selectedCell.classList.remove('selected-cell');
-}
-
-
-// Helper function to determine if the unit belongs to the player
-function isPlayerUnit(unitIdentifier, playerSocketId) {
-    // Extract the socket ID from the unit identifier
-    let parts = unitIdentifier.split('_');
-    let socketId = parts[parts.length - 1]; // Assuming the socket ID is the last part
-    return unitIdentifier.endsWith(playerSocketId);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
 // Render the board in the HTML
 function renderBoard() {
       // Hide the control panel
@@ -1047,9 +874,8 @@ function renderBoard() {
 
             // Display unit image based on unit type, including tower health
             if (unitType) {
-                console.log(unitType);
                 const unitImage = document.createElement('img');
-                unitImage.src = getImageForUnit(unitType);  // Assuming 'piece' is something like 'p1_paladin_12415151'
+                unitImage.src = getImageForUnit(unitType);  // Set the image source based on the unit
                 unitImage.classList.add('unit-image');  // Optional: Add a class for styling
                 td.appendChild(unitImage);
 
@@ -1064,79 +890,12 @@ function renderBoard() {
                     }
                 }
             }
-            // Assign the appropriate click handler based on game mode
-            if (isMassiveMode) {
-                td.onclick = () => onClickMassive(row, col);  // Massive mode click handler
-            } else {
-                td.onclick = () => onClick(row, col);  // Regular mode click handler
-            }
+
+            td.onclick = () => onClick(row, col);  // Add click handler
             tr.appendChild(td);
         }
         gameBoard.appendChild(tr);
     }
-}
-
-
-function updateBoardCells() {
-    for (let row = 0; row < board.length; row++) {
-        for (let col = 0; col < board[row].length; col++) {
-            const cellId = `cell-${row}-${col}`;
-            const td = document.getElementById(cellId);
-            const terrainType = board[row][col].terrain;
-            const unitType = board[row][col].unit;
-
-            // Update terrain class
-            td.className = 'board-cell';  // Reset class
-            if (terrainType === 'water') {
-                td.classList.add('water-terrain');
-            } else if (terrainType === 'red') {
-                td.classList.add('red-terrain');
-            } else {               
-                    td.classList.add('normal1-terrain');
-                }
-
-            // Update unit image or clear the previous one
-            const existingImage = td.querySelector('.unit-image');
-            if (unitType) {
-                if (!existingImage) {
-                    const unitImage = document.createElement('img');
-                    unitImage.src = getImageForUnit(unitType);
-                    unitImage.classList.add('unit-image');
-                    td.appendChild(unitImage);
-                } else {
-                    existingImage.src = getImageForUnit(unitType);
-                }
-
-                // Update tower HP if it's a tower
-                if (unitType.includes('T')) {
-                    const tower = board[row][col];
-                    const hpDisplay = td.querySelector('.tower-hp');
-                    if (hpDisplay) {
-                        hpDisplay.textContent = `${tower.hp}`;
-                    } else {
-                       // const newHpDisplay = document.createElement('div');
-                       // newHpDisplay.textContent = `${tower.hp}`;
-                      //  newHpDisplay.classList.add('tower-hp');
-                      //  td.appendChild(newHpDisplay);
-                    }
-                }
-            } else {
-                if (existingImage) {
-                    td.removeChild(existingImage);
-                }
-            }
-        }
-    }
-}
-
-
-function getImageForUnitMassive(unitIdentifier) {
-    // Split the identifier into parts and remove the last part (socket ID)
-    let parts = unitIdentifier.split('_');
-    let unitType = parts.slice(0, -1).join('_'); // Joins back the parts except the last one
-
-    // Call getImageForUnit with the modified unitType to get the correct path
-    return getImageForUnit(unitType);
 }
 
 // Helper function to return the image path for a given unit type
@@ -1183,21 +942,9 @@ function getImageForUnit(unitType) {
         'gahit': '/resources/images/animation/gahit.gif',
         'paladinhit': '/resources/images/animation/paladinhit.gif',
         'paladinattack': '/resources/images/animation/paladinattack.gif',
-        'paladin2attack': '/resources/images/animation/paladin2attack.gif',
-        'mob':'/resources/images/animation/mob.gif',
-        'mobborn':'/resources/images/animation/mobborn.gif',
-        'archeranimation':'/resources/images/animation/archeranimation.gif'
-
+        'paladin2attack': '/resources/images/animation/paladin2attack.gif'
         // Add other units as needed
     };
-    if(isMassiveMode && unitType != "mob" && unitType != "archeranimation" ){
-        let parts = unitType.split('_');
-        // Construct the unit type by ignoring the last part which is the socket ID
-        unitType = parts.slice(0, -1).join('_');  // Joins the parts back except the socket ID
-     }
-
-
-
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit
 }
 
