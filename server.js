@@ -957,7 +957,7 @@ socket.on('emojiSelected', function(data) {
                     if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                         const attackingTower = game.board[from.row][from.col];
             
-                        if (attackingTower.hp > 0) {
+                        if (attackingTower.hp > 1) {
                             attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
                             console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
             
