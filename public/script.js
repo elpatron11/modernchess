@@ -219,8 +219,8 @@ function loadGeneralDropdown() {
             const generals = playerData.ownedGenerals || []; // Assume 'generals' is an array of owned generals
             
               // Add default General Warrior (GW) if not already included
-              if (!generals.includes('Paladin')) {
-                generals.unshift('Paladin'); // Add GW at the start if it's missing
+              if (!generals.includes('Barbarian')) {
+                generals.unshift('Barbarian'); // Add GW at the start if it's missing
             }
 
             // Get the dropdown element

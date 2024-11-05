@@ -4,13 +4,29 @@ db.players.updateOne(
 {$addToSet:{ownedGenerals:{$each:["Voldemort"]}}}
 );
 
-
-to replace everyones general to another one.
+//to replace everyones general to another one.
 db.players.updateMany(
-    { "ownedGenerals": "GW" }, // Filter: matches documents where 'ownedGenerals' includes 'GW'
-    { "$set": { "ownedGenerals.$[element]": "Paladin" } }, // Update: replaces 'GW' with 'NewGeneral'
-    { "arrayFilters": [{ "element": "GW" }] } // ArrayFilters: specifies the condition for array elements to update
+    { "ownedGenerals": "Paladin" }, // Filter: matches documents where 'ownedGenerals' includes 'Paladin'
+    { "$set": { "ownedGenerals.$[element]": "Barbarian" } }, // Update: replaces 'GW' with 'NewGeneral'
+    { "arrayFilters": [{ "element": "Paladin" }] } // ArrayFilters: specifies the condition for array elements to update
 );
+
+
+//to add a general to everyone
+  db.players.updateMany(
+        {}, // Filter (empty means "match all documents")
+        { $addToSet: { ownedGenerals: newGeneral } }, // Update (addToSet avoids duplicates)
+        { new: true } // Options
+    )
+
+// To remove a general from everyone
+db.players.updateMany(
+    {}, // Filter (empty means "match all documents")
+    { $pull: { ownedGenerals: "Voldemort" } }, // Update (pull removes all occurrences of the value)
+    { new: true } // Options
+)
+
+
 
 
 //To update something like rating:
