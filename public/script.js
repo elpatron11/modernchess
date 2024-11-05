@@ -81,6 +81,7 @@ function login() {
             `;
             updateRatingImage(data.rating);
             document.getElementById('logoutButton').style.display = 'block';
+            document.getElementById('generalPhoto').style.display = 'block';
             loadGeneralDropdown();  // Call this function after login success
         } else {
             alert('Login failed: ' + data.message);
@@ -840,11 +841,15 @@ function renderBoard() {
       // Hide the control panel
       document.getElementById('control-Panel').style.display = 'none';
       document.getElementById('generalImage').style.display = 'none';
+      document.getElementById('apk').style.display = 'none';      
+      document.getElementById('topRanking').style.display = 'none';
+      document.getElementById('timerDisplay').style.display = 'none';
       document.getElementById('leaveGameButton').style.display = 'block';
       // Show the game board or other game start related elements
       document.getElementById('gameContainer').style.display = 'block';
       document.getElementById('infoContainer').style.display = 'block';
       document.getElementById('gameBoard').style.display = 'block';
+      document.getElementById('emojiDisplays').style.display = 'block';
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
 

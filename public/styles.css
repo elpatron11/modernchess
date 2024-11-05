@@ -346,7 +346,7 @@ img {
     display: flex;
     justify-content: center;  /* Center the items horizontally */
     align-items: center;      /* Align the items vertically in the middle */
-    gap: 10px;                /* Optional: Adds space between the two divs */
+    gap: 5px;                /* Optional: Adds space between the two divs */
 }
 
 #ratingImageContainer{
