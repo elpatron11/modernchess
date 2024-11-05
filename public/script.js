@@ -1001,13 +1001,13 @@ socket.on('receiveEmoji', function(data) {
 
 //Leave button
 document.getElementById('leaveGameButton').addEventListener('click', function() {
-    if (confirm('Are you sure you want to leave the game? You will lose the match and lose rating.')) {
+   
         socket.emit('leaveGame', { roomId: roomId, playerNumber: playerNumber });
         // Hide the leave button once the player has left
         document.getElementById('leaveGameButton').style.display = 'none';
         resetGameState();
         
-    }
+    
 });
 
 
