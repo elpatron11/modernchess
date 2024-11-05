@@ -263,9 +263,7 @@ async function checkAndUnlockGeneral(username) {
         }
          else if (player.rating >= 1240 && !player.ownedGenerals.includes('GH')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
-        } else if (player.rating >= 1250 && !player.ownedGenerals.includes('GH')) {
-            unlockedGeneral = 'GM';  // Unlock General Horse after 10 games
-        }
+        } 
 
         // If a new general is unlocked, add it to the player's ownedGenerals
         if (unlockedGeneral) {
