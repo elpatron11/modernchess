@@ -25,12 +25,7 @@ const schedule = require('node-schedule');
 let countdown = 0; // counter for event timer.
 const gameTimers = {}; // Stores timers for each game
 // Add bot account to matchmaking if no players are waiting
-const botAccount = {
-    username: 'Newacc',
-    password: '12345678',
-    general: 'Barbarian',
-    socketId: 'botSocketId12345'  // Static socket ID for the bot
-};
+
 
 mongoose.connect(process.env.DB_URL, {
     useNewUrlParser: true,
@@ -318,9 +313,7 @@ function switchTurn(roomId) {
     startTurnTimer(roomId, game.turn); // Start timer for the new player's turn
     console.log(`Turn switched to ${game.turn}`);
      // If it's the bot's turn, initiate bot logic
-     if (game.players[game.turn].username === botAccount.username) {
-        botTakeTurn(roomId);
-    }
+     
 }
 function botTakeTurn(roomId) {
     const game = games[roomId];
@@ -729,6 +722,13 @@ socket.on('emojiSelected', function(data) {
     
     
     
+    let isBotInQueue = false;
+    let isBotInGame = false;
+    let botLastQueuedTime = 0; // Timestamp of the bot's last queue entry
+    
+    const BOT_QUEUE_COOLDOWN = 300000; // 5 minutes in milliseconds
+    
+ 
     socket.on('joinGame', (data) => {
         console.log("Received data for joinGame:", data);
         if (!data || !data.general || !data.username) {
@@ -736,98 +736,74 @@ socket.on('emojiSelected', function(data) {
             socket.emit('error', { message: 'Invalid or no data received for general or username.' });
             return;
         }
-    
         const { username, general } = data;
-    
+
         if (!username) {
             socket.emit('error', { message: "You must be logged in to join the game." });
             return;
         }
-    
-        const playerGame = Object.values(games).find(game => 
-            Object.keys(game.players).some(pid => game.players[pid].socketId === socket.id)
-        );
-    
+
+        const playerGame = Object.values(games).find(game => Object.keys(game.players).some(pid => game.players[pid].socketId === socket.id));
         if (playerGame) {
             console.log(`Player ${socket.id} is already in a game.`);
             socket.emit('error', 'You are already in a game.');
             return;
         }
-    
+
         const isQueued = matchmakingQueue.some(player => player.username === username);
         if (isQueued) {
             console.log(`Player ${socket.id} is already in the matchmaking queue.`);
             socket.emit('error', 'You are already waiting for a match.');
             return;
         }
-    
-        const isInGame = Object.values(games).some(game => 
-            Object.values(game.players).some(player => player.username === username)
-        );
-    
-        if (isInGame) {
-            socket.emit('error', { message: 'You are already in a game' });
-            return;
-        }
-    
-        // Add bot to matchmaking if the queue is empty and the player joining isn't the bot
-        if (matchmakingQueue.length === 0 && username !== botAccount.username) {
-            matchmakingQueue.push({ socket: botAccount.socketId, username: botAccount.username, general: botAccount.general });
-        }
-    
-        if (matchmakingQueue.length > 0) {
-            const opponentData = matchmakingQueue.shift();
-            const opponentSocketId = opponentData.socket;
-    
-            // Check if opponent is a real player or the bot
-            const isBot = opponentSocketId === botAccount.socketId;
-    
-            // If it's not the bot, ensure opponent is still connected
-            if (!isBot && !opponentSocketId.connected) {
-                console.error('Matchmaking error: Invalid or disconnected opponent.');
-                matchmakingQueue.push({ socket: socket, username, general });
-                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-                return;
-            }
-    
-            const roomId = `${socket.id}-${opponentSocketId}`;
-            games[roomId] = {
-                players: {
-                    'P1': { socketId: socket.id, username },
-                    'P2': { socketId: opponentSocketId, username: opponentData.username }
-                },
-                board: createGameBoard(),
-                turn: 'P1',
-                actionCount: 0,
-                generals: {
-                    [socket.id]: general,
-                    [opponentSocketId]: opponentData.general
-                },
-                unitHasAttacked: {},
-                unitHasMoved: {}
-            };
-    
-            console.log(`Game initialized with players:`, games[roomId].players);
-            turnCounter = 0;
-            io.to(roomId).emit('updateTurnCounter', turnCounter);
-    
-            games[roomId].board[0][3].unit = `P1_${general}`;
-            games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
-    
-            socket.join(roomId);
-            if (!isBot) opponentSocketId.join(roomId);
-    
-            socket.emit('gameStart', {
-                roomId,
-                board: games[roomId].board,
-                playerNumber: 'P1',
-                opponentNumber: 'P2',
-                playerName: games[roomId].players.P1.username,
-                opponentName: games[roomId].players.P2.username
+            // Check if the player is already in a game
+            const isInGame = Object.values(games).some(game => {
+                return Object.values(game.players).some(player => player.username === username);
             });
     
-            if (!isBot) {
-                opponentSocketId.emit('gameStart', {
+            if (isInGame) {
+                socket.emit('error', { message: 'You are already in a game' });
+                return;
+            }
+
+        if (matchmakingQueue.length > 0) {
+            const opponentData = matchmakingQueue.shift();
+            const opponent = opponentData.socket;
+
+            if (opponent && opponent.connected) {
+                const roomId = `${socket.id}-${opponent.id}`;
+                games[roomId] = {
+                    players: {
+                        'P1': { socketId: socket.id, username: data.username },
+                        'P2': { socketId: opponent.id, username: opponentData.username }
+                    },
+                    board: createGameBoard(),
+                    turn: 'P1',
+                    actionCount: 0,
+                    generals: {
+                        [socket.id]: data.general,
+                        [opponent.id]: opponentData.general
+                    },
+                    unitHasAttacked: {},
+                    unitHasMoved: {}
+                };
+                console.log(`Game initialized with players:`, games[roomId].players);
+                turnCounter = 0;
+                io.to(roomId).emit('updateTurnCounter', turnCounter);
+                games[roomId].board[0][3].unit = `P1_${data.general}`;
+                games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
+                socket.join(roomId);
+                opponent.join(roomId);
+
+                socket.emit('gameStart', {
+                    roomId,
+                    board: games[roomId].board,
+                    playerNumber: 'P1',
+                    opponentNumber: 'P2',
+                    playerName: games[roomId].players.P1.username,
+                    opponentName: games[roomId].players.P2.username
+                });
+                opponent.emit('gameStart', {
                     roomId,
                     board: games[roomId].board,
                     playerNumber: 'P2',
@@ -835,24 +811,17 @@ socket.on('emojiSelected', function(data) {
                     playerName: games[roomId].players.P2.username,
                     opponentName: games[roomId].players.P1.username
                 });
+            } else {
+                console.error('Matchmaking error: Invalid or disconnected opponent.');
+                matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
+                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
             }
-    
-            // If the opponent is the bot, start the bot's turn
-            if (isBot) {
-                setTimeout(() => {
-                    if (games[roomId].turn === "P2") botTakeTurn(roomId);
-                }, 1000);  // Delay for bot reaction time
-            }
-    
-            startTurnTimer(roomId, games[roomId].turn);
         } else {
-            matchmakingQueue.push({ socket: socket, username, general });
+            matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
             socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-            console.log(`Player ${socket.id} added to matchmaking queue with general ${general}`);
+            console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general}`);
         }
     });
-
-
 
 
 
