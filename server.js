@@ -24,6 +24,13 @@ const dbHost = process.env.DB_HOST;
 const schedule = require('node-schedule');
 let countdown = 0; // counter for event timer.
 const gameTimers = {}; // Stores timers for each game
+// Add bot account to matchmaking if no players are waiting
+const botAccount = {
+    username: 'Newacc',
+    password: '12345678',
+    general: 'Barbarian',
+    socketId: 'botSocketId12345'  // Static socket ID for the bot
+};
 
 mongoose.connect(process.env.DB_URL, {
     useNewUrlParser: true,
@@ -310,7 +317,260 @@ function switchTurn(roomId) {
     io.to(roomId).emit('updateTurnCounter', turnCounter);
     startTurnTimer(roomId, game.turn); // Start timer for the new player's turn
     console.log(`Turn switched to ${game.turn}`);
+     // If it's the bot's turn, initiate bot logic
+     if (game.players[game.turn].username === botAccount.username) {
+        botTakeTurn(roomId);
+    }
 }
+function botTakeTurn(roomId) {
+    const game = games[roomId];
+    if (!game) return;
+
+    let actionsPerformed = 0;
+    let botTurnCompleted = false;
+
+    // Function to perform a single action with a delay
+    function attemptAction() {
+        if (actionsPerformed >= 2 || botTurnCompleted) {
+            if (!botTurnCompleted) {
+                botTurnCompleted = true;
+                switchTurn(roomId); // End bot's turn after 2 actions
+            }
+            return;
+        }
+
+        const availableMoves = findAvailableMoves(game, 'P2'); // Bot is player 2
+
+        let selectedMove;
+        
+        // Ensure the bot prioritizes all possible attacks first
+        if (availableMoves.attacks.length > 0) {
+            selectedMove = availableMoves.attacks[Math.floor(Math.random() * availableMoves.attacks.length)];
+        } else if (availableMoves.moves.length > 0) {
+            selectedMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
+        } else {
+            console.error('No valid moves or attacks available for the bot.');
+            if (!botTurnCompleted) {
+                botTurnCompleted = true;
+                switchTurn(roomId); // End turn if no moves are available
+            }
+            return;
+        }
+
+        if (selectedMove && selectedMove.move) {
+            const { from, to } = selectedMove.move;
+            const moveSuccessful = makeMove(from, to, roomId, botAccount.socketId);
+
+            if (moveSuccessful) {
+                actionsPerformed++;
+                console.log(`Bot action ${actionsPerformed} from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
+            }
+        }
+
+        // Schedule the next action attempt with a delay of 1 second if bot hasn't completed its turn
+        if (actionsPerformed < 2 && !botTurnCompleted) {
+            setTimeout(attemptAction, 1000);
+        }
+    }
+
+    // Start the first action attempt
+    attemptAction();
+}
+
+
+function findAvailableMoves(game, player) {
+    const moves = { attacks: [], moves: [] };
+    const board = game.board;
+
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+            const pieceData = board[row][col];
+            const piece = pieceData.unit;
+
+            if (!piece || !piece.startsWith(player)) continue;
+
+            let maxMoveDistance = 1;
+            if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
+                maxMoveDistance = 3;
+            }
+
+            for (let toRow = Math.max(0, row - maxMoveDistance); toRow <= Math.min(board.length - 1, row + maxMoveDistance); toRow++) {
+                for (let toCol = Math.max(0, col - maxMoveDistance); toCol <= Math.min(board[toRow].length - 1, col + maxMoveDistance); toCol++) {
+                    if (row === toRow && col === toCol) continue;
+
+                    const targetPieceData = board[toRow][toCol];
+
+                    // Check for attack range first
+                    if (isValidAttack(game, pieceData, row, col, toRow, toCol)) {
+                        moves.attacks.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                    } else if (isValidMove(game, pieceData, row, col, toRow, toCol) && (!targetPieceData.unit || !targetPieceData.unit.startsWith(player))) {
+                        moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                    }
+                }
+            }
+        }
+    }
+
+    return moves;
+}
+
+
+
+
+function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
+    const board = game.board;
+
+    // Basic validation for piece data
+    if (!pieceData || typeof pieceData.unit !== 'string') {
+        console.error('Invalid pieceData:', pieceData);
+        return false;
+    }
+
+    const piece = pieceData.unit;
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
+
+    // Check that destination is within bounds
+    if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length) {
+        console.log(`Out of bounds move attempt from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol})`);
+        return false;
+    }
+
+    // Prevent moving onto water
+    if (board[toRow][toCol].terrain === 'water') {
+        console.log(`Cannot move onto water at (${toRow}, ${toCol})`);
+        return false;
+    }
+
+    // Prevent moving onto friendly units
+    const targetPiece = board[toRow][toCol].unit;
+    if (targetPiece && targetPiece.startsWith(piece.substring(0, 3))) {
+        console.log(`Cannot move onto friendly unit at (${toRow}, ${toCol})`);
+        return false;
+    }
+
+    // Movement rules based on piece type
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_GW") || piece.startsWith("P2_GW")|| piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P2_Barbarian")|| piece.startsWith("P2_M") || piece.startsWith("P2_M") ) {
+        const valid = rowDiff <= 1 && colDiff <= 1;
+        console.log(`Warrior move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
+        return valid;
+    }
+
+    if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
+        const valid = (rowDiff <= 3 && colDiff === 0) || (colDiff <= 3 && rowDiff === 0) || (rowDiff === colDiff && rowDiff <= 3);
+        console.log(`Horse move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
+        return valid;
+    }
+
+    console.log(`No move rules matched for ${piece} at (${fromRow}, ${fromCol}) to (${toRow}, ${toCol})`);
+    return false;
+}
+
+
+
+// Adjust `isValidAttack` to ensure Archers and Mages use cross-pattern attacks
+function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol) {
+    const board = game?.board;
+    if (!Array.isArray(board) || !Array.isArray(board[toRow])) {
+        console.error('Invalid board structure or out of bounds:', { toRow, toCol });
+        return false;
+    }
+
+    if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= (board[toRow]?.length || 0)) {
+        console.log(`Target out of bounds: (${toRow}, ${toCol})`);
+        return false;
+    }
+
+    if (!pieceData || typeof pieceData.unit !== 'string') {
+        console.error('Invalid pieceData:', pieceData);
+        return false;
+    }
+
+    const piece = pieceData.unit;
+    const targetPieceData = board[toRow][toCol]?.unit;
+
+    if (targetPieceData && targetPieceData.startsWith(piece.substring(0, 3))) {
+        console.log("Cannot attack friendly units.");
+        return false;
+    }
+
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
+
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_Barbarian")) {
+        return rowDiff <= 1 && colDiff <= 1;
+    } 
+    if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
+        return rowDiff <= 1 && colDiff <= 1;
+    } 
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA") || piece.startsWith("P1_Robinhood") || piece.startsWith("P2_Robinhood")) {
+        return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
+    }
+    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
+        return (rowDiff === 0 && colDiff <= 2) || (colDiff === 0 && rowDiff <= 2);
+    }
+
+    return false;
+}
+
+
+function makeMove(from, to, roomId, playerId) {
+    const game = games[roomId];
+    if (!game) {
+        console.error(`Game not found for roomId: ${roomId}`);
+        return false;
+    }
+
+    const board = game.board;
+    if (!from || !to || from.row === undefined || from.col === undefined || to.row === undefined || to.col === undefined) {
+        console.error('Invalid move coordinates:', { from, to });
+        return false;
+    }
+
+    const attackingPiece = board[from.row][from.col].unit;
+    const targetPiece = board[to.row][to.col].unit;
+
+    // Ensure there is an attacking piece at the 'from' position
+    if (!attackingPiece) {
+        console.log(`No piece found at source (${from.row}, ${from.col})`);
+        return false;
+    }
+
+    // Check if it's a valid move or attack
+    if (isValidMove(game, board[from.row][from.col], from.row, from.col, to.row, to.col) || 
+        isValidAttack(board, board[from.row][from.col], from.row, from.col, to.row, to.col)) {
+        
+        if (targetPiece) {
+            // Attack logic if there's a piece on the target square
+            console.log(`Bot attacking from ${from.row},${from.col} to ${to.row},${to.col}`);
+            board[to.row][to.col].unit = '';  // Clear the target piece
+        } else {
+            // Move logic if the target square is empty
+            console.log(`Bot moving from ${from.row},${from.col} to ${to.row},${to.col}`);
+            board[to.row][to.col].unit = attackingPiece;  // Move the piece
+            board[from.row][from.col].unit = '';  // Clear the original position
+        }
+
+        // Emit an event to update the game state for all clients
+        io.to(roomId).emit('updateBoard', {
+            board: game.board,
+            turn: game.turn,
+        });
+
+        // Track that the bot has completed its move
+        game.actionCount++;
+        if (game.actionCount >= 2) {
+            switchTurn(roomId);  // End the bot's turn if it has performed 2 actions
+        }
+        return true;
+    } else {
+        console.log(`Invalid move or attack attempted by bot from ${from.row},${from.col} to ${to.row},${to.col}`);
+        return false;
+    }
+}
+
+
+
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
@@ -476,75 +736,98 @@ socket.on('emojiSelected', function(data) {
             socket.emit('error', { message: 'Invalid or no data received for general or username.' });
             return;
         }
+    
         const { username, general } = data;
-
+    
         if (!username) {
             socket.emit('error', { message: "You must be logged in to join the game." });
             return;
         }
-
-        const playerGame = Object.values(games).find(game => Object.keys(game.players).some(pid => game.players[pid].socketId === socket.id));
+    
+        const playerGame = Object.values(games).find(game => 
+            Object.keys(game.players).some(pid => game.players[pid].socketId === socket.id)
+        );
+    
         if (playerGame) {
             console.log(`Player ${socket.id} is already in a game.`);
             socket.emit('error', 'You are already in a game.');
             return;
         }
-
+    
         const isQueued = matchmakingQueue.some(player => player.username === username);
         if (isQueued) {
             console.log(`Player ${socket.id} is already in the matchmaking queue.`);
             socket.emit('error', 'You are already waiting for a match.');
             return;
         }
-            // Check if the player is already in a game
-            const isInGame = Object.values(games).some(game => {
-                return Object.values(game.players).some(player => player.username === username);
-            });
     
-            if (isInGame) {
-                socket.emit('error', { message: 'You are already in a game' });
-                return;
-            }
-
+        const isInGame = Object.values(games).some(game => 
+            Object.values(game.players).some(player => player.username === username)
+        );
+    
+        if (isInGame) {
+            socket.emit('error', { message: 'You are already in a game' });
+            return;
+        }
+    
+        // Add bot to matchmaking if the queue is empty and the player joining isn't the bot
+        if (matchmakingQueue.length === 0 && username !== botAccount.username) {
+            matchmakingQueue.push({ socket: botAccount.socketId, username: botAccount.username, general: botAccount.general });
+        }
+    
         if (matchmakingQueue.length > 0) {
             const opponentData = matchmakingQueue.shift();
-            const opponent = opponentData.socket;
-
-            if (opponent && opponent.connected) {
-                const roomId = `${socket.id}-${opponent.id}`;
-                games[roomId] = {
-                    players: {
-                        'P1': { socketId: socket.id, username: data.username },
-                        'P2': { socketId: opponent.id, username: opponentData.username }
-                    },
-                    board: createGameBoard(),
-                    turn: 'P1',
-                    actionCount: 0,
-                    generals: {
-                        [socket.id]: data.general,
-                        [opponent.id]: opponentData.general
-                    },
-                    unitHasAttacked: {},
-                    unitHasMoved: {}
-                };
-                console.log(`Game initialized with players:`, games[roomId].players);
-                turnCounter = 0;
-                io.to(roomId).emit('updateTurnCounter', turnCounter);
-                games[roomId].board[0][3].unit = `P1_${data.general}`;
-                games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
-                socket.join(roomId);
-                opponent.join(roomId);
-
-                socket.emit('gameStart', {
-                    roomId,
-                    board: games[roomId].board,
-                    playerNumber: 'P1',
-                    opponentNumber: 'P2',
-                    playerName: games[roomId].players.P1.username,
-                    opponentName: games[roomId].players.P2.username
-                    
-                });
-                opponent.emit('gameStart', {
+            const opponentSocketId = opponentData.socket;
+    
+            // Check if opponent is a real player or the bot
+            const isBot = opponentSocketId === botAccount.socketId;
+    
+            // If it's not the bot, ensure opponent is still connected
+            if (!isBot && !opponentSocketId.connected) {
+                console.error('Matchmaking error: Invalid or disconnected opponent.');
+                matchmakingQueue.push({ socket: socket, username, general });
+                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
+                return;
+            }
+    
+            const roomId = `${socket.id}-${opponentSocketId}`;
+            games[roomId] = {
+                players: {
+                    'P1': { socketId: socket.id, username },
+                    'P2': { socketId: opponentSocketId, username: opponentData.username }
+                },
+                board: createGameBoard(),
+                turn: 'P1',
+                actionCount: 0,
+                generals: {
+                    [socket.id]: general,
+                    [opponentSocketId]: opponentData.general
+                },
+                unitHasAttacked: {},
+                unitHasMoved: {}
+            };
+    
+            console.log(`Game initialized with players:`, games[roomId].players);
+            turnCounter = 0;
+            io.to(roomId).emit('updateTurnCounter', turnCounter);
+    
+            games[roomId].board[0][3].unit = `P1_${general}`;
+            games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
+    
+            socket.join(roomId);
+            if (!isBot) opponentSocketId.join(roomId);
+    
+            socket.emit('gameStart', {
+                roomId,
+                board: games[roomId].board,
+                playerNumber: 'P1',
+                opponentNumber: 'P2',
+                playerName: games[roomId].players.P1.username,
+                opponentName: games[roomId].players.P2.username
+            });
+    
+            if (!isBot) {
+                opponentSocketId.emit('gameStart', {
                     roomId,
                     board: games[roomId].board,
                     playerNumber: 'P2',
@@ -552,18 +835,27 @@ socket.on('emojiSelected', function(data) {
                     playerName: games[roomId].players.P2.username,
                     opponentName: games[roomId].players.P1.username
                 });
-                startTurnTimer(roomId, games[roomId].turn);
-            } else {
-                console.error('Matchmaking error: Invalid or disconnected opponent.');
-                matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
-                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
             }
+    
+            // If the opponent is the bot, start the bot's turn
+            if (isBot) {
+                setTimeout(() => {
+                    if (games[roomId].turn === "P2") botTakeTurn(roomId);
+                }, 1000);  // Delay for bot reaction time
+            }
+    
+            startTurnTimer(roomId, games[roomId].turn);
         } else {
-            matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
+            matchmakingQueue.push({ socket: socket, username, general });
             socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-            console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general}`);
+            console.log(`Player ${socket.id} added to matchmaking queue with general ${general}`);
         }
     });
+
+
+
+
+
 
     function checkWinCondition(game, player, roomId) {
         const opponent = player === 'P1' ? 'P2' : 'P1';
