@@ -326,53 +326,38 @@ function switchTurn(roomId) {
 
      
 }
+
 function botTakeTurn(roomId) {
     const game = games[roomId];
     if (!game) return;
 
     let actionsPerformed = 0;
-    let botTurnCompleted = false;
 
     // Function to perform a single action with a delay
     function attemptAction() {
-        if (actionsPerformed >= 2 || botTurnCompleted) {
-            if (!botTurnCompleted) {
-                botTurnCompleted = true;
-                switchTurn(roomId); // End bot's turn after 2 actions
-            }
+        if (actionsPerformed >= 2) {
+            switchTurn(roomId); // End bot's turn after 2 actions
             return;
         }
 
+        // Find all available moves for the bot
         const availableMoves = findAvailableMoves(game, 'P2'); // Bot is player 2
-
-        let selectedMove;
-        
-        // Ensure the bot prioritizes all possible attacks first
         if (availableMoves.attacks.length > 0) {
-            selectedMove = availableMoves.attacks[Math.floor(Math.random() * availableMoves.attacks.length)];
+            const randomAttack = availableMoves.attacks[Math.floor(Math.random() * availableMoves.attacks.length)];
+            executeMove(randomAttack, roomId);
+            actionsPerformed++;
         } else if (availableMoves.moves.length > 0) {
-            selectedMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
+            const randomMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
+            executeMove(randomMove, roomId);
+            actionsPerformed++;
         } else {
-            console.error('No valid moves or attacks available for the bot.');
-            if (!botTurnCompleted) {
-                botTurnCompleted = true;
-                switchTurn(roomId); // End turn if no moves are available
-            }
+            console.error('No valid moves available for the bot.');
+            switchTurn(roomId); // End turn if no moves are available
             return;
         }
 
-        if (selectedMove && selectedMove.move) {
-            const { from, to } = selectedMove.move;
-            const moveSuccessful = makeMove(from, to, roomId, botAccount.socketId);
-
-            if (moveSuccessful) {
-                actionsPerformed++;
-                console.log(`Bot action ${actionsPerformed} from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
-            }
-        }
-
-        // Schedule the next action attempt with a delay of 1 second if bot hasn't completed its turn
-        if (actionsPerformed < 2 && !botTurnCompleted) {
+        // Schedule the next action attempt if fewer than 2 actions have been performed
+        if (actionsPerformed < 2) {
             setTimeout(attemptAction, 1000);
         }
     }
@@ -381,6 +366,18 @@ function botTakeTurn(roomId) {
     attemptAction();
 }
 
+// Execute a move and update the game state
+function executeMove(selectedMove, roomId) {
+    const game = games[roomId];
+    if (!selectedMove || !selectedMove.move) return;
+
+    const { from, to } = selectedMove.move;
+    const moveSuccessful = makeMove(from, to, roomId, botAccount.socketId);
+
+    if (moveSuccessful) {
+        console.log(`Bot action from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
+    }
+}
 
 function findAvailableMoves(game, player) {
     const moves = { attacks: [], moves: [] };
@@ -393,33 +390,62 @@ function findAvailableMoves(game, player) {
 
             if (!piece || !piece.startsWith(player)) continue;
 
-            let maxMoveDistance = 1;
-            if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
-                maxMoveDistance = 3;
-            }
+            const maxMoveDistance = piece.startsWith("P2_H") || piece.startsWith("P2_GH") ? 3 : 1;
+            const maxAttackDistance = getMaxAttackRange(piece);
 
+            // Standard move range for most units
             for (let toRow = Math.max(0, row - maxMoveDistance); toRow <= Math.min(board.length - 1, row + maxMoveDistance); toRow++) {
                 for (let toCol = Math.max(0, col - maxMoveDistance); toCol <= Math.min(board[toRow].length - 1, col + maxMoveDistance); toCol++) {
                     if (row === toRow && col === toCol) continue;
 
                     const targetPieceData = board[toRow][toCol];
+                    const targetPiece = targetPieceData.unit;
 
-                    // Check for attack range first
-                    if (isValidAttack(game, pieceData, row, col, toRow, toCol)) {
-                        moves.attacks.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
-                    } else if (isValidMove(game, pieceData, row, col, toRow, toCol) && (!targetPieceData.unit || !targetPieceData.unit.startsWith(player))) {
-                        moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                    // Prevent moves to friendly units
+                    if (targetPiece && targetPiece.startsWith(player)) continue;
+
+                    // Check for valid move
+                    if (piece !== "P2_T") {
+                        // Check for valid move
+                        if (isValidMove(game, pieceData, row, col, toRow, toCol)) {
+                            moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                        }
+                    }
+                }
+            }
+
+            // Check for valid ranged attacks for Archers and Mages
+            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA") || piece.startsWith("P2_M")) {
+                for (let toRow = row - maxAttackDistance; toRow <= row + maxAttackDistance; toRow++) {
+                    for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
+                        if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length || (toRow === row && toCol === col)) continue;
+
+                        const targetPieceData = board[toRow][toCol];
+                        const targetPiece = targetPieceData.unit;
+
+                        if (targetPiece && !targetPiece.startsWith(player) && isValidAttack(game, pieceData, row, col, toRow, toCol)) {
+                            moves.attacks.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                        }
                     }
                 }
             }
         }
     }
-
     return moves;
 }
 
 
 
+// Define maximum attack range for each piece type
+function getMaxAttackRange(piece) {
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+        return 3; // Archer range
+    }
+    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
+        return 2; // Mage range
+    }
+    return 1; // Default range for other pieces
+}
 
 function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
     const board = game.board;
@@ -454,7 +480,7 @@ function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
     }
 
     // Movement rules based on piece type
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_GW") || piece.startsWith("P2_GW")|| piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P2_Barbarian")|| piece.startsWith("P2_M") || piece.startsWith("P2_M") ) {
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_A") || piece.startsWith("P2_") || piece.startsWith("P1_GW") || piece.startsWith("P2_GW")) {
         const valid = rowDiff <= 1 && colDiff <= 1;
         console.log(`Warrior move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
         return valid;
@@ -472,49 +498,39 @@ function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
 
 
 
-// Adjust `isValidAttack` to ensure Archers and Mages use cross-pattern attacks
+// Refine attack validation based on unit type and range
 function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol) {
-    const board = game?.board;
-    if (!Array.isArray(board) || !Array.isArray(board[toRow])) {
-        console.error('Invalid board structure or out of bounds:', { toRow, toCol });
-        return false;
-    }
+    const board = game.board;
 
-    if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= (board[toRow]?.length || 0)) {
-        console.log(`Target out of bounds: (${toRow}, ${toCol})`);
-        return false;
-    }
-
-    if (!pieceData || typeof pieceData.unit !== 'string') {
-        console.error('Invalid pieceData:', pieceData);
-        return false;
-    }
+    if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length) return false;
+    if (!pieceData || typeof pieceData.unit !== 'string') return false;
 
     const piece = pieceData.unit;
-    const targetPieceData = board[toRow][toCol]?.unit;
+    const targetPiece = board[toRow][toCol]?.unit;
 
-    if (targetPieceData && targetPieceData.startsWith(piece.substring(0, 3))) {
-        console.log("Cannot attack friendly units.");
-        return false;
-    }
+    if (targetPiece && targetPiece.startsWith(piece.substring(0, 3))) return false; // No friendly fire
 
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_Barbarian")) {
-        return rowDiff <= 1 && colDiff <= 1;
-    } 
-    if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
-        return rowDiff <= 1 && colDiff <= 1;
-    } 
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA") || piece.startsWith("P1_Robinhood") || piece.startsWith("P2_Robinhood")) {
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+        // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
     }
     if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
-        return (rowDiff === 0 && colDiff <= 2) || (colDiff === 0 && rowDiff <= 2);
+        // Mages can attack within a 2x2 area in all directions
+        return (rowDiff <= 2 && colDiff <= 2) && (rowDiff === 0 || colDiff === 0 || rowDiff === colDiff);
+    }
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_Barbarian")) {
+        // Warriors and General Warriors can attack adjacent squares
+        return rowDiff <= 1 && colDiff <= 1;
+    } 
+    if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
+        // Horses can attack adjacent squares
+        return rowDiff <= 1 && colDiff <= 1;
     }
 
-    return false;
+    return false; // Default no attack
 }
 
 
@@ -542,26 +558,38 @@ function makeMove(from, to, roomId, playerId) {
 
     // Check if it's a valid move or attack
     if (isValidMove(game, board[from.row][from.col], from.row, from.col, to.row, to.col) || 
-        isValidAttack(board, board[from.row][from.col], from.row, from.col, to.row, to.col)) {
+        isValidAttack(game, board[from.row][from.col], from.row, from.col, to.row, to.col)) {
         
         if (targetPiece) {
-            // Attack logic if there's a piece on the target square
+            if(targetPiece === "P1_T"){
+                const tower = game.board[to.row][to.col];
+        
+                if (!tower.hp) {
+                    tower.hp = 26;
+                }
+                tower.hp -= 2;
+                console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${2} damage.`);
+                if (tower.hp <= 0) {
+                    console.log(`Tower ${tower} is destroyed!`);
+                    game.board[to.row][to.col].unit = 'towerdestroyed';  // Update tower to destroyed state
+                    
+                        io.to(roomId).emit('gameOver', 'Player 2 wins!');
+                        
+                    
+                                       
+            }}
+            else{
             console.log(`Bot attacking from ${from.row},${from.col} to ${to.row},${to.col}`);
             board[to.row][to.col].unit = '';  // Clear the target piece
+            }
         } else {
-            // Move logic if the target square is empty
             console.log(`Bot moving from ${from.row},${from.col} to ${to.row},${to.col}`);
             board[to.row][to.col].unit = attackingPiece;  // Move the piece
             board[from.row][from.col].unit = '';  // Clear the original position
         }
 
-        // Emit an event to update the game state for all clients
-        io.to(roomId).emit('updateBoard', {
-            board: game.board,
-            turn: game.turn,
-        });
+        io.to(roomId).emit('updateBoard', { board: game.board, turn: game.turn });
 
-        // Track that the bot has completed its move
         game.actionCount++;
         if (game.actionCount >= 2) {
             switchTurn(roomId);  // End the bot's turn if it has performed 2 actions
@@ -572,9 +600,6 @@ function makeMove(from, to, roomId, playerId) {
         return false;
     }
 }
-
-
-
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
