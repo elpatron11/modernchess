@@ -223,14 +223,18 @@ schedule.scheduleJob('59 23 * * *', function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
-      // Reset all player ratings to 1200 at 6pm server time
-      Player.updateMany({}, { $set: { rating: 1200 } })
-      .then(result => {
-          console.log('Ratings reset for all players:', result);
-      })
-      .catch(err => {
-          console.error('Error resetting player ratings:', err);
-      });
+    try {
+        // Reset all player ratings to 1200 at 6pm server time
+        Player.updateMany({}, { $set: { rating: 1200 } })
+            .then(result => {
+                console.log('Ratings reset for all players:', result);
+            })
+            .catch(err => {
+                console.error('Error resetting player ratings:', err);
+            });
+    } catch (error) {
+        console.error('Unexpected error occurred while resetting ratings:', error);
+    }
   });
  // const job = schedule.scheduleJob('05* * * *', function() {
   //  console.log('The answer to life, the universe, and everything!');
@@ -245,7 +249,46 @@ schedule.scheduleJob('59 23 * * *', function() { //6pm server time
   }, 1000);
   
 
+   
+  function checkWinCondition(game, player, roomId) {
+    const opponent = player === 'P1' ? 'P2' : 'P1';
+    let towerAlive = false;
+    let unitsAlive = false;
 
+    // Check if the opponent still has a tower or any units alive
+    for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+            const unit = game.board[row][col].unit;
+            if (unit.startsWith(opponent)) {
+                if (unit.includes('_T')) {
+                    towerAlive = true;  // Opponent's tower is still alive
+                } else {
+                    unitsAlive = true;  // Opponent has other units alive
+                }
+            }
+        }
+    }
+
+    // Win condition: Opponent has no tower or no units left
+    if (!towerAlive || !unitsAlive) {
+        let winnerUsername = game.players[player].username;
+        let loserUsername = game.players[opponent].username;
+        
+        console.log(`Game over! Winner: ${winnerUsername}, Loser: ${loserUsername}`);
+        io.to(roomId).emit('gameOver', {
+            message: `Player ${player} wins!`,
+            winner: winnerUsername,
+            loser: loserUsername
+        });
+
+  
+        //delete games[roomId];
+        console.log("deleted room?`")
+        return true;  // Game over, return true
+    }
+
+    return false;  // No win condition met, return false
+}
 
 // Function to check if user is eligible for a new general
 // Function to check and unlock generals based on games played
@@ -353,6 +396,12 @@ function botTakeTurn(roomId) {
         } else {
             console.error('No valid moves available for the bot.');
             switchTurn(roomId); // End turn if no moves are available
+            return;
+        }
+
+          // Check for win condition after each action
+          if (checkWinCondition(game, 'P2', roomId)) {
+            io.to(roomId).emit('gameOver', `Bot wins!`);
             return;
         }
 
@@ -518,8 +567,8 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol) {
         return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
     }
     if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
-        // Mages can attack within a 2x2 area in all directions
-        return (rowDiff <= 2 && colDiff <= 2) && (rowDiff === 0 || colDiff === 0 || rowDiff === colDiff);
+        // Mages can attack within a 2x2 area in orthogonal directions only
+        return (rowDiff <= 2 && colDiff === 0) || (colDiff <= 2 && rowDiff === 0);
     }
     if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_Barbarian")) {
         // Warriors and General Warriors can attack adjacent squares
@@ -702,6 +751,37 @@ async function updateGameResult(winnerUsername, loserUsername) {
     }
 }
 
+
+async function updateBotGameResult(playerUsername, botWins) {
+    console.log(`updateBotGameResult called for ${playerUsername}, botWins: ${botWins}`);
+    try {
+        const player = await Player.findOne({ username: playerUsername });
+        console.log("Player found:", player);
+        if (!player) {
+            throw new Error("Player not found");
+        }
+
+        let ratingChange = botWins ? 5 : -5;
+
+        // Update the player's rating based on the result
+        player.rating += ratingChange;
+
+        // Ensure the player’s rating does not fall below the minimum rating, e.g., 1000
+        player.rating = Math.max(1000, player.rating);
+
+        // Increment games played for the player
+        player.gamesPlayed += 1;
+
+        // Save changes
+        await player.save();
+
+        console.log(`Game result updated for player vs bot. ${botWins ? 'Bot wins' : 'Player wins'}.`);
+    } catch (error) {
+        console.error('Failed to update game results for player vs bot:', error);
+    }
+}
+
+
 function logout() {
     // Clear the username and other data from localStorage
     localStorage.removeItem('username');
@@ -750,15 +830,33 @@ socket.on('emojiSelected', function(data) {
             });
     
             // Perform the updateGameResult afterward
-            updateGameResult(game.players[winner].username, game.players[loser].username)
-                .then(() => {
-                    console.log('Game result updated successfully');
-                    // Optionally remove the game after updating results
-                    delete games[roomId];
-                })
-                .catch((error) => {
-                    console.error('Failed to update game results:', error);
-                });
+                        // Check if the loser is the bot
+                if (game.players[loser].username === botAccount.username) {
+                    // Call a separate update function for bot loss
+                    updateBotGameResult(game.players[winner].username)
+                        .then(() => {
+                            console.log('Bot loss handled successfully');
+                            // Optionally remove the game after updating results
+                            delete games[roomId];
+                        })
+                        .catch((error) => {
+                            console.error('Failed to handle bot loss:', error);
+                        });
+                } else {
+                    // Regular updateGameResult for player loss
+                    updateGameResult(game.players[winner].username, game.players[loser].username)
+                        .then(() => {
+                            console.log('Game result updated successfully');
+                            // Optionally remove the game after updating results
+                            delete games[roomId];
+                        })
+                        .catch((error) => {
+                            console.error('Failed to update game results:', error);
+                        });
+                }
+
+
+
         }
     });
     
@@ -866,20 +964,8 @@ socket.on('emojiSelected', function(data) {
        }
 
 
-    socket.on('joinGame', (data) => {
-        const totalPlayers = Object.keys(activePlayers).length;
 
-        if (totalPlayers >= 2) {
-            // If there are two or more active players, match with another player
-            console.log("Using player vs player matchmaking...");
-            joinGameWithPlayer(socket, data);
-        } else {
-            // Otherwise, fall back to matching with the bot
-            console.log("Using player vs bot matchmaking...");
-            joinGameWithBot(socket, data);
-        }
-        
-    }); 
+    
         
     function joinGameWithBot(socket, data) {
         
@@ -1017,53 +1103,21 @@ socket.on('emojiSelected', function(data) {
     }
 
 
+    socket.on('joinGame', (data) => {
+        const totalPlayers = Object.keys(activePlayers).length;
 
-
-
-
-
-
-
-    function checkWinCondition(game, player, roomId) {
-        const opponent = player === 'P1' ? 'P2' : 'P1';
-        let towerAlive = false;
-        let unitsAlive = false;
-    
-        // Check if the opponent still has a tower or any units alive
-        for (let row = 0; row < BOARD_SIZE; row++) {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                const unit = game.board[row][col].unit;
-                if (unit.startsWith(opponent)) {
-                    if (unit.includes('_T')) {
-                        towerAlive = true;  // Opponent's tower is still alive
-                    } else {
-                        unitsAlive = true;  // Opponent has other units alive
-                    }
-                }
-            }
+        if (totalPlayers >= 2) {
+            // If there are two or more active players, match with another player
+            console.log("Using player vs player matchmaking...");
+            joinGameWithPlayer(socket, data);
+        } else {
+            // Otherwise, fall back to matching with the bot
+            console.log("Using player vs bot matchmaking...");
+            joinGameWithBot(socket, data);
         }
-    
-        // Win condition: Opponent has no tower or no units left
-        if (!towerAlive || !unitsAlive) {
-            let winnerUsername = game.players[player].username;
-            let loserUsername = game.players[opponent].username;
-            
-            console.log(`Game over! Winner: ${winnerUsername}, Loser: ${loserUsername}`);
-            io.to(roomId).emit('gameOver', {
-                message: `Player ${player} wins!`,
-                winner: winnerUsername,
-                loser: loserUsername
-            });
+        
+    }); 
 
-      
-            //delete games[roomId];
-            console.log("deleted room?`")
-            return true;  // Game over, return true
-        }
-    
-        return false;  // No win condition met, return false
-    }
-    
     
 
     socket.on('saveGameState', (gameState) => {
@@ -1695,16 +1749,39 @@ socket.on('emojiSelected', function(data) {
                 // Mark the game as concluded to prevent further actions affecting the result
                 game.gameConcluded = true;
     
-                // Perform the updateGameResult
-                updateGameResult(game.players[winner].username, game.players[loser].username)
-                    .then(() => {
-                        console.log('Game result updated successfully due to disconnection.');
-                        // Optionally remove the game after updating results
-                        delete games[roomId];
-                    })
-                    .catch((error) => {
-                        console.error('Failed to update game results:', error);
-                    });
+               // Check if the loser is the bot
+     // Check if the bot is the winner or loser
+        if (game.players[winner].username === botAccount.username || game.players[loser].username === botAccount.username) {
+            // Determine who is the actual player
+            const realPlayerUsername = game.players[winner].username === botAccount.username 
+                ? game.players[loser].username 
+                : game.players[winner].username;
+            
+            // Determine if the bot won or lost
+            const botWins = game.players[winner].username === botAccount.username;
+
+            // Call `updateBotGameResult` with the real player's username and bot's result
+            updateBotGameResult(realPlayerUsername, botWins)
+                .then(() => {
+                    console.log(`Bot result handled successfully. Bot ${botWins ? 'won' : 'lost'}.`);
+                    delete games[roomId]; // Optionally delete the game afterward
+                })
+                .catch((error) => {
+                    console.error('Failed to handle bot result:', error);
+                });
+        } else {
+            // Regular updateGameResult for player loss
+            updateGameResult(game.players[winner].username, game.players[loser].username)
+                .then(() => {
+                    console.log('Game result updated successfully');
+                    // Optionally remove the game after updating results
+                    delete games[roomId];
+                })
+                .catch((error) => {
+                    console.error('Failed to update game results:', error);
+                });
+        }
+
             }
         }
     });
