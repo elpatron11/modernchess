@@ -515,6 +515,7 @@ socket.on('gameOver', async (data) => {
         console.log('Congratulations! You won!'); // Use console log 
       // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
+       // Notify the server of game end to handle rating update
       
       setTimeout(() => {
           location.reload();

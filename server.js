@@ -249,12 +249,13 @@ schedule.scheduleJob('59 23 * * *', function() { //6pm server time
   }, 1000);
   
 
+
    
   function checkWinCondition(game, player, roomId) {
     const opponent = player === 'P1' ? 'P2' : 'P1';
     let towerAlive = false;
     let unitsAlive = false;
-
+   
     // Check if the opponent still has a tower or any units alive
     for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
@@ -271,9 +272,11 @@ schedule.scheduleJob('59 23 * * *', function() { //6pm server time
 
     // Win condition: Opponent has no tower or no units left
     if (!towerAlive || !unitsAlive) {
-        let winnerUsername = game.players[player].username;
-        let loserUsername = game.players[opponent].username;
-        
+        const winnerUsername = game.players[player].username;
+        const loserUsername = game.players[opponent].username;
+
+            
+
         console.log(`Game over! Winner: ${winnerUsername}, Loser: ${loserUsername}`);
         io.to(roomId).emit('gameOver', {
             message: `Player ${player} wins!`,
@@ -281,14 +284,15 @@ schedule.scheduleJob('59 23 * * *', function() { //6pm server time
             loser: loserUsername
         });
 
-  
-        //delete games[roomId];
-        console.log("deleted room?`")
+      
+
         return true;  // Game over, return true
     }
 
     return false;  // No win condition met, return false
 }
+
+
 
 // Function to check if user is eligible for a new general
 // Function to check and unlock generals based on games played
@@ -411,8 +415,8 @@ function botTakeTurn(roomId) {
         }
     }
 
-    // Start the first action attempt
-    attemptAction();
+    // Start the first action attempt with an initial delay
+    setTimeout(attemptAction, 1000);
 }
 
 // Execute a move and update the game state
@@ -761,7 +765,7 @@ async function updateBotGameResult(playerUsername, botWins) {
             throw new Error("Player not found");
         }
 
-        let ratingChange = botWins ? 5 : -5;
+        let ratingChange = botWins ? -5 : 5;
 
         // Update the player's rating based on the result
         player.rating += ratingChange;
@@ -1118,6 +1122,7 @@ socket.on('emojiSelected', function(data) {
         
     }); 
 
+
     
 
     socket.on('saveGameState', (gameState) => {
@@ -1187,6 +1192,29 @@ socket.on('emojiSelected', function(data) {
         if ((targetPiece === 'P1_T' && game.turn === 'P1') || (targetPiece === 'P2_T' && game.turn === 'P2')) {
             socket.emit('invalidAction', 'You cannot attack your own tower!');
             return;
+        }
+        
+
+        async function updatePlayerRating(username) {
+            try {
+                const player = await Player.findOne({ username });
+                
+                if (player) {
+                    // Add 5 points to the player's rating
+                    player.rating += 10;
+        
+                    // Ensure the rating does not exceed the maximum, e.g., 1500
+                    player.rating = Math.min(player.rating, 1500);
+        
+                    // Save the updated rating to the database
+                    await player.save();
+                    console.log(`Player ${username}'s rating increased by 5.`);
+                } else {
+                    console.error(`Player ${username} not found for rating update.`);
+                }
+            } catch (error) {
+                console.error(`Error updating rating for player ${username}:`, error);
+            }
         }
         
   
@@ -1260,6 +1288,13 @@ socket.on('emojiSelected', function(data) {
                         // Suppose you determine the winner and loser based on some game logic
                         let winnerUsername = game.turn === 'P1' ? game.players['P1'].username : game.players['P2'].username;
                         let loserUsername = game.turn === 'P1' ? game.players['P2'].username : game.players['P1'].username;
+                          // Check if this is a bot game and if P1 is the winner
+                            const isBotGame = game.players['P2'].username === botAccount.username;
+                            if (isBotGame && game.turn === 'P1') {
+                                console.log("Bot game detected, awarding rating bonus to P1 for victory.");
+                                updatePlayerRating(winnerUsername);  // Increase rating for Player 1
+                            }
+
                         console.log(loserUsername)
                         if (!winnerUsername || !loserUsername) {
                             console.error('Winner or loser username is undefined');
@@ -1562,6 +1597,12 @@ socket.on('emojiSelected', function(data) {
                          }, 3000); // 3 seconds for the hit animation
                         
                     if (checkWinCondition(game, game.turn, moveData.roomId)) {
+                        const isBotGame = game.players['P2'].username === botAccount.username;
+                        const winnerUsername = game.turn === 'P1' ? game.players['P1'].username : game.players['P2'].username;
+                        if (isBotGame && game.turn === 'P1') {
+                            console.log("Bot game detected, awarding rating bonus to P1 for victory.");
+                            updatePlayerRating(winnerUsername);  // Increase rating for Player 1
+                        }
                         io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`);
                         return;
                     }
