@@ -277,10 +277,10 @@ socket.on('startTimer', (data) => {
 }); 
 
 
-/*function updateTimerDisplay(seconds) {
+function updateTimerDisplay(seconds) {
     
     document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
-} */
+} 
 
 
 //when turn switches 60 sec timer resets
@@ -301,7 +301,7 @@ socket.on('turnSwitched', (data) => {
   }
   */
 
-  
+
 function updateRatingImage(rating) {
     const ratingImageContainer = document.getElementById('ratingImageContainer');
     // Create an image element

@@ -262,12 +262,12 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
  // });
   
   // Decrement the countdown every second and emit the updated time
-  /*setInterval(() => {
+  setInterval(() => {
     if (countdown > 0) {
       countdown--;
       io.emit('countdown', { countdown });
     }
-  }, 1000);  */
+  }, 1000);  
   
 
 
