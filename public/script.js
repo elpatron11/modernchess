@@ -274,20 +274,24 @@ socket.on('startTimer', (data) => {
             
         }
     }, 1000);
-});
-function updateTimerDisplay(seconds) {
+}); 
+
+
+/*function updateTimerDisplay(seconds) {
     
     document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
-}
+} */
+
+
 //when turn switches 60 sec timer resets
 socket.on('turnSwitched', (data) => {
     clearInterval(countdownTimer);
    // document.getElementById('playerturn123').textContent = `It's now ${data.newTurn}'s turn`;
 });
 
-socket.on('countdown', function(data) {
+/* socket.on('countdown', function(data) {
     document.getElementById('timerDisplay').textContent = formatTime(data.countdown);
-  });
+  });  
 
   function formatTime(seconds) {
     const h = Math.floor(seconds / 3600);
@@ -295,6 +299,8 @@ socket.on('countdown', function(data) {
     const s = seconds % 60;
     return `${h}:${m}:${s < 10 ? '0' : ''}${s}`;
   }
+  */
+
   
 function updateRatingImage(rating) {
     const ratingImageContainer = document.getElementById('ratingImageContainer');
@@ -306,13 +312,13 @@ function updateRatingImage(rating) {
     ratingImage.style.display = 'none'; // Initially hide it if necessary
     // Append the image to the container
     ratingImageContainer.appendChild(ratingImage);
-    if (rating < 1220) {
+    if (rating < 1300) {
         ratingImage.src = '/resources/images/ranks/rank1.png'; // Path to your image for rating < 1350
         ratingImage.style.display = 'block'; // Make the image visible
-    } else if (rating >= 1220 && rating < 1240) {
+    } else if (rating >= 1300 && rating < 1500) {
         ratingImage.src = '/resources/images/ranks/rank2.png'; // Path to your image for rating between 1350 and 1600
         ratingImage.style.display = 'block'; // Make the image visible
-    } else if (rating >= 1240) {
+    } else if (rating >= 1500) {
         ratingImage.src = '/resources/images/ranks/rank3.png'; // Path to your image for rating >= 1600
         ratingImage.style.display = 'block'; // Make the image visible
     }

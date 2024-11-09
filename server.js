@@ -219,34 +219,55 @@ app.get('/generals', async (req, res) => {
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
-schedule.scheduleJob('59 23 * * *', function() { //6pm server time
+schedule.scheduleJob('00 14 * * *', function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
-    countdown = 7200; // reset countdown
+    //countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
     try {
         // Reset all player ratings to 1200 at 6pm server time
-        Player.updateMany({}, { $set: { rating: 1200 } })
-            .then(result => {
+        Player.updateMany(
+            { rating: { $gte: 1400 } },  // Condition: rating is 1400 or more          
+            { $inc: { rating: -50 } }   // Action: decrement rating by 25
+        ).then(result => {
                 console.log('Ratings reset for all players:', result);
             })
             .catch(err => {
                 console.error('Error resetting player ratings:', err);
             });
+            
     } catch (error) {
         console.error('Unexpected error occurred while resetting ratings:', error);
     }
+
+    try {
+        // Reset all player ratings to 1200 at 6pm server time
+        Player.updateMany(
+            { rating: { $gte: 1500 } },  // Condition: rating is 1400 or more          
+            { $inc: { rating: -50 } }   // Action: decrement rating by 25
+        ).then(result => {
+                console.log('Ratings reset for all players:', result);
+            })
+            .catch(err => {
+                console.error('Error resetting player ratings:', err);
+            });
+            
+    } catch (error) {
+        console.error('Unexpected error occurred while resetting ratings:', error);
+    }
+    
+    
   });
  // const job = schedule.scheduleJob('05* * * *', function() {
   //  console.log('The answer to life, the universe, and everything!');
  // });
   
   // Decrement the countdown every second and emit the updated time
-  setInterval(() => {
+  /*setInterval(() => {
     if (countdown > 0) {
       countdown--;
       io.emit('countdown', { countdown });
     }
-  }, 1000);
+  }, 1000);  */
   
 
 
@@ -307,11 +328,11 @@ async function checkAndUnlockGeneral(username) {
         const gamesPlayed = player.gamesPlayed;
 
         // Example unlock conditions based on games played
-        if (player.rating >= 1230 && !player.ownedGenerals.includes('GA')) {
-            unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
-        }
-         else if (player.rating >= 1240 && !player.ownedGenerals.includes('GH')) {
+        if (player.rating >= 1400 && !player.ownedGenerals.includes('GA')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
+        }
+         else if (player.rating >= 1600 && !player.ownedGenerals.includes('GH')) {
+            unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
         } 
 
         // If a new general is unlocked, add it to the player's ownedGenerals
@@ -411,12 +432,12 @@ function botTakeTurn(roomId) {
 
         // Schedule the next action attempt if fewer than 2 actions have been performed
         if (actionsPerformed < 2) {
-            setTimeout(attemptAction, 1000);
+            setTimeout(attemptAction, 2000);
         }
     }
 
     // Start the first action attempt with an initial delay
-    setTimeout(attemptAction, 1000);
+    setTimeout(attemptAction, 3000);
 }
 
 // Execute a move and update the game state
@@ -446,28 +467,7 @@ function findAvailableMoves(game, player) {
             const maxMoveDistance = piece.startsWith("P2_H") || piece.startsWith("P2_GH") ? 3 : 1;
             const maxAttackDistance = getMaxAttackRange(piece);
 
-            // Standard move range for most units
-            for (let toRow = Math.max(0, row - maxMoveDistance); toRow <= Math.min(board.length - 1, row + maxMoveDistance); toRow++) {
-                for (let toCol = Math.max(0, col - maxMoveDistance); toCol <= Math.min(board[toRow].length - 1, col + maxMoveDistance); toCol++) {
-                    if (row === toRow && col === toCol) continue;
-
-                    const targetPieceData = board[toRow][toCol];
-                    const targetPiece = targetPieceData.unit;
-
-                    // Prevent moves to friendly units
-                    if (targetPiece && targetPiece.startsWith(player)) continue;
-
-                    // Check for valid move
-                    if (piece !== "P2_T") {
-                        // Check for valid move
-                        if (isValidMove(game, pieceData, row, col, toRow, toCol)) {
-                            moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
-                        }
-                    }
-                }
-            }
-
-            // Check for valid ranged attacks for Archers and Mages
+            // Check for valid ranged attacks for Archers, General Archers, and Mages
             if (piece.startsWith("P2_A") || piece.startsWith("P2_GA") || piece.startsWith("P2_M")) {
                 for (let toRow = row - maxAttackDistance; toRow <= row + maxAttackDistance; toRow++) {
                     for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
@@ -479,6 +479,38 @@ function findAvailableMoves(game, player) {
                         if (targetPiece && !targetPiece.startsWith(player) && isValidAttack(game, pieceData, row, col, toRow, toCol)) {
                             moves.attacks.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
                         }
+                    }
+                }
+            }
+
+            // Check for valid melee attacks for all units
+            for (let toRow = Math.max(0, row - 1); toRow <= Math.min(board.length - 1, row + 1); toRow++) {
+                for (let toCol = Math.max(0, col - 1); toCol <= Math.min(board[toRow].length - 1, col + 1); toCol++) {
+                    if (row === toRow && col === toCol) continue;
+
+                    const targetPieceData = board[toRow][toCol];
+                    const targetPiece = targetPieceData.unit;
+
+                    if (targetPiece && !targetPiece.startsWith(player) && isValidAttack(game, pieceData, row, col, toRow, toCol)) {
+                        moves.attacks.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                    }
+                }
+            }
+
+            // Standard move range for units without any attacks
+            for (let toRow = Math.max(0, row - maxMoveDistance); toRow <= Math.min(board.length - 1, row + maxMoveDistance); toRow++) {
+                for (let toCol = Math.max(0, col - maxMoveDistance); toCol <= Math.min(board[toRow].length - 1, col + maxMoveDistance); toCol++) {
+                    if (row === toRow && col === toCol) continue;
+
+                    const targetPieceData = board[toRow][toCol];
+                    const targetPiece = targetPieceData.unit;
+
+                    // Prevent moves to friendly units
+                    if (targetPiece && targetPiece.startsWith(player)) continue;
+
+                    // Check for valid move
+                    if (piece !== "P2_T" && isValidMove(game, pieceData, row, col, toRow, toCol)) {
+                        moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
                     }
                 }
             }
