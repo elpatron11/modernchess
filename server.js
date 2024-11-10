@@ -367,7 +367,7 @@ function startTurnTimer(roomId, currentPlayer) {
 let botAccount = {
     username: 'Newacc',
     password: '12345678',
-    general: 'Barbarian',
+    general: 'GW',
     socketId: 'botSocketId12345'  // Static socket ID for the bot
 };
 // Switch turns
@@ -656,7 +656,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
         // Mages can attack within a 2x2 area in orthogonal directions only
         return (rowDiff <= 2 && colDiff === 0) || (colDiff <= 2 && rowDiff === 0);
     }
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_Barbarian")) {
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW")) {
         // Warriors and General Warriors can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
     } 
@@ -691,7 +691,7 @@ function makeMove(from, to, roomId, playerId) {
     if (isAttack && targetPiece) {
         // Avoidance logic (skip for towers or if bot is attacking from red terrain)
         let hitChance = 1.0;
-        if (!targetPiece.startsWith('P2_T') && fromTerrain !== 'red') {
+        if (!attackingPiece.startsWith("P2_M") && !targetPiece.startsWith('P2_T') && fromTerrain !== 'red') {
             if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                 hitChance = 0.7; // Horse avoidance
             } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
