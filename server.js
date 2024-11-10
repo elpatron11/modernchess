@@ -367,7 +367,7 @@ function startTurnTimer(roomId, currentPlayer) {
 let botAccount = {
     username: 'Newacc',
     password: '12345678',
-    general: 'GW',
+    general: 'GA',
     socketId: 'botSocketId12345'  // Static socket ID for the bot
 };
 // Switch turns
@@ -418,7 +418,7 @@ function botTakeTurn(roomId) {
             const unitPosition = `${from.row},${from.col}`;
 
             return isValidAttack(game, game.board[from.row][from.col], from.row, from.col, to.row, to.col, unitsThatAttacked) &&
-                   (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M")) &&
+                   (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M") || game.board[from.row][from.col].unit.startsWith("P2_GA")) &&
                    !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
         });
 
@@ -480,7 +480,7 @@ function botTakeTurn(roomId) {
     }
 
     // Start the first action attempt with an initial delay
-    setTimeout(attemptAction, 3000);
+    setTimeout(attemptAction, 4000);
 }
 
 
@@ -519,7 +519,9 @@ function findAvailableMoves(game, player) {
                     for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
                         if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length || (toRow === row && toCol === col)) continue;
 
-                        const targetPieceData = board[toRow][toCol];
+                        const targetPieceData = board[toRow]?.[toCol];
+                        if (!targetPieceData) continue;
+
                         const targetPiece = targetPieceData.unit;
 
                         if (targetPiece && !targetPiece.startsWith(player) && isValidAttack(game, pieceData, row, col, toRow, toCol)) {
@@ -530,11 +532,13 @@ function findAvailableMoves(game, player) {
             }
 
             // Check for valid melee attacks for all units
-            for (let toRow = Math.max(0, row - 1); toRow <= Math.min(board.length - 1, row + 1); toRow++) {
-                for (let toCol = Math.max(0, col - 1); toCol <= Math.min(board[toRow].length - 1, col + 1); toCol++) {
+            for (let toRow = row - 1; toRow <= row + 1; toRow++) {
+                for (let toCol = col - 1; toCol <= col + 1; toCol++) {
                     if (row === toRow && col === toCol) continue;
 
-                    const targetPieceData = board[toRow][toCol];
+                    const targetPieceData = board[toRow]?.[toCol];
+                    if (!targetPieceData) continue;
+
                     const targetPiece = targetPieceData.unit;
 
                     if (targetPiece && !targetPiece.startsWith(player) && isValidAttack(game, pieceData, row, col, toRow, toCol)) {
@@ -548,15 +552,30 @@ function findAvailableMoves(game, player) {
                 for (let toCol = Math.max(0, col - maxMoveDistance); toCol <= Math.min(board[toRow].length - 1, col + maxMoveDistance); toCol++) {
                     if (row === toRow && col === toCol) continue;
 
-                    const targetPieceData = board[toRow][toCol];
+                    const targetPieceData = board[toRow]?.[toCol];
+                    if (!targetPieceData) continue;
+
                     const targetPiece = targetPieceData.unit;
 
                     // Prevent moves to friendly units
                     if (targetPiece && targetPiece.startsWith(player)) continue;
 
-                    // Check for valid move
+                    // Enhanced movement logic for Horse pieces
                     if (piece !== "P2_T" && isValidMove(game, pieceData, row, col, toRow, toCol)) {
-                        moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                        if (piece.startsWith("P2_H") || piece.startsWith("P2_GH")) {
+                            // Check moves up to 3 spaces in any direction (straight or diagonal)
+                            const rowDiff = Math.abs(toRow - row);
+                            const colDiff = Math.abs(toCol - col);
+
+                            if ((rowDiff === 3 && colDiff === 0) ||  // Vertical move up to 3 spaces
+                                (colDiff === 3 && rowDiff === 0) ||  // Horizontal move up to 3 spaces
+                                (rowDiff === colDiff && rowDiff <= 3)) { // Diagonal move up to 3 spaces
+                                moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                            }
+                        } else {
+                            // Standard movement for non-Horse units
+                            moves.moves.push({ move: { from: { row, col }, to: { row: toRow, col: toCol } } });
+                        }
                     }
                 }
             }
@@ -569,8 +588,10 @@ function findAvailableMoves(game, player) {
 
 // Define maximum attack range for each piece type
 function getMaxAttackRange(piece) {
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") ) {
         return 3; // Archer range
+    } if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+        return 4; // Archer range
     }
     if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
         return 2; // Mage range
@@ -581,7 +602,6 @@ function getMaxAttackRange(piece) {
 function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
     const board = game.board;
 
-    // Basic validation for piece data
     if (!pieceData || typeof pieceData.unit !== 'string') {
         console.error('Invalid pieceData:', pieceData);
         return false;
@@ -610,21 +630,19 @@ function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
         return false;
     }
 
-    // Movement rules based on piece type
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_A") || piece.startsWith("P2_") || piece.startsWith("P1_GW") || piece.startsWith("P2_GW")) {
-        const valid = rowDiff <= 1 && colDiff <= 1;
-        console.log(`Warrior move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
-        return valid;
-    }
-
+    // Movement logic for Horses (up to 3 spaces)
     if (piece.startsWith("P1_H") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
-        const valid = (rowDiff <= 3 && colDiff === 0) || (colDiff <= 3 && rowDiff === 0) || (rowDiff === colDiff && rowDiff <= 3);
+        const valid = (rowDiff <= 3 && colDiff === 0) ||  // Vertical up to 3 spaces
+                      (colDiff <= 3 && rowDiff === 0) ||  // Horizontal up to 3 spaces
+                      (rowDiff === colDiff && rowDiff <= 3); // Diagonal up to 3 spaces
         console.log(`Horse move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
         return valid;
     }
 
-    console.log(`No move rules matched for ${piece} at (${fromRow}, ${fromCol}) to (${toRow}, ${toCol})`);
-    return false;
+    // Default movement for other units (1 space in any direction)
+    const valid = rowDiff <= 1 && colDiff <= 1;
+    console.log(`Move from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol}): ${valid ? 'Valid' : 'Invalid'}`);
+    return valid;
 }
 
 
@@ -648,9 +666,13 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") || piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") ) {
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
+    } 
+    if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
+        // Archers attack in a cross pattern, up to 3 spaces
+        return (rowDiff === 0 && colDiff <= 4) || (colDiff === 0 && rowDiff <= 4);
     }
     if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
         // Mages can attack within a 2x2 area in orthogonal directions only
@@ -742,7 +764,7 @@ function makeMove(from, to, roomId, playerId) {
 
         if (targetPiece === "P1_T") {
             const tower = board[to.row][to.col];
-            tower.hp = tower.hp ? tower.hp - 5 : 26;  // Initialize if not already set, then reduce HP
+            tower.hp = tower.hp ? tower.hp - 7 : 26;  // Initialize if not already set, then reduce HP
             console.log(`Player 1's tower at (${to.row}, ${to.col}) now has ${tower.hp} HP.`);
 
             if (tower.hp <= 0) {
