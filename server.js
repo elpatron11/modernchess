@@ -226,8 +226,8 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
     try {
         // Reset all player ratings to 1200 at 6pm server time
         Player.updateMany(
-            { rating: { $gte: 1400 } },  // Condition: rating is 1400 or more          
-            { $inc: { rating: -50 } }   // Action: decrement rating by 25
+            { rating: { $gte: 1500 } },  // Condition: rating is 1400 or more          
+            { $inc: { rating: -60 } }   // Action: decrement rating by 25
         ).then(result => {
                 console.log('Ratings reset for all players:', result);
             })
@@ -242,8 +242,8 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
     try {
         // Reset all player ratings to 1200 at 6pm server time
         Player.updateMany(
-            { rating: { $gte: 1500 } },  // Condition: rating is 1400 or more          
-            { $inc: { rating: -50 } }   // Action: decrement rating by 25
+            { rating: { $gte: 1350 } },  // Condition: rating is 1500 or more          
+            { $inc: { rating: -40 } }   // Action: decrement rating by 25
         ).then(result => {
                 console.log('Ratings reset for all players:', result);
             })
