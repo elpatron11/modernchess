@@ -394,12 +394,12 @@ function switchTurn(roomId) {
 
      
 }
-
 function botTakeTurn(roomId) {
     const game = games[roomId];
     if (!game) return;
 
     let actionsPerformed = 0;
+    const unitsThatAttacked = new Set(); // Track which units have attacked this turn
 
     // Function to perform a single action with a delay
     function attemptAction() {
@@ -410,22 +410,65 @@ function botTakeTurn(roomId) {
 
         // Find all available moves for the bot
         const availableMoves = findAvailableMoves(game, 'P2'); // Bot is player 2
-        if (availableMoves.attacks.length > 0) {
-            const randomAttack = availableMoves.attacks[Math.floor(Math.random() * availableMoves.attacks.length)];
-            executeMove(randomAttack, roomId);
-            actionsPerformed++;
-        } else if (availableMoves.moves.length > 0) {
+
+        // Prioritize ranged attacks first
+        const rangedAttacks = availableMoves.attacks.filter(move => {
+            const from = move.move.from;
+            const to = move.move.to;
+            const unitPosition = `${from.row},${from.col}`;
+
+            return isValidAttack(game, game.board[from.row][from.col], from.row, from.col, to.row, to.col, unitsThatAttacked) &&
+                   (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M")) &&
+                   !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
+        });
+
+        let actionTaken = false;
+
+        if (rangedAttacks.length > 0) {
+            // Execute a ranged attack if available
+            const randomRangedAttack = rangedAttacks[Math.floor(Math.random() * rangedAttacks.length)];
+            const from = randomRangedAttack.move.from;
+            const attackSuccess = executeMove(randomRangedAttack, roomId);
+
+            unitsThatAttacked.add(`${from.row},${from.col}`); // Mark this unit as having attacked
+            actionsPerformed++; // Count the attack attempt as an action
+            actionTaken = true;
+
+            console.log(`Bot attempted a ranged attack from (${randomRangedAttack.move.from.row}, ${randomRangedAttack.move.from.col}) to (${randomRangedAttack.move.to.row}, ${randomRangedAttack.move.to.col})`);
+        } else if (availableMoves.attacks.length > 0) {
+            // Execute a melee attack if no ranged attacks are available
+            const randomMeleeAttack = availableMoves.attacks.find(move => {
+                const from = move.move.from;
+                const unitPosition = `${from.row},${from.col}`;
+                return !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
+            });
+
+            if (randomMeleeAttack) {
+                const from = randomMeleeAttack.move.from;
+                const attackSuccess = executeMove(randomMeleeAttack, roomId);
+
+                unitsThatAttacked.add(`${from.row},${from.col}`); // Mark this unit as having attacked
+                actionsPerformed++; // Count the attack attempt as an action
+                actionTaken = true;
+
+                console.log(`Bot attempted a melee attack from (${randomMeleeAttack.move.from.row}, ${randomMeleeAttack.move.from.col}) to (${randomMeleeAttack.move.to.row}, ${randomMeleeAttack.move.to.col})`);
+            }
+        } 
+
+        // If no attacks are available, attempt a move
+        if (!actionTaken && availableMoves.moves.length > 0) {
             const randomMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
+            console.log(`Bot chose to move from (${randomMove.move.from.row}, ${randomMove.move.from.col}) to (${randomMove.move.to.row}, ${randomMove.move.to.col})`);
             executeMove(randomMove, roomId);
             actionsPerformed++;
-        } else {
+        } else if (!actionTaken) {
             console.error('No valid moves available for the bot.');
             switchTurn(roomId); // End turn if no moves are available
             return;
         }
 
-          // Check for win condition after each action
-          if (checkWinCondition(game, 'P2', roomId)) {
+        // Check for win condition after each action
+        if (checkWinCondition(game, 'P2', roomId)) {
             io.to(roomId).emit('gameOver', `Bot wins!`);
             return;
         }
@@ -440,7 +483,8 @@ function botTakeTurn(roomId) {
     setTimeout(attemptAction, 3000);
 }
 
-// Execute a move and update the game state
+
+
 function executeMove(selectedMove, roomId) {
     const game = games[roomId];
     if (!selectedMove || !selectedMove.move) return;
@@ -450,6 +494,8 @@ function executeMove(selectedMove, roomId) {
 
     if (moveSuccessful) {
         console.log(`Bot action from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
+    } else {
+        console.error(`Failed to execute move from (${from.row}, ${from.col}) to (${to.row}, ${to.col})`);
     }
 }
 
@@ -584,7 +630,7 @@ function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
 
 
 // Refine attack validation based on unit type and range
-function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol) {
+function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsThatAttacked = new Set()) {
     const board = game.board;
 
     if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length) return false;
@@ -592,6 +638,10 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol) {
 
     const piece = pieceData.unit;
     const targetPiece = board[toRow][toCol]?.unit;
+    const unitPosition = `${fromRow},${fromCol}`;
+
+      // Check if this unit has already attacked
+      if (unitsThatAttacked.has(unitPosition)) return false; // Prevent the unit from attacking again
 
     if (targetPiece && targetPiece.startsWith(piece.substring(0, 3))) return false; // No friendly fire
 
@@ -627,64 +677,99 @@ function makeMove(from, to, roomId, playerId) {
     }
 
     const board = game.board;
-    if (!from || !to || from.row === undefined || from.col === undefined || to.row === undefined || to.col === undefined) {
-        console.error('Invalid move coordinates:', { from, to });
-        return false;
-    }
-
     const attackingPiece = board[from.row][from.col].unit;
     const targetPiece = board[to.row][to.col].unit;
 
-    // Ensure there is an attacking piece at the 'from' position
     if (!attackingPiece) {
         console.log(`No piece found at source (${from.row}, ${from.col})`);
         return false;
     }
 
-    // Check if it's a valid move or attack
-    if (isValidMove(game, board[from.row][from.col], from.row, from.col, to.row, to.col) || 
-        isValidAttack(game, board[from.row][from.col], from.row, from.col, to.row, to.col)) {
-        
-        if (targetPiece) {
-            if(targetPiece === "P1_T"){
-                const tower = game.board[to.row][to.col];
-        
-                if (!tower.hp) {
-                    tower.hp = 26;
+    const fromTerrain = board[from.row][from.col].terrain;
+    const isAttack = isValidAttack(game, board[from.row][from.col], from.row, from.col, to.row, to.col);
+
+    if (isAttack && targetPiece) {
+        // Avoidance logic (skip for towers or if bot is attacking from red terrain)
+        let hitChance = 1.0;
+        if (!targetPiece.startsWith('P2_T') && fromTerrain !== 'red') {
+            if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
+                hitChance = 0.7; // Horse avoidance
+            } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
+                hitChance = 0.5; // Warrior avoidance
+            } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
+                hitChance = 0.8; // Archer avoidance
+            }else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+            } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
+                hitChance = 0.25;  // General Horse has a 70% chance to avoid against normal units
+            } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
+                hitChance = 0.5;  // General Archer has a 50% chance to avoid
+            }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
+                hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
+            }
+             else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
+                hitChance = 0.15;  // General barbarian 70% chance to avoid
+            }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
+                hitChance = 0.20;  // General barbarian 70% chance to avoid
+            } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
+                hitChance = 0.15;  // General Orc 70% chance to avoid
+            }
+            if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
+                const attackingTower = game.board[from.row][from.col];
+            
+                if (attackingTower.hp > 1) {
+                    attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
+                    console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
                 }
-                tower.hp -= 2;
-                console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${2} damage.`);
-                if (tower.hp <= 0) {
-                    console.log(`Tower ${tower} is destroyed!`);
-                    game.board[to.row][to.col].unit = 'towerdestroyed';  // Update tower to destroyed state
-                    
-                        io.to(roomId).emit('gameOver', 'Player 2 wins!');
-                        
-                    
-                                       
-            }}
-            else{
-            console.log(`Bot attacking from ${from.row},${from.col} to ${to.row},${to.col}`);
-            board[to.row][to.col].unit = '';  // Clear the target piece
+
+            }
+            // Random chance to hit or miss
+            if (Math.random() > hitChance) {
+                console.log(`Attack missed! ${targetPiece} avoided the hit.`);
+                io.to(roomId).emit('attackMiss', { targetPosition: to, message: `${targetPiece} avoided the attack!` });
+                
+                // Count this as an action even though it missed
+                game.actionCount++;
+                if (game.actionCount >= 2) {
+                    switchTurn(roomId); // End the bot's turn after performing 2 actions
+                }
+                return true; // End function here if attack missed
+            }
+        }
+
+        // If attack succeeds or avoidance is bypassed
+        console.log(`Bot is attacking from (${from.row},${from.col}) to (${to.row},${to.col})`);
+
+        if (targetPiece === "P1_T") {
+            const tower = board[to.row][to.col];
+            tower.hp = tower.hp ? tower.hp - 2 : 26;  // Initialize if not already set, then reduce HP
+            console.log(`Player 1's tower at (${to.row}, ${to.col}) now has ${tower.hp} HP.`);
+
+            if (tower.hp <= 0) {
+                board[to.row][to.col].unit = 'towerdestroyed';
+                io.to(roomId).emit('gameOver', 'Player 2 wins!');
             }
         } else {
-            console.log(`Bot moving from ${from.row},${from.col} to ${to.row},${to.col}`);
-            board[to.row][to.col].unit = attackingPiece;  // Move the piece
-            board[from.row][from.col].unit = '';  // Clear the original position
+            board[to.row][to.col].unit = '';  // Clear target piece after successful attack
         }
-
-        io.to(roomId).emit('updateBoard', { board: game.board, turn: game.turn });
-
-        game.actionCount++;
-        if (game.actionCount >= 2) {
-            switchTurn(roomId);  // End the bot's turn if it has performed 2 actions
-        }
-        return true;
     } else {
-        console.log(`Invalid move or attack attempted by bot from ${from.row},${from.col} to ${to.row},${to.col}`);
-        return false;
+        // Handle movement if it's not an attack
+        console.log(`Bot is moving from (${from.row},${from.col}) to (${to.row},${to.col})`);
+        board[to.row][to.col].unit = attackingPiece;
+        board[from.row][from.col].unit = '';
     }
+
+    // Emit board update after move or attack
+    io.to(roomId).emit('updateBoard', { board: game.board });
+
+    // Increment action count and end turn if necessary
+    game.actionCount++;
+    if (game.actionCount >= 2) {
+        switchTurn(roomId); // End the bot's turn after performing 2 actions
+    }
+    return true;
 }
+
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
