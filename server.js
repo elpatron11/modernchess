@@ -695,30 +695,30 @@ function makeMove(from, to, roomId, playerId) {
             if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                 hitChance = 0.7; // Horse avoidance
             } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                hitChance = 0.5; // Warrior avoidance
+                hitChance = 0.6; // Warrior avoidance
             } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
                 hitChance = 0.8; // Archer avoidance
             }else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                hitChance = 0.2;  // General Warrior has a 20% chance to avoid
+                hitChance = 0.35;  // General Warrior has a 20% chance to avoid
             } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                hitChance = 0.25;  // General Horse has a 70% chance to avoid against normal units
+                hitChance = 0.4;  // General Horse has a 70% chance to avoid against normal units
             } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
-                hitChance = 0.5;  // General Archer has a 50% chance to avoid
+                hitChance = 0.6;  // General Archer has a 50% chance to avoid
             }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
-                hitChance = 0.4;  // General Archer Robinhood has a 60% chance to avoid
+                hitChance = 0.5;  // General Archer Robinhood has a 60% chance to avoid
             }
              else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                hitChance = 0.15;  // General barbarian 70% chance to avoid
+                hitChance = 0.3;  // General barbarian 70% chance to avoid
             }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
-                hitChance = 0.20;  // General barbarian 70% chance to avoid
+                hitChance = 0.35;  // General barbarian 70% chance to avoid
             } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                hitChance = 0.15;  // General Orc 70% chance to avoid
+                hitChance = 0.3;  // General Orc 70% chance to avoid
             }
             if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                 const attackingTower = game.board[from.row][from.col];
             
                 if (attackingTower.hp > 1) {
-                    attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
+                    attackingTower.hp -= 0;  // Reduce tower HP by 1 on attack
                     console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
                 }
 
@@ -889,7 +889,7 @@ async function updateBotGameResult(playerUsername, botWins) {
             throw new Error("Player not found");
         }
 
-        let ratingChange = botWins ? -5 : 5;
+        let ratingChange = botWins ? -15 : 5;
 
         // Update the player's rating based on the result
         player.rating += ratingChange;
@@ -1325,7 +1325,7 @@ socket.on('emojiSelected', function(data) {
                 
                 if (player) {
                     // Add 5 points to the player's rating
-                    player.rating += 10;
+                    player.rating += 20;
         
                     // Ensure the rating does not exceed the maximum, e.g., 1500
                     player.rating = Math.min(player.rating, 1500);
