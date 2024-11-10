@@ -502,6 +502,17 @@ socket.on('attackMiss', (message) => {
     playOnMiss();
 });
 
+
+// Play sound effect when the bot hits a target
+socket.on('botAttackHit', (data) => {
+    
+    dieSound.play();
+   
+});
+
+
+
+
 // Notify if it's not the player's turn
 socket.on('notYourTurn', () => {
     alert('It is not your turn!');

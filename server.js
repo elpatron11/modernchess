@@ -742,7 +742,7 @@ function makeMove(from, to, roomId, playerId) {
 
         if (targetPiece === "P1_T") {
             const tower = board[to.row][to.col];
-            tower.hp = tower.hp ? tower.hp - 2 : 26;  // Initialize if not already set, then reduce HP
+            tower.hp = tower.hp ? tower.hp - 5 : 26;  // Initialize if not already set, then reduce HP
             console.log(`Player 1's tower at (${to.row}, ${to.col}) now has ${tower.hp} HP.`);
 
             if (tower.hp <= 0) {
@@ -750,7 +750,14 @@ function makeMove(from, to, roomId, playerId) {
                 io.to(roomId).emit('gameOver', 'Player 2 wins!');
             }
         } else {
-            board[to.row][to.col].unit = '';  // Clear target piece after successful attack
+            console.log(`Bot is moving from (${from.row},${from.col}) to (${to.row},${to.col})`);
+            board[to.row][to.col].unit = attackingPiece;
+            io.to(roomId).emit('botAttackHit');
+            board[to.row][to.col].unit = 'explosion';  // replace defender img
+            setTimeout(() => {
+                board[to.row][to.col].unit = '';  // Clear target piece after successful attack
+            }, 3000); // 3 seconds for the hit animation
+            
         }
     } else {
         // Handle movement if it's not an attack
