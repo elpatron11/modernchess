@@ -126,7 +126,7 @@ app.get('/top-rankings', async (req, res) => {
         const topPlayers = await Player.find({})
             .sort({ rating: -1 })  // Sort by rating descending
             .select('username rating ownedGenerals')
-            .limit(20);  // Limit to top 10 players
+            .limit(50);  // Limit to top 10 players
         res.status(200).json(topPlayers);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching top rankings' });
