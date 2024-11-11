@@ -331,8 +331,8 @@ async function checkAndUnlockGeneral(username) {
         if (player.rating >= 1400 && !player.ownedGenerals.includes('GA')) {
             unlockedGeneral = 'GH';  // Unlock General Horse after 10 games
         }
-         else if (player.rating >= 1600 && !player.ownedGenerals.includes('GH')) {
-            unlockedGeneral = 'GA';  // Unlock General Horse after 10 games
+         else if (player.rating >= 1500 && !player.ownedGenerals.includes('GH')) {
+            unlockedGeneral = 'GW';  // Unlock General Horse after 10 games
         } 
 
         // If a new general is unlocked, add it to the player's ownedGenerals
@@ -1026,40 +1026,40 @@ socket.on('emojiSelected', function(data) {
             socket.emit('error', { message: 'Invalid or no data received for general or username.' });
             return;
         }
+    
         const { username, general } = data;
-
         if (!username) {
             socket.emit('error', { message: "You must be logged in to join the game." });
             return;
         }
-
+    
         const playerGame = Object.values(games).find(game => Object.keys(game.players).some(pid => game.players[pid].socketId === socket.id));
         if (playerGame) {
             console.log(`Player ${socket.id} is already in a game.`);
             socket.emit('error', 'You are already in a game.');
             return;
         }
-
+    
         const isQueued = matchmakingQueue.some(player => player.username === username);
         if (isQueued) {
             console.log(`Player ${socket.id} is already in the matchmaking queue.`);
             socket.emit('error', 'You are already waiting for a match.');
             return;
         }
-            // Check if the player is already in a game
-            const isInGame = Object.values(games).some(game => {
-                return Object.values(game.players).some(player => player.username === username);
-            });
     
-            if (isInGame) {
-                socket.emit('error', { message: 'You are already in a game' });
-                return;
-            }
-
+        const isInGame = Object.values(games).some(game => {
+            return Object.values(game.players).some(player => player.username === username);
+        });
+    
+        if (isInGame) {
+            socket.emit('error', { message: 'You are already in a game' });
+            return;
+        }
+    
         if (matchmakingQueue.length > 0) {
             const opponentData = matchmakingQueue.shift();
             const opponent = opponentData.socket;
-
+    
             if (opponent && opponent.connected) {
                 const roomId = `${socket.id}-${opponent.id}`;
                 games[roomId] = {
@@ -1084,7 +1084,7 @@ socket.on('emojiSelected', function(data) {
                 games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
                 socket.join(roomId);
                 opponent.join(roomId);
-
+    
                 socket.emit('gameStart', {
                     roomId,
                     board: games[roomId].board,
@@ -1110,9 +1110,18 @@ socket.on('emojiSelected', function(data) {
             matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
             socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
             console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general}`);
+    
+            // Start a timeout to join a game with bot if no match is found in 40 seconds
+            setTimeout(() => {
+                const isStillQueued = matchmakingQueue.some(player => player.socket.id === socket.id);
+                if (isStillQueued) {
+                    matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id); // Remove player from queue
+                    joinGameWithBot(socket, data); // Call function to join with bot
+                }
+            }, 40000); // 40 seconds timeout
         }
-       }
-
+    }
+    
 
 
     
@@ -1522,7 +1531,7 @@ socket.on('emojiSelected', function(data) {
                 // Specific avoidance logic for Archers attacking General Horse (GH)
                 if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
                     hitChance = 0.00;  // General Horse avoids Archer attacks 100% of the time
-                    alert("Arrows dont hit this general/Las flechas no le dan");
+                    
                 } else {
                     // Regular avoidance logic for Archers hitting other units
                     if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
