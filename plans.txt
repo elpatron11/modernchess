@@ -1,0 +1,30 @@
+Web app:
+work on collection of generals and on view
+
+More account restrictions, ip tracking, limit registration etc...
+more security for creating account.
+
+work on objects to try to make units more alive (if possible)
+
+
+
+
+Android app: 
+done with webviewer
+
+
+
+
+plans:
+adding nfc card for real game collection 
+real physical game board.
+Tournaments and community IRL
+massive on platforms.
+
+should we try to get crowdfunding??
+
+
+
+
+
+

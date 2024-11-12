@@ -244,6 +244,7 @@ function loadGeneralDropdown() {
               // Add an event listener to change image on selection
               generalDropdown.addEventListener('change', function() {
                   generalImage.src = `resources/images/dropdown/${this.value}.png`; // Update the image source based on the selected value
+                  document.getElementById('generalPhoto').style.display = 'block';
               });
         })
         .catch(error => {
