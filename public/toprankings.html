@@ -80,12 +80,18 @@
     </tbody>
 </table>
 
+<!-- "Show More" button -->
+<button class="btn" id="showMoreBtn">Show More</button>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/top-rankings')
+    let limit = 20; // Initial limit of players to show
+
+    function fetchRankings() {
+        fetch(`/top-rankings?limit=${limit}`)
             .then(response => response.json())
             .then(rankings => {
                 const rankingsBody = document.getElementById('rankingsBody');
+                rankingsBody.innerHTML = ''; // Clear current rows before adding updated rows
 
                 rankings.forEach((player, index) => {
                     const row = document.createElement('tr');
@@ -95,34 +101,38 @@
                     const ownedGeneralsCell = document.createElement('td');
                     const moneyIconCell = document.createElement('td');
 
-                    rankCell.textContent = index + 1; // Rank starts at 1
+                    rankCell.textContent = index + 1;
                     usernameCell.textContent = player.username;
                     ratingCell.textContent = player.rating;
                     ownedGeneralsCell.textContent = player.ownedGenerals.join(', ');
 
-                    // Add a money icon to the top three players
-                    if (index < 3) {
+                    if (index < 3) { // Add money icon for top 3 players
                         const moneyIcon = document.createElement('img');
-                        moneyIcon.src = 'resources/images/moneyicon.jpg'; // Specify the path to your money icon image
+                        moneyIcon.src = 'resources/images/moneyicon.jpg';
                         moneyIcon.className = 'money-icon';
                         moneyIconCell.appendChild(moneyIcon);
                     }
 
-                    row.appendChild(rankCell);       // Rank
-                    row.appendChild(usernameCell);   // Username
-                    row.appendChild(ratingCell);     // Rating
-                    row.appendChild(moneyIconCell);  // Money Icon Cell
-                    row.appendChild(ownedGeneralsCell); // Owned Generals
-                    
-
+                    row.appendChild(rankCell);
+                    row.appendChild(usernameCell);
+                    row.appendChild(ratingCell);
+                    row.appendChild(moneyIconCell);
+                    row.appendChild(ownedGeneralsCell);
                     rankingsBody.appendChild(row);
                 });
             })
-            .catch(error => {
-                console.error('Error fetching rankings:', error);
-            });
+            .catch(error => console.error('Error fetching rankings:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchRankings);
+
+    // Increase limit and fetch more players when "Show More" button is clicked
+    document.getElementById('showMoreBtn').addEventListener('click', () => {
+        limit += 20; // Increase the limit by 20 each time
+        fetchRankings();
     });
 </script>
+
 
 </body>
 </html>

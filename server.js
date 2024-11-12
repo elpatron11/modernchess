@@ -121,16 +121,20 @@ app.get('/player/:username', async (req, res) => {
 
 
 // In your server.js or routes file
+// In your server.js or routes file
 app.get('/top-rankings', async (req, res) => {
-    try { rs = await Player.find({})
-            .sort({ rating: -1 })  // Sort by rating descending
+    try {
+        const limit = parseInt(req.query.limit) || 20; // Default limit to 20 if no query param is provided
+        const topPlayers = await Player.find({})
+            .sort({ rating: -1 })
             .select('username rating ownedGenerals')
-            .limit(50);  // Limit to top 10 players
+            .limit(limit); // Apply dynamic limit
         res.status(200).json(topPlayers);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching top rankings' });
     }
 });
+
 
 
 app.post('/update-game-result', async (req, res) => {
