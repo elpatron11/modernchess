@@ -122,8 +122,7 @@ app.get('/player/:username', async (req, res) => {
 
 // In your server.js or routes file
 app.get('/top-rankings', async (req, res) => {
-    try {
-        const topPlayers = await Player.find({})
+    try { rs = await Player.find({})
             .sort({ rating: -1 })  // Sort by rating descending
             .select('username rating ownedGenerals')
             .limit(50);  // Limit to top 10 players
@@ -136,7 +135,7 @@ app.get('/top-rankings', async (req, res) => {
 
 app.post('/update-game-result', async (req, res) => {
     const { winnerUsername, loserUsername } = req.body;
-
+ 
     try {
         const winner = await Player.findOne({ username: winnerUsername });
         const loser = await Player.findOne({ username: loserUsername });
@@ -717,24 +716,24 @@ function makeMove(from, to, roomId, playerId) {
             if (targetPiece.startsWith('P1_H') || targetPiece.startsWith('P2_H')) {
                 hitChance = 0.7; // Horse avoidance
             } else if (targetPiece.startsWith('P1_W') || targetPiece.startsWith('P2_W')) {
-                hitChance = 0.6; // Warrior avoidance
+                hitChance = 0.5; // Warrior avoidance
             } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
                 hitChance = 0.8; // Archer avoidance
             }else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                hitChance = 0.35;  // General Warrior has a 20% chance to avoid
+                hitChance = 0.3;  // General Warrior has a 20% chance to avoid
             } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                hitChance = 0.4;  // General Horse has a 70% chance to avoid against normal units
+                hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
             } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
-                hitChance = 0.6;  // General Archer has a 50% chance to avoid
+                hitChance = 0.5;  // General Archer has a 50% chance to avoid
             }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
-                hitChance = 0.5;  // General Archer Robinhood has a 60% chance to avoid
+                hitChance = 0.6;  // General Archer Robinhood has a 60% chance to avoid
             }
              else if (targetPiece.startsWith('P1_Barbarian') || targetPiece.startsWith('P2_Barbarian')) {
-                hitChance = 0.3;  // General barbarian 70% chance to avoid
+                hitChance = 0.2;  // General barbarian 70% chance to avoid
             }else if (targetPiece.startsWith('P1_Paladin') || targetPiece.startsWith('P2_Paladin')) {
                 hitChance = 0.35;  // General barbarian 70% chance to avoid
             } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
-                hitChance = 0.3;  // General Orc 70% chance to avoid
+                hitChance = 0.2;  // General Orc 70% chance to avoid
             }
             if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                 const attackingTower = game.board[from.row][from.col];
@@ -764,7 +763,7 @@ function makeMove(from, to, roomId, playerId) {
 
         if (targetPiece === "P1_T") {
             const tower = board[to.row][to.col];
-            tower.hp = tower.hp ? tower.hp - 7 : 26;  // Initialize if not already set, then reduce HP
+            tower.hp = tower.hp ? tower.hp - 4 : 26;  // Initialize if not already set, then reduce HP
             console.log(`Player 1's tower at (${to.row}, ${to.col}) now has ${tower.hp} HP.`);
 
             if (tower.hp <= 0) {
