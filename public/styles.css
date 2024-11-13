@@ -332,6 +332,11 @@ img {
     height: 50px;
 }
 
+#flagButton #flagButton2 {
+    width: 30px;
+    height: 50px;
+}
+
 #emojiPicker span {
     font-size: 30px;
     padding: 5px;

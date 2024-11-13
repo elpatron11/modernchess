@@ -11,9 +11,23 @@
         /* Basic table styling for the chessboard */
         table { border-collapse: collapse; }
         td { width: 50px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid black; }
+        td { width: 50px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid black; }
+        .language-toggle { position: fixed; top: 10px; right: 10px; z-index: 1000; }
+        .language-toggle button { margin: 0 5px; padding: 5px 10px; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
+  <!-- Language Selector with Flag Images -->
+<div class="language-toggle">
+    <button id="flagButton" onclick="setLanguage('en')">
+        <img src="resources/images/usa.png" alt="US Flag" style="width: 20px; height: 14px;"/> EN
+    </button>
+    <button id="flagButton2" onclick="setLanguage('es')">
+        <img src="resources/images/spain.png" alt="Spain Flag" style="width: 20px; height: 14px;"/> ES
+    </button>
+</div>
+
+
     <div id="customAlert" class="custom-alert" style="display:none;">
         <p>Alert message goes here!</p>
     </div>
@@ -25,7 +39,7 @@
         </div>
     </a>
     <div id="topRanking">
-    <button  class="btn-big-bold" onclick="window.location.href='toprankings.html'">View Top Rankings/Ver Jugadores Top</button>
+    <button id="topRankingButton" class="btn-big-bold" onclick="window.location.href='toprankings.html'">View Top Rankings/Ver Jugadores Top</button>
     </div>
     <div id="timerDisplay"></div>
     <div id="opponentInfo" class="d-inline-block mr-3"></div>
@@ -57,7 +71,7 @@
     <div class="user-controls">
         <button onclick="joinGame()" id="playButton" class="btn btn-primary">PLAY</button>
         <button class="shop-button" id="viewGeneralsButton">Generals</button>
-        <button class="back-button" id="comicButton">Story</button>
+        <button class="back-button" id="comicButton">Comic</button>
 
         <div id="signs">
             <div id="statusDisplay" class="alert alert-secondary mt-3" style="display: none;">Waiting for opponent...</div> 
@@ -109,58 +123,36 @@
      <div id="loginForm">
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="register()">Register</button>
-        <button onclick="login()">Login</button>
+        <button id="registerButton" onclick="register()">Register</button>
+        <button  id="loginButton" onclick="login()">Login</button>
         
         
     </div>
 </div>     
     <div class="container text-center mt-4" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
         
-        <p>Instructions: Now you can play 24hr vs bots and players. The bot wins give 5 rating and players give more (10-20). <br/>
+        <p id="instructionsTxt">Instructions: Now you can play 24hr vs bots and players. The bot wins give 5 rating and players give more (10-20). <br/>
         Every day 1400 and up players loose some rating and have to try to stay on the top of the list. 
         Bots are not that smart so we have given them some advantages:<br/>
-        <li>Bots deal 4 dmg  to the tower(all units)</li>
-        <li>Bot tower attacks dont reduce their hp by -1</li>
-        
-        <br/>
-
-        Instrucciones: Ahora puedes jugar las 24 horas contra bots y jugadores. Los bot dan 5 puntos pero jugadores dan mas(10-20). <br/>
-        Cada dia los jugadores con mas de 1400 rating pierden algo de rating y deben tratar de mantenerse en la cima para ganar.<br/>
-        <li>Los bot le pegan 4 a la torre</li>
-        <li>La torre del bot no pierde 1hp al atacar</li>
-       
-        <br/> </p>
+        Bots deal 4 dmg  to the tower(all units) and Bot tower attacks dont reduce their hp by -1.
+        </p>
 
 
 
-        <h4>Rating Prizes/Premios</h4>
-        <p>Every day at 7:00pm EST, the clock ends. Top players will make money:</p>
-        <p>Todos los dias a las 7pm EST el reloj termina al llegar los jugadores top ganan dinero:</p>
+        <h4 id="prizeTxt">Rating Prizes</h4>
+        <p id="prizeTime">Every day at 7:00pm EST, the clock ends. Top players will make money:</p>
         <ul>
-            <li>Top 1: $100 - Monday/Lunes 7pm</li>
-            <li>Top 2: $35 - </li>
-            <li>Top 3: $5 - </li>
-            <li>Top 4: $1 -</li>
-            <li>Top 5: $1 - </li>
+            <li>Top 1: $40 -</li>
+            <li>Top 2: $5 - </li>
             <li>Top 3: $1 - </li>
             <li>Top 4: $1 -</li>
-            <li>Top 5: $1 - </li>  
+            <li>Top 5: $1 - </li>
+       
                                    
         </ul>
 
-        <ul>
-            <h1>Saturday Winners/Ganadores del Sabado </h1>
-            <li>Top 1:newacc2 ($100)</li>
-            <li>Top 2: Miketyson ($50)</li>
-            <li>Top 3: ImPro ($5)</li>
-            <li>Top 4: Yoelvi08 ($1)</li>
-            <li>Top 5: Superhealz ($1)</li>
-           
-        </ul>
-       
     <div id="freeGenerals">
-        <p>Unlock free generals/ Consigue generales gratis </p>
+        <h4 id="unlockGeneral">Unlock FREE generals </h4>
         <li>Rating 1400=> General Horse/ General Caballo</li>
         <img src="resources/images/dropdown/GH.png" alt="General Horse">
         
@@ -202,12 +194,73 @@
     <audio id="emoji2" src="resources/audio/emoji2.mp3"></audio>
     <audio id="start" src="resources/audio/start.mp3"></audio>
     <audio id="letsgo" src="resources/audio/letsgo.mp3"></audio>
+
+
+      <!-- Translations and Language Toggle Script -->
+      <script>
+        const translations = {
+            en: {
+                alertMessage: "Alert message goes here!",
+                downloadApkText: "Download Android APK",
+                topRankingButton: "View Top Rankings",
+                tutorialEnglish: "Tutorial English",
+                tutorialSpanish: "Tutorial Español",
+                generalsTitle: "Generals",
+                playButton: "PLAY",
+                viewGeneralsButton: "Generals",
+                comicButton: "Story",
+                loginButton: "Login",
+                registerButton: "Register",
+                instructionsTxt: "Instructions: Now you can play 24hr vs bots and players. The bot wins give 5 rating and players give more (10-20).Every day 1400 and up players loose some rating and have to try to stay on the top of the list.Bots are not that smart so we have given them some advantages: Bots deal 4 dmg  to the tower(all units) and Bot tower attacks dont reduce their hp by -1.",
+                prizeTxt: "Rating Prizes",
+                prizeTime: "Every day at 7:00pm EST, the clock ends. Top players will make money:",
+                unlockGeneral:"Unlock FREE generals"
+                    },
+            es: {
+                alertMessage: "¡Mensaje de alerta aquí!",
+                downloadApkText: "Descargar APK de Android",
+                topRankingButton: "Ver Jugadores Top",
+                tutorialEnglish: "Tutorial Inglés",
+                tutorialSpanish: "Tutorial Español",
+                generalsTitle: "Generales",
+                playButton: "JUGAR",
+                viewGeneralsButton: "Generales",
+                comicButton: "Historia",
+                loginButton: "Iniciar Session",
+                registerButton: "Registrarse",
+                instructionsTxt: "Instrucciones: Ahora puedes jugar las 24 horas contra bots y jugadores. Los bot dan 5 puntos pero jugadores dan mas(10-20). Cada dia los jugadores con mas de 1400 rating pierden algo de rating y deben tratar de mantenerse en la cima para ganar. Los bot le pegan 4 a la torre y la torre del bot no pierde 1hp al atacar.",
+                prizeTxt:"Premios por Rating",
+                prizeTime:"Todos los dias a las 7pm EST el reloj termina al llegar los jugadores top ganan dinero:",
+                unlockGeneral:"Consigue generales GRATIS"
+            }
+        };
+
+        function setLanguage(language) {
+    console.log("Setting language to:", language); // Debugging
+    try {
+        Object.keys(translations[language]).forEach((key) => {
+            const element = document.getElementById(key);
+            if (element) {
+                element.textContent = translations[language][key];
+            } else {
+                console.warn(`Element with ID '${key}' not found.`);
+            }
+        });
+    } catch (error) {
+        console.error("Error toggling language:", error);
+    }
+}
+
+    </script>
         <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
+      <!-- Translations Data & Language Toggle Script -->
+
+
 
 </table>
 </body>
