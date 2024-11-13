@@ -11,7 +11,7 @@
             align-items: center;
             margin-top: 20px;
         }
-        .language-button, .chapter, #nextPageButton {
+        .language-button, .chapter, #nextPageButton, #backToGameButton {
             margin: 10px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -23,13 +23,14 @@
             color: white;
             font-weight: bold;
         }
-        .language-button:hover, #nextPageButton:hover {
+        .language-button:hover, #nextPageButton:hover, #backToGameButton:hover {
             background-color: #0056b3;
         }
         .comic-page {
             width: 80%;
             height: auto;
             margin-top: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -52,6 +53,9 @@
         <img id="comicPage" class="comic-page" src="" alt="Comic Page">
         <button id="nextPageButton">Next Page</button>
     </div>
+
+    <!-- Back to Game button -->
+    <button id="backToGameButton" onclick="goBackToGame()">Back to Game</button>
 
     <script>
         const chapters = [
@@ -112,7 +116,7 @@
             comicPage.src = `/resources/images/comics/${pageList[currentPageIndex]}`;
         }
 
-        nextPageButton.addEventListener('click', () => {
+        function nextPage() {
             currentPageIndex++;
             const pageList = selectedLanguage === 'en' ? currentChapter.pages_en : currentChapter.pages_es;
             if (currentPageIndex < pageList.length) {
@@ -122,7 +126,15 @@
                 pageContainer.style.display = 'none';
                 chapterContainer.style.display = 'flex';
             }
-        });
+        }
+
+        nextPageButton.addEventListener('click', nextPage);
+        comicPage.addEventListener('click', nextPage);  // Allow clicking the image to go to the next page
+
+        // Function to go back to the game main site
+        function goBackToGame() {
+            window.location.href = '/'; // Replace '/game' with your main game site URL
+        }
     </script>
 </body>
 </html>
