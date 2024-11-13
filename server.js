@@ -257,6 +257,22 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
     } catch (error) {
         console.error('Unexpected error occurred while resetting ratings:', error);
     }
+
+    try {
+        // Reset all player ratings to 1200 at 6pm server time
+        Player.updateMany(
+            { rating: { $lte: 1175 } },  // Condition: rating is 1175 or less
+            { $inc: { rating: 25 } }     // Action: increment rating by 25
+        ).then(result => {
+                console.log('Ratings reset for all players:', result);
+            })
+            .catch(err => {
+                console.error('Error resetting player ratings:', err);
+            });
+            
+    } catch (error) {
+        console.error('Unexpected error occurred while resetting ratings:', error);
+    }
     
     
   });
