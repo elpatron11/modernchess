@@ -161,7 +161,8 @@ img {
     margin-top: 20px;
 }
 .generals-section {
-    margin-bottom: 20px; /* Add space between sections */
+    margin-bottom: 10px; /* Add space between sections */
+    width: 100;
 }
 .normal-terrain {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -322,7 +323,12 @@ img {
 }
 
 #playButton{
-    width: 150px;
+    width: 100px;
+    height: 50px;
+}
+
+#comicButton {
+    width: 100px;
     height: 50px;
 }
 

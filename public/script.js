@@ -1016,6 +1016,9 @@ socket.on('receiveEmoji', function(data) {
 });
 
 
+document.getElementById('comicButton').addEventListener('click', function() {
+    window.location.href = '/comic.html';  // Opens the comic page
+});
 
 
 //Leave button

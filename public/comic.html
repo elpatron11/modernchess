@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comic Chapters</title>
+    <style>
+        .language-container, .chapter-container, .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .language-button, .chapter, #nextPageButton {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 200px;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .language-button:hover, #nextPageButton:hover {
+            background-color: #0056b3;
+        }
+        .comic-page {
+            width: 80%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Comic Reader</h1>
+
+    <!-- Language selection container -->
+    <div id="languageContainer" class="language-container">
+        <button class="language-button" onclick="selectLanguage('en')">English</button>
+        <button class="language-button" onclick="selectLanguage('es')">Español</button>
+    </div>
+
+    <!-- Chapter selection container -->
+    <div id="chapterContainer" class="chapter-container" style="display: none;">
+        <!-- Chapters will be dynamically loaded here -->
+    </div>
+
+    <!-- Comic page display container -->
+    <div id="pageContainer" class="page-container" style="display: none;">
+        <img id="comicPage" class="comic-page" src="" alt="Comic Page">
+        <button id="nextPageButton">Next Page</button>
+    </div>
+
+    <script>
+        const chapters = [
+            { 
+                title_en: "Chapter 1", 
+                title_es: "Capítulo 1", 
+                pages_en: ["chapter1/page1.jpg", "chapter1/page2.jpg", "chapter1/page3.jpg", "chapter1/page4.jpg", "chapter1/page5.jpg"], 
+                pages_es: ["capitulo1/pagina1.jpg", "capitulo1/pagina2.jpg", "capitulo1/pagina3.jpg","capitulo1/pagina4.jpg", "capitulo1/pagina5.jpg"]
+            },
+            { 
+                title_en: "Chapter 2", 
+                title_es: "Capítulo 2", 
+                pages_en: ["chapter2/page1.jpg", "chapter2/page2.jpg"], 
+                pages_es: ["capitulo2/pagina1.jpg", "capitulo2/pagina2.jpg"]
+            },
+            // Add more chapters as needed
+        ];
+
+        let selectedLanguage = 'en';
+        let currentChapter = null;
+        let currentPageIndex = 0;
+
+        const languageContainer = document.getElementById('languageContainer');
+        const chapterContainer = document.getElementById('chapterContainer');
+        const pageContainer = document.getElementById('pageContainer');
+        const comicPage = document.getElementById('comicPage');
+        const nextPageButton = document.getElementById('nextPageButton');
+
+        function selectLanguage(language) {
+            selectedLanguage = language;
+            languageContainer.style.display = 'none';
+            loadChapters();
+        }
+
+        function loadChapters() {
+            chapterContainer.innerHTML = '';  // Clear any existing chapters
+            chapterContainer.style.display = 'flex';
+
+            chapters.forEach((chapter, index) => {
+                const chapterElement = document.createElement('div');
+                chapterElement.classList.add('chapter');
+                chapterElement.textContent = selectedLanguage === 'en' ? chapter.title_en : chapter.title_es;
+                chapterElement.addEventListener('click', () => openChapter(index));
+                chapterContainer.appendChild(chapterElement);
+            });
+        }
+
+        function openChapter(chapterIndex) {
+            currentChapter = chapters[chapterIndex];
+            currentPageIndex = 0;
+            chapterContainer.style.display = 'none';
+            pageContainer.style.display = 'flex';
+            showPage();
+        }
+
+        function showPage() {
+            const pageList = selectedLanguage === 'en' ? currentChapter.pages_en : currentChapter.pages_es;
+            comicPage.src = `/resources/images/comics/${pageList[currentPageIndex]}`;
+        }
+
+        nextPageButton.addEventListener('click', () => {
+            currentPageIndex++;
+            const pageList = selectedLanguage === 'en' ? currentChapter.pages_en : currentChapter.pages_es;
+            if (currentPageIndex < pageList.length) {
+                showPage();
+            } else {
+                alert('End of Chapter');
+                pageContainer.style.display = 'none';
+                chapterContainer.style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>
