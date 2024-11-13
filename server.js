@@ -873,14 +873,14 @@ async function updateGameResult(winnerUsername, loserUsername) {
 
         if (ratingDifference >= 50) {
             ratingChange = 0; // No points gained for the winner
-        }else if (ratingDifference >= 20) {
+        }else if (ratingDifference >= 15) {
             ratingChange = 0; // Minimal points gained for the winner
-        }  else if (ratingDifference >= 15) {
+        }  else if (ratingDifference >= 10) {
             ratingChange = 5; // Minimal points gained for the winner
         } else if (ratingDifference < 0) {
             ratingChange = 10; // Big gain for the winner when beating a higher-rated player
         } else {
-            ratingChange = 15; // Moderate gain when players are closely rated
+            ratingChange = 10; // Moderate gain when players are closely rated
         }
 
         // Apply rating changes
@@ -914,7 +914,7 @@ async function updateBotGameResult(playerUsername, botWins) {
             throw new Error("Player not found");
         }
 
-        let ratingChange = botWins ? -15 : 5;
+        let ratingChange = botWins ? -5 : 5;
 
         // Update the player's rating based on the result
         player.rating += ratingChange;
@@ -1359,7 +1359,7 @@ socket.on('emojiSelected', function(data) {
                 
                 if (player) {
                     // Add 5 points to the player's rating
-                    player.rating += 20;
+                    player.rating += 10;
         
                     // Ensure the rating does not exceed the maximum, e.g., 1500
                     player.rating = Math.min(player.rating, 1500);
