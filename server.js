@@ -289,7 +289,7 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
   }, 1000);  
   
 
-  schedule.scheduleJob('00 23 * * *', async function() { //6pm server time
+  schedule.scheduleJob('59 23 * * *', async function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     // countdown = 7200; // reset countdown
     // io.emit('countdown', { countdown });
