@@ -289,6 +289,27 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
   }, 1000);  
   
 
+  schedule.scheduleJob('00 23 * * *', async function() { //6pm server time
+    console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
+    // countdown = 7200; // reset countdown
+    // io.emit('countdown', { countdown });
+
+    try {
+        // Find the top 5 players based on rating
+        const topPlayers = await Player.find().sort({ rating: -1 }).limit(5).select('_id');
+        const topPlayerIds = topPlayers.map(player => player._id);
+
+        // Update only the top 5 players by increasing their balance by 1
+        await Player.updateMany(
+            { _id: { $in: topPlayerIds } },  // Match only top 5 players
+            { $inc: { balance: 1 } }         // Increment balance by 1
+        );
+        
+        console.log('Successfully updated balance for top 5 players');
+    } catch (error) {
+        console.error('Unexpected error occurred while updating balance for top players:', error);
+    }
+});
 
    
   function checkWinCondition(game, player, roomId) {
