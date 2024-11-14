@@ -224,10 +224,11 @@ img {
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
    /* background-image: url('resources/images/animation/selectedunit2.gif');*/
 }
-.tower-hp {
-    font-size: 10px;  /* Adjust this value to your preferred size */
-    color: rgb(0, 0, 0);  /* Optional: Change the color of the text */
+td .tower-hp {
+    font-size: 13px;  /* Adjust this value to your preferred size */
+    color: rgb(231, 231, 231);  /* Optional: Change the color of the text */
     text-align: right;
+    font-weight: bold;
     display: block; /* Ensure the label is a block-level element */
 }
 
