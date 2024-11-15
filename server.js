@@ -444,7 +444,11 @@ function botTakeTurn(roomId) {
     // Function to perform a single action with a delay
     function attemptAction() {
         if (actionsPerformed >= 2) {
+             // Increment the turn counter after the bot's full turn
+             turnCounter++;
+             io.to(roomId).emit('updateTurnCounter', turnCounter);
             switchTurn(roomId); // End bot's turn after 2 actions
+             
             return;
         }
 
@@ -503,7 +507,11 @@ function botTakeTurn(roomId) {
             actionsPerformed++;
         } else if (!actionTaken) {
             console.error('No valid moves available for the bot.');
+             // Increment the turn counter after the bot's full turn
+             turnCounter++;
+             io.to(roomId).emit('updateTurnCounter', turnCounter);
             switchTurn(roomId); // End turn if no moves are available
+             
             return;
         }
 
@@ -516,11 +524,14 @@ function botTakeTurn(roomId) {
         // Schedule the next action attempt if fewer than 2 actions have been performed
         if (actionsPerformed < 2) {
             setTimeout(attemptAction, 2000);
+ 
+
         }
     }
 
     // Start the first action attempt with an initial delay
     setTimeout(attemptAction, 4000);
+   
 }
 
 
