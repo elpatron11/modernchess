@@ -892,6 +892,7 @@ function endTurn() {
 // Render the board in the HTML
 function renderBoard() {
       // Hide the control panel
+      document.getElementById('slider-container').style.display = 'none';
       document.getElementById('control-Panel').style.display = 'none';
       document.getElementById('generalImage').style.display = 'none';
       document.getElementById('apk').style.display = 'none';      
