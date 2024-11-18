@@ -1069,7 +1069,9 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
 
 
 
-
+document.getElementById("LoginButton").addEventListener("click", function () {
+    openLoginModal(); // Reuse the existing modal opening logic
+});
 
 // Attach the joinRoom function to the join button
 document.getElementById('joinButton').onclick = startMatchmaking;
