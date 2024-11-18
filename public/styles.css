@@ -438,7 +438,167 @@ td .tower-hp {
     text-align: center; /* Centers the text */
 }
 
+
+/* Modal Background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* On top of other elements */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full screen for centering */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Vertically center */
+    justify-content: center; /* Horizontally center */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: white;
+    padding: 15px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 250px; /* Compact width */
+    max-width: 90%; /* Prevents it from exceeding screen width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional shadow for better visibility */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Close Button */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: red;
+}
+
+/* Input and Button Styling */
+.modal input {
+    width: calc(100% - 20px); /* Proper alignment inside the modal */
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensure padding doesn’t add to width */
+}
+
+.modal button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%; /* Matches input width */
+    font-size: 14px;
+    box-sizing: border-box; /* Ensure padding doesn’t add to width */
+}
+
+.modal button:hover {
+    background-color: #0056b3;
+}
+
+/* Modal Title */
+.modal h3 {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #108dd5;
+}
+
+
+/* Center the slider in the web app */
+.slider-container {
+    position: relative;
+    width: 40%; /* Adjust based on your layout */
+    height: 700px; /* Adjust to match your images */
+    margin: 0 auto; /* Center horizontally */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    box-shadow: 0px 0px 8px rgba(3, 195, 38, 0.8), 0px 0px 30px rgba(3, 161, 195, 0.5);
+    border-radius: 10px;
+    
+
+    
+
+}
+
+/* Styling for the slider */
+.slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%;
+}
+
+.slider-item {
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+    border-radius: 10px; /* Add some curve to the images */
+}
+
+.slider-item.active {
+    display: block;
+}
+
+/* Styling for the play button */
+.playButton {
+    position: absolute;
+    z-index: 2;
+    background-color: rgba(40, 100, 2, 0.8);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 10px 15px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.playButton:hover {
+    background-color: rgb(6, 125, 6);
+    transform: scale(1.1); /* Slightly enlarge on hover */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); /* More prominent shadow */
+}
+
+
+
+
+
 @media (max-width: 768px) {
+
+    /* Center the slider in the web app */
+.slider-container {
+    position: relative;
+    width: 100%; /* Adjust based on your layout */
+    height: 400px; /* Adjust to match your images */
+  
+    
+
+}
+
+
     #gameBoard {
         width: 100%;
         max-width: none;

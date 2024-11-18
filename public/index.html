@@ -48,6 +48,19 @@
     <div id="userInfo" class="user-info"  style="display: none;" class="container text-center mt-4">
         
     </div>
+
+    <div class="slider-container">
+        <div class="slider">
+            <img src="resources/images/banner/banner1gif.gif" class="slider-item active" alt="Slide 1">
+            <img src="resources/images/banner/collect.gif" class="slider-item" alt="Slide 2">
+            <img src="resources/images/banner/makemoney.gif" class="slider-item" alt="Slide 3">
+            <img src="resources/images/banner/comic.gif" class="slider-item" alt="Slide 4">
+        </div>
+        <button class="playButton" onclick="joinGame()" id="playButton" >PLAY</button>
+    </div>
+    
+
+
     <div id="timerDisplay"></div>
     <div id="opponentInfo" class="d-inline-block mr-3"></div>
     
@@ -76,7 +89,7 @@
                 
     <!-- Example button for joining a game -->
     <div class="user-controls">
-        <button onclick="joinGame()" id="playButton" class="btn btn-primary">PLAY</button>
+       
         <button class="shop-button" id="viewGeneralsButton">Generals</button>
         <button class="back-button" id="comicButton">Comic</button>
 
@@ -125,14 +138,14 @@
     
     <button id="logoutButton"  style="display: none;" onclick="logout()">Logout</button>
      <!-- HTML for registration form -->
-     <div id="loginForm">
+    <!-- <div id="loginForm">
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <button id="registerButton" onclick="register()">Register</button>
         <button  id="loginButton" onclick="login()">Login</button>
         
         
-    </div>
+    </div> -->
 </div>     
     <div class="container text-center mt-4" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
         
@@ -148,7 +161,7 @@
         <p id="prizeTime">Every day at 7:00pm EST, the clock ends. Top players will make money:</p>
         <ul>
             <li>Top 1: $40 -</li>
-            <li>Top 2: $5 - </li>
+            <li>Top 2: $1 - </li>
             <li>Top 3: $1 - </li>
             <li>Top 4: $1 -</li>
             <li>Top 5: $1 - </li>
@@ -174,6 +187,24 @@
     <p>Join our Discord/ Unete a nuestro discord</p>
     <a href="https://discord.gg/dAxDXK3B" class="discord-link" target="_blank">Join Our Discord Server</a>
 </div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeLoginModal()">&times;</span>
+        <h3>Login</h3>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Enter your username" required>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            
+            <button type="button" onclick="login()">Login</button>
+            <button id="registerButton" onclick="register()">Register</button>
+        </form>
+    </div>
+</div>
+
+
+
 </body>
 
     <audio id="missSound" src="resources/audio/swordMiss.mp3" ></audio>

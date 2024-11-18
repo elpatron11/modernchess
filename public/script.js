@@ -65,10 +65,11 @@ function login() {
         if (data.message === "Login successful") {
             // Hide login form and show user details
             localStorage.setItem('username', data.username);  // Storing in local storage
-             
+            closeLoginModal();
             if (data.generalUnlockMessage) {
             alert(data.generalUnlockMessage); // Notify the player about the unlocked general
             loadGeneralDropdown();
+            
             }
             
             document.getElementById('loginForm').style.display = 'none';
@@ -83,6 +84,7 @@ function login() {
             document.getElementById('logoutButton').style.display = 'block';
             document.getElementById('generalPhoto').style.display = 'block';
             loadGeneralDropdown();  // Call this function after login success
+
         } else {
             alert('Login failed: ' + data.message);
         }
@@ -111,6 +113,7 @@ function register() {
     .then(data => {
         if (data.username) {
             alert('Registration successful!');
+
         } else {
             alert('Registration failed: ' + data.message);
         }
@@ -187,6 +190,7 @@ function joinGame() {
         letsgo.play();
         if (!username) {
             alert("Please log in before joining the game.");
+            openLoginModal();
             return;
         }
          // Ensure this ID matches your HTML element
@@ -197,6 +201,22 @@ function joinGame() {
 
     socket.emit('joinGame', {username:username, general: general });
 }
+
+function openLoginModal() {
+    const loginModal = document.getElementById('loginModal');
+    loginModal.style.display = 'block'; // Show the modal
+}
+
+function closeLoginModal() {
+    const loginModal = document.getElementById('loginModal');
+    loginModal.style.display = 'none'; // Hide the modal
+}
+
+
+
+
+
+
 // Function to save the game state to localStorage
 function saveGameState() {
     const gameState = {
@@ -251,6 +271,20 @@ function loadGeneralDropdown() {
             console.error('Error fetching player data:', error);
         });
 }
+
+const sliderItems = document.querySelectorAll('.slider-item');
+let currentIndex = 0;
+
+// Function to change slides
+function changeSlide() {
+    sliderItems[currentIndex].classList.remove('active');
+    currentIndex = (currentIndex + 1) % sliderItems.length;
+    sliderItems[currentIndex].classList.add('active');
+}
+
+// Start the slider loop
+setInterval(changeSlide, 4000); // Change every 4 seconds
+
 
 // Example usage when you receive the player data
 socket.on('playerData', (data) => {
