@@ -523,6 +523,8 @@ td .tower-hp {
 
 /* Center the slider in the web app */
 .slider-container {
+    margin: 20px auto; /* Add margin to center and create space from the top */
+    top: 20px; /* Moves the slider slightly down */
     position: relative;
     width: 40%; /* Adjust based on your layout */
     height: 700px; /* Adjust to match your images */
@@ -593,8 +595,7 @@ td .tower-hp {
     position: relative;
     width: 100%; /* Adjust based on your layout */
     height: 400px; /* Adjust to match your images */
-  
-    
+     
 
 }
 
@@ -706,6 +707,16 @@ td .tower-hp {
 
 /* Extra small devices (phones, less than 600px) */
 @media (max-width: 1000px) {
+
+        /* Center the slider in the web app */
+    .slider-container {
+        position: relative;
+        width: 100%; /* Adjust based on your layout */
+        height: 400px; /* Adjust to match your images */
+        
+
+    }
+    
     #userInfo{
         font-size: 8px;
         width: 70px; /* Adjust the width as needed */ 
@@ -824,6 +835,13 @@ td .tower-hp {
         left: 10%; /* Start from the center horizontally */
 
         }
+        /* Center the slider in the web app */
+    .slider-container {
+        position: relative;
+        width: 100%; /* Adjust based on your layout */
+        height: 400px; /* Adjust to match your images */
+        }
+        
 
     body {
         font-size: 9px;
@@ -918,6 +936,12 @@ td .tower-hp {
 
 /* Very small screens (less than 400px) */
 @media (max-width: 400px) {
+
+    .slider-container {
+        position: relative;
+        width: 100%; /* Adjust based on your layout */
+        height: 400px; /* Adjust to match your images */
+        }
 
     #userInfo{
         font-size: 8px;
