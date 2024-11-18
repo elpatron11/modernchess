@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game</title>
+    <title>Generals Online</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="/resources/images/favicon.ico" type="image/x-icon">
+
    <style>
         /* Basic table styling for the chessboard */
         table { border-collapse: collapse; }
@@ -14,10 +16,12 @@
         td { width: 50px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid black; }
         .language-toggle { position: fixed; top: 10px; right: 10px; z-index: 1000; }
         .language-toggle button { margin: 0 5px; padding: 5px 10px; display: flex; align-items: center; gap: 5px; }
+       
     </style>
 </head>
 <body>
-  <!-- Language Selector with Flag Images -->
+    
+     <!-- Language Selector with Flag Images -->
 <div class="language-toggle">
     <button id="flagButton" onclick="setLanguage('en')">
         <img src="resources/images/usa.png" alt="US Flag" style="width: 20px; height: 14px;"/> EN
@@ -40,6 +44,9 @@
     </a>
     <div id="topRanking">
     <button id="topRankingButton" class="btn-big-bold" onclick="window.location.href='toprankings.html'">View Top Rankings</button>
+    </div>
+    <div id="userInfo" class="user-info"  style="display: none;" class="container text-center mt-4">
+        
     </div>
     <div id="timerDisplay"></div>
     <div id="opponentInfo" class="d-inline-block mr-3"></div>
@@ -110,12 +117,10 @@
 
     
 
-    <div id= "userInfo"></div>
+    
     <button id="leaveGameButton" style="display: none;">Leave Game</button>  
     <!-- User info -->
-    <div id="userInfo"   style="display: none;" class="container text-center mt-4">
-        
-    </div>
+ 
     <div id="ratingImageContainer" class="rating-badge"></div>  
     
     <button id="logoutButton"  style="display: none;" onclick="logout()">Logout</button>

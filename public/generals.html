@@ -13,17 +13,18 @@
         .card {
             border: 1px solid #ccc;
             border-radius: 10px;
-            width: 300px;
+            width: 320px;
             margin: 15px;
             padding: 10px;
             text-align: center;
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
         .card img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
         .owned {
             color: green;
             font-weight: bold;
@@ -89,7 +90,7 @@
                     card.classList.add('card');
 
                     const img = document.createElement('img');
-                    img.src = `/resources/images/cards/${general.name}.png`;
+                    img.src = `/resources/images/dropdown/${general.name}.png`;
                     img.alt = general.name;
 
                     const title = document.createElement('h3');

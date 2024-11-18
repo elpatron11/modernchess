@@ -74,6 +74,9 @@ li {
     
 }
 
+
+
+
 label, select, button {
     display: block;  /* Makes each element take a full row */
     margin: 10px 0;  /* Spacing between elements */
@@ -283,14 +286,31 @@ td .tower-hp {
     border-radius: 8px;
     margin-top: 10px;
 }
+/* Add hover effect for interactivity */
+#userInfo:hover {
+    background: linear-gradient(135deg, #00BFFF, #007BFF); /* Reverse gradient */
+    transform: translateX(-50%) scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhance shadow on hover */
+}
 
 #userInfo{
-    color:#d32f2f;
-    font-weight: bold;
-    background-color: #f4f4f4;
-    width: 300px; /* Adjust the width as needed */
-    margin: 0 auto; /* Center the div horizontally */
-    padding: 15px; /* Add some padding for spacing inside the box */
+    color:#00f819;
+    font-weight: bold;    
+    width: 150px; /* Adjust the width as needed */    
+    padding: 12px; /* Add some padding for spacing inside the box */
+    display: flex;
+    align-items: center;
+    background-color: #007BFF;
+    justify-content: center;
+    font-size: 15px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a shadow for depth */
+    border: 2px solid #00f819; /* Border to complement color scheme */
+      /* Centering logic */
+      position: absolute; /* Position absolutely within parent */
+      left: 20%; /* Start from the center horizontally */
+      transform: translateX(-50%); /* Offset by 50% of width to truly center */
+      top: 20px; /* Adjust for spacing from the top */
 }
 #userInfo p {
     margin-bottom: 5px; /* Add some space between paragraphs */
@@ -512,6 +532,13 @@ td .tower-hp {
        
     }
 
+    #userInfo{
+        font-size: 8px;
+        width: 70px; /* Adjust the width as needed */ 
+        left: 10%; /* Start from the center horizontally */
+
+        }
+
 }
 
 
@@ -519,6 +546,13 @@ td .tower-hp {
 
 /* Extra small devices (phones, less than 600px) */
 @media (max-width: 1000px) {
+    #userInfo{
+        font-size: 8px;
+        width: 70px; /* Adjust the width as needed */ 
+        left: 10%; /* Start from the center horizontally */
+
+        }
+
     body {
         font-size: 9px;
     }
@@ -623,6 +657,14 @@ td .tower-hp {
 
 
 @media (max-width: 600px) {
+
+    #userInfo{
+        font-size: 8px;
+        width: 70px; /* Adjust the width as needed */ 
+        left: 10%; /* Start from the center horizontally */
+
+        }
+
     body {
         font-size: 9px;
     }
@@ -716,6 +758,15 @@ td .tower-hp {
 
 /* Very small screens (less than 400px) */
 @media (max-width: 400px) {
+
+    #userInfo{
+        font-size: 8px;
+        width: 70px; /* Adjust the width as needed */ 
+        left: 10%; /* Start from the center horizontally */
+
+        }
+
+
     body {
         font-size: 12px;
     }

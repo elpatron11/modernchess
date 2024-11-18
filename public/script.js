@@ -74,11 +74,11 @@ function login() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('userInfo').style.display = 'block';
             document.getElementById('userInfo').innerHTML = `
-                Username: ${data.username}<br>
-                Rating: ${data.rating}<br>
-                Games Played: ${data.gamesPlayed}<br>
-                Balance:$${data.balance}.00 
-            `;
+            ${data.username}</br>  
+            Rating:${data.rating}</br>
+             $${data.balance}.00 
+        `;
+      
             updateRatingImage(data.rating);
             document.getElementById('logoutButton').style.display = 'block';
             document.getElementById('generalPhoto').style.display = 'block';
@@ -137,11 +137,11 @@ window.onload = function() {
                     document.getElementById('loginForm').style.display = 'none';
                     document.getElementById('userInfo').style.display = 'block';
                     document.getElementById('userInfo').innerHTML = `
-                        Username: ${data.username}<br>
-                        Rating: ${data.rating}<br>
-                        Games Played: ${data.gamesPlayed}<br>
-                        Balance: $${data.balance}.00
+                        ${data.username}</br>  
+                        Rating:${data.rating}</br>
+                        $${data.balance}.00 
                     `;
+                            
                     
                     // Optionally, show the logout button
                     document.getElementById('logoutButton').style.display = 'block';

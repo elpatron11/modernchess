@@ -772,9 +772,9 @@ function makeMove(from, to, roomId, playerId) {
             } else if (targetPiece.startsWith('P1_A') || targetPiece.startsWith('P2_A')) {
                 hitChance = 0.8; // Archer avoidance
             }else if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
-                hitChance = 0.25;  // General Warrior has a 20% chance to avoid
+                hitChance = 0.2;  // General Warrior has a 20% chance to avoid
             } else if (targetPiece.startsWith('P1_GH') || targetPiece.startsWith('P2_GH')) {
-                hitChance = 0.3;  // General Horse has a 70% chance to avoid against normal units
+                hitChance = 0.25;  // General Horse has a 70% chance to avoid against normal units
             } else if (targetPiece.startsWith('P1_GA') || targetPiece.startsWith('P2_GA')) {
                 hitChance = 0.5;  // General Archer has a 50% chance to avoid
             }else if (targetPiece.startsWith('P1_Robinhood') || targetPiece.startsWith('P2_Robinhood')) {
