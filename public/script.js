@@ -315,7 +315,7 @@ socket.on('startTimer', (data) => {
 function updateTimerDisplay(seconds) {
     
     document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
-    document.getElementById('timerDisplay2').style.width = '100px';
+    document.getElementById('timerDisplay2').style.width = '110px';
     document.getElementById('timerDisplay2').style.fontSize = '13px';
     //document.getElementById('timerDisplay2').style.height = '30px';
 } 
