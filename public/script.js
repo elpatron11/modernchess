@@ -315,6 +315,9 @@ socket.on('startTimer', (data) => {
 function updateTimerDisplay(seconds) {
     
     document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
+    document.getElementById('timerDisplay2').style.width = '100px';
+    document.getElementById('timerDisplay2').style.fontSize = '13px';
+    //document.getElementById('timerDisplay2').style.height = '30px';
 } 
 
 
@@ -403,7 +406,10 @@ socket.on('gameStart', (data) => {
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
         document.getElementById('turnInfo').style.background = 'green';
+        
         document.getElementById('turnInfo').style.color = 'red';
+        console.log(document.getElementById('gameBoard'));
+
        
     } else {
         // Logic to revert the border color or change to another color
@@ -427,17 +433,32 @@ socket.on('updateBoard', (data) => {
     actionCount = 0;  // Reset action count after turn switch
     unitHasAttacked = {};  // Reset attack tracking after turn switch
     renderBoard();
-    document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'Player 1' : 'Player 2'}'s turn`;
+    document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'Turn: P1' : ' Turn: P2'} `;
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
-        document.getElementById('turnInfo').style.background = 'green';
-        document.getElementById('turnInfo').style.color = 'red';
-       
+        document.getElementById('turnInfo').style.color = 'black';
+        document.getElementById('turnInfo').style.backgroundColor = 'green';
+        document.getElementById('turnCounterDisplay').style.backgroundColor = 'green';
+        document.getElementById('gameBoard').style.border = '6px solid transparent'; // Correct border syntax
+        document.getElementById('gameBoard').style.boxShadow = '0px 0px 8px rgba(3, 195, 38, 0.8), 0px 0px 40px rgba(3, 161, 195, 0.5)';
+        document.getElementById('gameBoard').style.backgroundColor = 'rgb(6, 241, 13)';
+        document.getElementById('timerDisplay2').style.backgroundColor ="green";
+        document.getElementById('turnCounterDisplay').style.backgroundColor ="green";
+        document.getElementById('timerDisplay2').style.color ='black';
+        document.getElementById('turnCounterDisplay').style.color ='black';
+
     } else {
         // Logic to revert the border color or change to another color
-        document.getElementById('turnInfo').style.background = 'black';
-        document.getElementById('turnInfo').style.color = 'red';
-      
+        document.getElementById('turnCounterDisplay').style.backgroundColor = 'black';
+        document.getElementById('gameBoard').style.border = '6px solid transparent'; // Correct border syntax
+        document.getElementById('gameBoard').style.boxShadow = '0px 0px 8px rgba(8, 8, 8, 0.8), 0px 0px 40px rgba(3, 161, 195, 0.5)';
+        document.getElementById('gameBoard').style.backgroundColor = 'black';
+        document.getElementById('turnInfo').style.color = 'green';
+        document.getElementById('turnInfo').style.backgroundColor = 'black';
+        document.getElementById('timerDisplay2').style.backgroundColor ="black";
+        document.getElementById('turnCounterDisplay').style.backgroundColor ="black";
+        document.getElementById('timerDisplay2').style.color ='green';
+        document.getElementById('turnCounterDisplay').style.color ='green';
     }
 });
 
@@ -454,7 +475,7 @@ socket.on('lockGame', function(lock) {
 
 // Listen for the turn counter update from the server
 socket.on('updateTurnCounter', (turnCounter) => {
-    document.getElementById('turnCounterDisplay').textContent = `Turn: ${turnCounter}`;
+    document.getElementById('turnCounterDisplay').textContent = `Action: #${turnCounter}`;
 });
 
 

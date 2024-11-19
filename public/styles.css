@@ -55,10 +55,18 @@ li {
     background-color: red;
 }
 
+#turnInfo{
+    color: black;
+    background-color: green;
+}
+
 #timerDisplay1{
- 
+ font-size: 10;
  font:#f4f4f4;
 }
+
+
+
 
 #opponentInfo{
     background-color: #f44336;
@@ -160,8 +168,8 @@ img {
     display: flex;
     flex-direction: column; /* Align children vertically */
     align-items: center; /* Center-align children for a neat layout */
-    padding: 20px;
-    margin-top: 20px;
+    padding: 15px;
+    margin-top: 10px;
 }
 .generals-section {
     margin-bottom: 10px; /* Add space between sections */
@@ -193,21 +201,35 @@ img {
 .board-cell {
     width: 60px;  /* Adjust based on your game board size */
     height: 60px;
-    border: 1px solid #7A5A3B;  /* Board grid */
+    border: 1px dotted #7A5A3B;  /* Board grid */
     text-align: center;
     vertical-align: middle;
     position: relative;
     background-size: cover;
     transition: all 0.3s ease;
-    transform-origin: center;
-    
+    transform-origin: center;    
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  
+    aspect-ratio: 1; /* Ensure cells stay square */
 }
+
+
 .board-cell:hover {
-    background: linear-gradient(135deg, #0b0000, #429c30);
-    transform: scale(1.05);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+    transform: translateY(-3px); /* Slight lift */
     z-index: 10; /* Ensure it rises above other cells */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
+
+.board-cell img.unit {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin: auto;
+}
+
+
+
 
 .btn{
     font-weight: 300;
@@ -610,11 +632,12 @@ td .tower-hp {
 }
 
 #gameBoard {
-    border: 2px solid transparent;
-    box-shadow: 0px 0px 8px rgba(3, 195, 38, 0.8), 0px 0px 30px rgba(3, 161, 195, 0.5);
-    background: radial-gradient(circle, #031000, #28ca03); /* Subtle gradient */
+    border: 1px solid transparent;
+    background-color: rgb(5, 160, 10);
+    box-shadow: 0px 0px 40px rgba(3, 195, 38, 0.8), 0px 0px 60px rgba(3, 161, 195, 0.5);
+    aspect-ratio: 1; /* Ensure cells stay square */
     border-radius: 10px;
-    padding: 3px;
+    padding: 5px;
 }
 
 
@@ -624,6 +647,13 @@ td .tower-hp {
 
 
 @media (max-width: 768px) {
+
+    .emoji-display {
+        font-size: 35px;
+        min-height: 35px;
+        width: 30px;    
+       
+    }
 
     /* Center the slider in the web app */
 .slider-container {
@@ -636,8 +666,9 @@ td .tower-hp {
 
 
     #gameBoard {
-        width: 100%;
-        max-width: none;
+        max-width: 100%; /* Allow board to shrink for smaller screens */
+        margin: 0 auto; /* Center align */
+
     }
 
     #gameContainer {
@@ -646,7 +677,7 @@ td .tower-hp {
         display: none;
     }
     .board-cell {
-        aspect-ratio: 1 / 1;  /* This maintains square cells */
+        aspect-ratio: 1; /* Ensure cells stay square */
         width: 55px;
         height: 55px;
     }
@@ -723,10 +754,7 @@ td .tower-hp {
         display: none;
     }
  
-    #gameBoard.locked {
-        pointer-events: none; 
-       
-    }
+   
 
     #userInfo{
         font-size: 8px;
@@ -768,12 +796,11 @@ td .tower-hp {
         min-width: 0; /* Overcomes the minimum sizing issue which can block shrinking */
         display: none;
     }
-
     #gameBoard {
-        width: 100%;
-    }
+        max-width: 100%; /* Allow board to shrink for smaller screens */
+        margin: 0 auto; /* Center align */
 
- 
+    }
 
     .board-cell {
         width: 55px;
@@ -999,9 +1026,11 @@ td .tower-hp {
    
 }
 
-    #gameBoard {
-        width: 100%;
-    }
+#gameBoard {
+    max-width: 100%; /* Allow board to shrink for smaller screens */
+    margin: 0 auto; /* Center align */
+
+}
 
     .board-cell {
         
