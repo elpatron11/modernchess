@@ -6,9 +6,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "*", // Allow all origins (adjust this for production for security)
         methods: ["GET", "POST"]
-    }
+    },
+    pingInterval: 40000, // Send a ping every 10 seconds
+    pingTimeout: 80000,   // Disconnect if no pong is received within 5 seconds
 });
 const BOARD_SIZE = 8;
 let turnCounter = 0;
@@ -1005,7 +1007,9 @@ io.on('connection',(socket) => {
     activePlayers[socket.id] = socket.id;  // Add player to active list
     console.log(`Player ${socket.id} logged in, total active players: ${Object.keys(activePlayers).length}`);
 
-
+    socket.on('disconnect', (reason) => {
+        console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);
+    });
  // Server-side (Node.js)
 // Handling emoji selection within a game room
 socket.on('emojiSelected', function(data) {

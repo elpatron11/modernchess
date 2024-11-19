@@ -1,5 +1,9 @@
 
-const socket = io();
+const socket = io({
+    reconnection: true,       // Enable automatic reconnection
+    reconnectionAttempts: 10, // Number of attempts before giving up
+    reconnectionDelay: 3000, // Wait time between attempts (ms)
+});
 let playerNumber;
 let turn;
 let board = [];
@@ -293,6 +297,15 @@ socket.on('playerData', (data) => {
     
 });
 
+
+
+socket.on('disconnect', (reason) => {
+    console.log('Disconnected:', reason);
+    if (reason === 'io server disconnect') {
+        // The server disconnected this client manually
+        socket.connect(); // Try to reconnect manually
+    }
+});
 //turn timer for 60 sec coundown display for client side
 let countdownTimer;
 socket.on('startTimer', (data) => {
