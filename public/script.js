@@ -37,6 +37,7 @@ const robin = document.getElementById('robin');
 const voldemort = document.getElementById('voldemort');
 const archerkill = document.getElementById('archerkill');
 let terrainType2 = 0;
+let terrainType3 = 0;
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -244,8 +245,8 @@ function loadGeneralDropdown() {
             const generals = playerData.ownedGenerals || []; // Assume 'generals' is an array of owned generals
             
               // Add default General Warrior (GW) if not already included
-              if (!generals.includes('GW')) {
-                generals.unshift('GW'); // Add GW at the start if it's missing
+              if (!generals.includes('GM')) {
+                generals.unshift('GM'); // Add GW at the start if it's missing
             }
 
             // Get the dropdown element
@@ -431,6 +432,7 @@ socket.on('gameStart', (data) => {
     backgroundSound.play();
     start.play();
     terrainType2 = Math.random();
+    
     console.log(terrainType2);
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
@@ -973,10 +975,12 @@ function renderBoard() {
                 td.classList.add('water-terrain');
             } else if (terrainType === 'red') {
                 td.classList.add('red-terrain');
+            } else if (terrainType === 'grass') {
+                td.classList.add('grass-terrain');
             } else {
                   // Randomly apply one of the two normal terrain classes
                   if (terrainType2 < 0.5) {
-                    
+                       
                     td.classList.add('normal-terrain');  // Apply first normal terrain class
                 } else {
                     td.classList.add('normal1-terrain');  // Apply second normal terrain class

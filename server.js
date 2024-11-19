@@ -860,7 +860,7 @@ function placeRandomTerrain(board, row, type, count) {
     for (let i = 0; i < count; i++) {
         const randomIndex = Math.floor(Math.random() * availableCols.length);
         const col = availableCols.splice(randomIndex, 1)[0]; // Remove the chosen column from the pool
-        board[row][col].terrain = type; // Assign the terrain type (water/red)
+        board[row][col].terrain = type; // Assign the terrain type (water/red/green)
     }
 }
 
@@ -901,9 +901,11 @@ function createGameBoard() {
     for (let row = 2; row <= 5; row++) {
         const waterCount = Math.floor(Math.random() * 3) + 1;  // Random 1-3 water tiles
         const redCount = Math.floor(Math.random() * 2);  // Random 0-4 red tiles
+        const grassCount = Math.floor(Math.random() * 3) + 1;  // Random 1-3 water tiles
 
         placeRandomTerrain(board, row, 'water', waterCount);
         placeRandomTerrain(board, row, 'red', redCount);
+        placeRandomTerrain(board, row, 'grass', grassCount);
     }
 
     return board;

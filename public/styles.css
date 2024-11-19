@@ -158,6 +158,13 @@ img {
     background-size: cover;
 }
 
+.grass-terrain {
+    position: relative;
+    background-image: url('resources/images/terrain13.png');
+    background-size: cover;
+    
+}
+
 .user-controls {
     width: 100%; /* Full width */
     display: flex;
