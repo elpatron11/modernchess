@@ -676,8 +676,9 @@ function isValidMove(game, pieceData, fromRow, fromCol, toRow, toCol) {
 
     // Prevent moving onto friendly units
     const targetPiece = board[toRow][toCol].unit;
-    if (targetPiece && targetPiece.startsWith(piece.substring(0, 3))) {
-        console.log(`Cannot move onto friendly unit at (${toRow}, ${toCol})`);
+ // Prevent moving onto any unit (friendly or enemy)
+    if (targetPiece) {
+        console.log(`Cannot move onto occupied square at (${toRow}, ${toCol})`);
         return false;
     }
 
