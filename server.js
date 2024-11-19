@@ -1581,7 +1581,7 @@ socket.on('emojiSelected', function(data) {
                         //To heal the tower
                 if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                     // Determine which player is attacking and get the corresponding tower position
-                    let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 3, col: 0 } : { row: 4, col: 7 };
+                    let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 2, col: 4 } : { row: 5, col: 3 };
                     let tower = game.board[towerPosition.row][towerPosition.col];
                 
                     // Log the state of the tower before attempting to heal
