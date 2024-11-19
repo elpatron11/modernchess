@@ -999,7 +999,7 @@ function logout() {
     console.log(`Player logged out, total active players: ${Object.keys(activePlayers).length}`);
 }
 
-
+const activeGames = {}; // Key: roomId, Value: game state
 let activePlayers = {};
 io.on('connection',(socket) => {
     console.log('A player connected:', socket.id);
@@ -1007,8 +1007,29 @@ io.on('connection',(socket) => {
     activePlayers[socket.id] = socket.id;  // Add player to active list
     console.log(`Player ${socket.id} logged in, total active players: ${Object.keys(activePlayers).length}`);
 
-    socket.on('disconnect', (reason) => {
-        console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);
+
+    socket.on('createRoom', (roomId, gameState) => {
+        activeGames[roomId] = gameState;
+    });
+   
+      // Listen for the rejoinRoom event
+      socket.on('rejoinRoom', ({ roomId, playerData }) => {
+        const room = io.sockets.adapter.rooms.get(roomId);
+
+        if (room) {
+            // Check if the room exists
+            socket.join(roomId); // Add the player back to the room
+            console.log(`Player ${playerData.name} rejoined room ${roomId}`);
+
+            // Optionally, notify other players in the room
+            socket.to(roomId).emit('playerRejoined', playerData);
+
+            // Restore the game state if necessary
+            io.to(socket.id).emit('restoreState', { roomId, playerData });
+        } else {
+            // If the room no longer exists, notify the client
+            io.to(socket.id).emit('rejoinError', 'Room does not exist or game has ended.');
+        }
     });
  // Server-side (Node.js)
 // Handling emoji selection within a game room
