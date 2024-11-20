@@ -1127,7 +1127,7 @@ socket.on('activeGamesList', (activeGames) => {
 
     activeGames.forEach(game => {
         const gameButton = document.createElement('button');
-        gameButton.textContent = `${game.players.P1} vs ${game.players.P2}`; // Display player names
+        gameButton.textContent = `${game.players.P1}(P1) vs ${game.players.P2}(P2)`; // Display player names
         gameButton.onclick = () => joinAsSpectator(game.roomId); // Use roomId to join the game
         gameListContainer.appendChild(gameButton);
     });
