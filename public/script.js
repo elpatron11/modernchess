@@ -1170,6 +1170,7 @@ socket.on('activeGamesList', (activeGames) => {
 
 function joinAsSpectator(roomId) {
     isSpectator = true; // Mark the user as a spectator
+    startLoadingBar(5000); // Example: 5 seconds loading duration
     socket.emit('joinAsSpectator', roomId);
 }
 
@@ -1177,7 +1178,7 @@ function joinAsSpectator(roomId) {
 // Handle game state updates
 socket.on('gameStateUpdate', (data) => {
     console.log('Game state updated for spectator:', data);
-    startLoadingBar(5000); // Example: 5 seconds loading duration
+    
     renderBoard(data.board);
     updateTurnDisplay(data.turn);
      // Disable clicks for spectators
