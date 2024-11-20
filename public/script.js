@@ -38,6 +38,7 @@ const voldemort = document.getElementById('voldemort');
 const archerkill = document.getElementById('archerkill');
 let terrainType2 = 0;
 let terrainType3 = 0;
+let isSpectator = false; // Default to false
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -1111,15 +1112,56 @@ document.getElementById('comicButton').addEventListener('click', function() {
     window.location.href = '/comic.html';  // Opens the comic page
 });
 
+// Request the list of active games
+socket.emit('getActiveGames');
+
+// Handle the response from the server
+socket.on('activeGamesList', (activeGames) => {
+    const gameListContainer = document.getElementById('gameList'); // Assuming you have a container for the game list
+    gameListContainer.innerHTML = ''; // Clear any previous list
+
+    if (activeGames.length === 0) {
+        gameListContainer.innerHTML = '<p>No active games available.</p>';
+        return;
+    }
+
+    activeGames.forEach(game => {
+        const gameButton = document.createElement('button');
+        gameButton.textContent = `${game.players.P1} vs ${game.players.P2}`; // Display player names
+        gameButton.onclick = () => joinAsSpectator(game.roomId); // Use roomId to join the game
+        gameListContainer.appendChild(gameButton);
+    });
+});
+
+function joinAsSpectator(roomId) {
+    isSpectator = true; // Mark the user as a spectator
+    socket.emit('joinAsSpectator', roomId);
+}
+
+
+// Handle game state updates
+socket.on('gameStateUpdate', (data) => {
+    console.log('Game state updated for spectator:', data);
+    renderBoard(data.board);
+    updateTurnDisplay(data.turn);
+     // Disable clicks for spectators
+     document.querySelectorAll('.board-cell').forEach(cell => {
+        cell.style.pointerEvents = 'none'; // Prevent interaction
+    });
+});
+
 
 //Leave button
 document.getElementById('leaveGameButton').addEventListener('click', function() {
    
+    if (isSpectator) { // Add a variable to track if the user is a spectator
+        location.reload(); // Reload the page for spectators
+    } else {
         socket.emit('leaveGame', { roomId: roomId, playerNumber: playerNumber });
         // Hide the leave button once the player has left
         document.getElementById('leaveGameButton').style.display = 'none';
         resetGameState();
-        
+    }
     
 });
 

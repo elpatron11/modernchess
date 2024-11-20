@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -1003,12 +1004,50 @@ function logout() {
 
 const activeGames = {}; // Key: roomId, Value: game state
 let activePlayers = {};
+
+
 io.on('connection',(socket) => {
     console.log('A player connected:', socket.id);
     socket.emit('countdown', { countdown });
     activePlayers[socket.id] = socket.id;  // Add player to active list
     console.log(`Player ${socket.id} logged in, total active players: ${Object.keys(activePlayers).length}`);
 
+            // Emit list of active games to the client
+        socket.on('getActiveGames', () => {
+            const activeGames = Object.keys(games)
+            .filter(roomId => !games[roomId].gameConcluded) // Only include ongoing games
+            .map(roomId => ({
+                roomId,
+                players: {
+                    P1: games[roomId].players.P1.username, // Player 1's username
+                    P2: games[roomId].players.P2.username, // Player 2's username
+                }
+            }));
+            socket.emit('activeGamesList', activeGames);
+    
+    
+        });
+
+        socket.on('joinAsSpectator', (roomId) => {
+            const game = games[roomId];
+            if (game) {
+                game.spectators.push(socket.id);
+                socket.join(roomId);
+                console.log(`Spectator ${socket.id} joined game: ${roomId}`);
+        
+                // Send the game state to the spectator
+                socket.emit('gameStateUpdate', {
+                    board: game.board,
+                    turn: game.turn,
+                    players: game.players,
+                });
+            } else {
+                socket.emit('error', 'Game not found or has ended.');
+            }
+        });
+        
+    
+    
 
     socket.on('createRoom', (roomId, gameState) => {
         activeGames[roomId] = gameState;
@@ -1148,13 +1187,15 @@ socket.on('emojiSelected', function(data) {
                     },
                     board: createGameBoard(),
                     turn: 'P1',
-                    actionCount: 0,
+                    actionCount: 0,                    
+                    spectators: [], // Array to store spectator socket IDs
                     generals: {
                         [socket.id]: data.general,
                         [opponent.id]: opponentData.general
                     },
                     unitHasAttacked: {},
-                    unitHasMoved: {}
+                    unitHasMoved: {},
+                    gameConcluded: false
                 };
                 console.log(`Game initialized with players:`, games[roomId].players);
                 turnCounter = 0;
@@ -1280,6 +1321,7 @@ socket.on('emojiSelected', function(data) {
                 board: createGameBoard(),
                 turn: 'P1',
                 actionCount: 0,
+                spectators: [], // Array to store spectator socket IDs
                 generals: {
                     [socket.id]: general,
                     [opponentSocketId]: opponentData.general
@@ -1987,12 +2029,39 @@ socket.on('emojiSelected', function(data) {
             terrain: game.terrain,
             turn: game.turn,
         });
+    
+    
+            // Notify spectators
+        game.spectators.forEach((spectatorId) => {
+            io.to(spectatorId).emit('gameStateUpdate', {
+                board: game.board,
+                turn: game.turn,
+                players: game.players,
+            });
+        });
+    
     });
     
 
     socket.on('disconnect', () => {
         delete activePlayers[socket.id];  // Remove player from active list
         console.log(`Player logged out, total active players: ${Object.keys(activePlayers).length}`);
+
+            // Remove from games and spectators
+        for (const roomId in games) {
+            const game = games[roomId];
+
+            // Remove from players or spectators
+            if (game.players.P1.socketId === socket.id || game.players.P2.socketId === socket.id) {
+                console.log(`Player ${socket.id} was part of game ${roomId}, concluding the game.`);
+                game.gameConcluded = true; // Mark game as concluded
+                delete games[roomId];
+            } else {
+                game.spectators = game.spectators.filter(spectatorId => spectatorId !== socket.id);
+                console.log(`Spectator ${socket.id} removed from game ${roomId}`);
+            }
+        }
+
         // Remove from matchmaking queue
         const initialQueueLength = matchmakingQueue.length;
         matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);

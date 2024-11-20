@@ -162,8 +162,12 @@ img {
     position: relative;
     background-image: url('resources/images/terrain13.png');
     background-size: cover;
+   
+   
     
 }
+
+
 
 .user-controls {
     width: 100%; /* Full width */
@@ -668,8 +672,82 @@ td .tower-hp {
     padding: 5px;
 }
 
+.unit-image.attacking {
+    animation: attackJump 0.5s ease-in-out;
+}
+
+@keyframes attackJump {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px); /* Move up */
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
 
 
+/* Spectator container styles */
+#spectatorContainer {
+    margin: 20px auto;
+    width: 300px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center-aligns content inside */
+    
+}
+
+#spectatorContainer h2 {
+    font-size: 18px; /* Adjust to a smaller size */
+    font-weight: bold; /* Make it bold for emphasis */
+    color: #333; /* Darker color for better contrast */
+    margin-bottom: 15px; /* Add some spacing below the title */
+    text-align: center; /* Center the title */
+}
+
+/* Game list container */
+.game-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers buttons horizontally */
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style-type: none; /* Removes any default list styles */
+}
+
+/* Individual game button */
+.game-list button {
+    font-size: 14px;
+    width: 90%; /* Ensures buttons take up most of the container width */
+    padding: 8px;
+    background-color: #2a2b03;
+    border-style: inset;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center; /* Center-aligns text inside the button */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.game-list button:hover {
+    background-color: #0056b3;
+    transform: scale(1.02);
+}
+
+/* No games available message */
+.game-list p {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+}
 
 
 
