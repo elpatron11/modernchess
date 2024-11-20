@@ -345,6 +345,38 @@ socket.on('startTimer', (data) => {
 }); 
 
 
+//loading bar
+function startLoadingBar(duration) {
+    const overlay = document.getElementById('loadingOverlay');
+    const loadingBar = document.getElementById('loadingBar');
+
+    // Show the overlay
+    overlay.style.visibility = 'visible';
+
+    // Reset the bar
+    loadingBar.style.width = '0';
+
+    // Simulate the loading process
+    const interval = 100; // Update every 100ms
+    const steps = duration / interval;
+    let progress = 0;
+
+    const loadingInterval = setInterval(() => {
+        progress++;
+        const percentage = Math.min((progress / steps) * 100, 100);
+        loadingBar.style.width = `${percentage}%`;
+
+        if (progress >= steps) {
+            clearInterval(loadingInterval);
+            // Hide the overlay after loading completes
+            setTimeout(() => {
+                overlay.style.visibility = 'hidden';
+            }, 500); // Small delay to let users see the completed bar
+        }
+    }, interval);
+}
+
+
 function updateTimerDisplay(seconds) {
     
     document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
@@ -422,7 +454,9 @@ socket.on('playerNumber', (data) => {
 // When both players have joined, the game starts and the board is set
 // Receive game start data and initialize the game
 socket.on('gameStart', (data) => {
-    
+    startLoadingBar(5000); // Example: 5 seconds loading duration
+     // Delay game initialization until the loading bar completes
+     setTimeout(() => {
     roomId = data.roomId;
     board = data.board;
     playerNumber = data.playerNumber;
@@ -457,6 +491,7 @@ socket.on('gameStart', (data) => {
        // Display opponent details
        document.getElementById('opponentInfo').innerHTML = `
        Opponent: ${data.opponentName}`;
+    }, 5000); // Delay by the same duration as the loading bar (5 seconds)
 });
 
 
