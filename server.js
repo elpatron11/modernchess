@@ -408,7 +408,7 @@ function startTurnTimer(roomId, currentPlayer) {
 }
 
 let botAccount = {
-    username: 'Newacc',
+    username: 'Bot123',
     password: '12345678',
     general: 'GA',
     socketId: 'botSocketId12345'  // Static socket ID for the bot
