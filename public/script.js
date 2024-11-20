@@ -1014,13 +1014,9 @@ function renderBoard() {
             } else if (terrainType === 'grass') {
                 td.classList.add('grass-terrain');
             } else {
-                  // Randomly apply one of the two normal terrain classes
-                  if (terrainType2 < 0.5) {
-                       
+                                                   
                     td.classList.add('normal-terrain');  // Apply first normal terrain class
-                } else {
-                    td.classList.add('normal1-terrain');  // Apply second normal terrain class
-                }
+               
             }
 
             // Display unit image based on unit type, including tower health

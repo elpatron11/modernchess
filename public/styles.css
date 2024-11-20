@@ -147,26 +147,50 @@ img {
 /* CSS styles for each terrain */
 .normal-terrain {
     position: relative;
-    background-image: url('resources/images/terrain16.png');
+    background-image: url('resources/images/terrain5.png');
     background-size: cover;
     
 }
 
-.normal1-terrain {
-    position: relative;
-    background-image: url('resources/images/terrain5.png');
-    background-size: cover;
-}
 
 .grass-terrain {
     position: relative;
     background-image: url('resources/images/terrain13.png');
     background-size: cover;
-   
-   
+    
     
 }
 
+.grass-terrain img{
+    filter:contrast(2);
+}
+
+.red-terrain img {
+    filter: brightness(1.5) drop-shadow(0 0 10px red); /* Add glow effect */
+    animation: idleBounce 1s infinite, heatPulse 1.5s infinite alternate, glowPulse 1.5s infinite alternate;
+}
+
+/* Glow pulse effect */
+@keyframes glowPulse {
+    0% {
+        filter: brightness(1.5) drop-shadow(0 0 10px red);
+    }
+    50% {
+        filter: brightness(2) drop-shadow(0 0 20px orange); /* Intense glow */
+    }
+    100% {
+        filter: brightness(1.5) drop-shadow(0 0 10px red);
+    }
+}
+
+@keyframes heatPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05); /* Slight zoom */
+    }
+}
 
 
 .user-controls {
