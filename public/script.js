@@ -456,7 +456,7 @@ socket.on('playerNumber', (data) => {
 socket.on('gameStart', (data) => {
     startLoadingBar(5000); // Example: 5 seconds loading duration
      // Delay game initialization until the loading bar completes
-     setTimeout(() => {
+     
     roomId = data.roomId;
     board = data.board;
     playerNumber = data.playerNumber;
@@ -491,7 +491,7 @@ socket.on('gameStart', (data) => {
        // Display opponent details
        document.getElementById('opponentInfo').innerHTML = `
        Opponent: ${data.opponentName}`;
-    }, 5000); // Delay by the same duration as the loading bar (5 seconds)
+   
 });
 
 
@@ -1177,6 +1177,7 @@ function joinAsSpectator(roomId) {
 // Handle game state updates
 socket.on('gameStateUpdate', (data) => {
     console.log('Game state updated for spectator:', data);
+    startLoadingBar(5000); // Example: 5 seconds loading duration
     renderBoard(data.board);
     updateTurnDisplay(data.turn);
      // Disable clicks for spectators
