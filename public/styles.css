@@ -158,13 +158,27 @@ img {
     background-image: url('resources/images/terrain13.png');
     background-size: cover;
     
+
     
 }
 
 .grass-terrain img{
-    filter:contrast(2);
+    filter:contrast(1);
+    animation: slightShift 3s infinite ease-in-out;
+    
 }
-
+/* Slight side-to-side movement */
+@keyframes slightShift {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(0.7px); /* Move slightly to the right */
+    }
+    100% {
+        transform: translateX(0); /* Return to original position */
+    }
+}
 .red-terrain img {
     filter: brightness(1.5) drop-shadow(0 0 10px red); /* Add glow effect */
     animation: idleBounce 1s infinite, heatPulse 1.5s infinite alternate, glowPulse 1.5s infinite alternate;
@@ -263,6 +277,7 @@ img {
     height: 40px;
     object-fit: contain;
     margin: auto;
+    
 }
 
 
@@ -275,13 +290,13 @@ img {
 
 
 .unit-image {
-    width: 40px; /* Smaller width */
-    height: 40px; /* Smaller height */
+  
     top: 50%;  /* Center vertically */
     left: 50%;  /* Center horizontally */   
     object-fit: contain; /* Prevent distortion */  
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth animation */
     border-radius: 5px;
+    object-fit: contain; /* Prevent distortion */
 }
 
 @keyframes idleBounce {
@@ -871,11 +886,11 @@ td .tower-hp {
         align-items: center;
     }
     .unit-image {
-        width: 35px; /* Smaller width */
-        height: 35px; /* Smaller height */
-        position: absolute;
-        top: 6px;  /* Adjust position to center the image */
-        left: 6px; /* Adjust position to center the image */
+        
+        top: 4px;  /* Adjust for smaller cells */
+        left: 4px;
+        width: 85%; /* Slightly smaller to fit better */
+        height: 85%;
     }
     .tower-hp {
         font-size: 10px;  /* Adjust this value to your preferred size */
@@ -992,11 +1007,11 @@ td .tower-hp {
         font-size: 12px;
     }
     .unit-image {
-        width: 30px; /* Smaller width */
-        height: 30px; /* Smaller height */
+    
         position: absolute;
         top: 1px;  /* Adjust position to center the image */
         left: 1px; /* Adjust position to center the image */
+        object-fit: contain; /* Prevent distortion */
     }
 
     
@@ -1109,11 +1124,11 @@ td .tower-hp {
         height: 45px;
     }
     .unit-image {
-        width: 30px; /* Smaller width */
-        height: 30px; /* Smaller height */
+        
         position: absolute;
         top: 1px;  /* Adjust position to center the image */
         left: 1px; /* Adjust position to center the image */
+        object-fit: contain; /* Prevent distortion */
     }
     .tower-hp {
         font-size: 10px;  /* Adjust this value to your preferred size */
@@ -1222,11 +1237,11 @@ td .tower-hp {
         font-size: 12px;
     }
     .unit-image {
-        width: 30px; /* Smaller width */
-        height: 30px; /* Smaller height */
+       
         position: absolute;
         top: 1px;  /* Adjust position to center the image */
         left: 1px; /* Adjust position to center the image */
+        object-fit: contain; /* Prevent distortion */
     }
     .tower-hp {
         font-size: 8px;  /* Adjust this value to your preferred size */
