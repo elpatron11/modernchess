@@ -70,8 +70,10 @@
             <th>#</th>
             <th>Username</th>
             <th>Rating</th>
-            <th>Reward</th>
+            <th>Reward</th>    
+            <th>General Coins</th>          
             <th>Owned Generals</th>
+            
             
         </tr>
     </thead>
@@ -100,24 +102,59 @@
                     const ratingCell = document.createElement('td');
                     const ownedGeneralsCell = document.createElement('td');
                     const moneyIconCell = document.createElement('td');
+                    const balanceCell = document.createElement('td'); // New cell for coin balance
+
 
                     rankCell.textContent = index + 1;
                     usernameCell.textContent = player.username;
                     ratingCell.textContent = player.rating;
                     ownedGeneralsCell.textContent = player.ownedGenerals.join(', ');
+                    
+                    if (index < 5) { // Add coin icon and text for top 5 players
+                    const moneyIcon = document.createElement('img');
+                    moneyIcon.src = 'resources/images/gccoin.png';
+                    moneyIcon.className = 'money-icon';
+                    moneyIcon.style.width = '20px'; // Set the size of the image
+                    moneyIcon.style.height = '20px'; // Set the size of the image
+                    moneyIcon.style.marginRight = '5px'; // Add some spacing
 
-                    if (index < 3) { // Add money icon for top 3 players
-                        const moneyIcon = document.createElement('img');
-                        moneyIcon.src = 'resources/images/moneyicon.jpg';
-                        moneyIcon.className = 'money-icon';
-                        moneyIconCell.appendChild(moneyIcon);
-                    }
+                    const coinText = document.createElement('span');
+                    coinText.textContent = '200'; // Replace with dynamic value if needed
+                    coinText.style.fontWeight = 'bold'; // Make the text bold
+
+                    moneyIconCell.appendChild(moneyIcon);
+                    moneyIconCell.appendChild(coinText);
+                }
+                    // Add actual balance
+                    const balanceContainer = document.createElement('div');
+                    balanceContainer.style.display = 'flex';
+                    balanceContainer.style.alignItems = 'center';
+
+                    const balanceText = document.createElement('span');
+                    balanceText.textContent = player.generalsCoin || 0; // Display the player's actual coin balance
+                    balanceText.style.fontWeight = 'bold';
+                    balanceText.style.color = 'green'; // Make the balance text green for visibility
+
+                    const coinImage = document.createElement('img');
+                    coinImage.src = 'resources/images/gccoin.png'; // Adjust the path to your coin image
+                    coinImage.alt = 'GC Coin';
+                    coinImage.style.width = '20px';
+                    coinImage.style.height = '20px';
+                    coinImage.style.marginLeft = '5px'; // Add spacing between text and image
+
+                    balanceContainer.appendChild(balanceText);
+                    balanceContainer.appendChild(coinImage);
+
+                    balanceCell.appendChild(balanceContainer);
+
 
                     row.appendChild(rankCell);
                     row.appendChild(usernameCell);
-                    row.appendChild(ratingCell);
+                    row.appendChild(ratingCell);                   
                     row.appendChild(moneyIconCell);
+                    row.appendChild(balanceCell); // Append the balance cell
                     row.appendChild(ownedGeneralsCell);
+                    
                     rankingsBody.appendChild(row);
                 });
             })

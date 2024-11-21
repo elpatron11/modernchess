@@ -84,6 +84,7 @@ function login() {
             document.getElementById('userInfo').innerHTML = `
             ${data.username}</br>  
             Rating:${data.rating}</br>
+            GC: ${data.generalsCoin}</br>
              $${data.balance}.00 
         `;
       
@@ -143,15 +144,24 @@ window.onload = function() {
                     document.getElementById('loginForm').style.display = 'block';
                     document.getElementById('userInfo').style.display = 'none';
                 } else {
+                     // Create a GC coin container
+                    const gcCoinContainer = `
+                    <div style="display: flex; align-items: center;">
+                    
+                    <span style="font-weight: bold; color:#00f819;">${data.generalsCoin}</span>
+                        <img src="resources/images/gccoin.png" alt="GC Coin" style="width: 15px; height: 15px; margin-left: 5px;">
+                    </div>
+                `;
                     // If valid, display the user's information
                     document.getElementById('loginForm').style.display = 'none';
                     document.getElementById('userInfo').style.display = 'block';
                     document.getElementById('userInfo').innerHTML = `
-                        ${data.username}</br>  
-                        Rating:${data.rating}</br>
-                        $${data.balance}.00 
-                    `;
-                            
+                    ${data.username}</br>  
+                    Rating:${data.rating}</br>
+                    $${data.balance}.00 
+                     ${gcCoinContainer}</br>
+                `;
+              
                     
                     // Optionally, show the logout button
                     document.getElementById('logoutButton').style.display = 'block';
@@ -673,6 +683,7 @@ socket.on('gameOver', async (data) => {
              // Hide the leave button and show the join button after the game is over
       document.getElementById('leaveGameButton').style.display = 'none';     
       
+    
       setTimeout(() => {
         location.reload();
     }, 3000);  // Delay to let the sound play

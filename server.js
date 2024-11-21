@@ -124,20 +124,18 @@ app.get('/player/:username', async (req, res) => {
 
 
 // In your server.js or routes file
-// In your server.js or routes file
 app.get('/top-rankings', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20; // Default limit to 20 if no query param is provided
         const topPlayers = await Player.find({})
             .sort({ rating: -1 })
-            .select('username rating ownedGenerals')
+            .select('username rating ownedGenerals generalsCoin') // Include generalsCoin in the response
             .limit(limit); // Apply dynamic limit
         res.status(200).json(topPlayers);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching top rankings' });
     }
 });
-
 
 
 app.post('/update-game-result', async (req, res) => {
@@ -176,7 +174,6 @@ app.post('/update-game-result', async (req, res) => {
 });
 
 
-// Route to get all generals and ownership status
 app.get('/generals', async (req, res) => {
     const username = req.query.username;
     if (!username) {
@@ -184,44 +181,69 @@ app.get('/generals', async (req, res) => {
     }
 
     try {
-        const player = await Player.findOne({ username: username });
+        const player = await Player.findOne({ username });
         if (!player) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Define all available generals in the store
         const allGenerals = [
-            { name: 'GW', price: 0 }, 
-            { name: 'GH', price: 5 },
-            { name: 'GA', price: 5 },
-            { name: 'GM', price: 5 },
-            { name: 'Barbarian', price: 10 },
-            { name: 'Paladin', price: 10 },
-            { name: 'Voldemort', price: 15 },
-            { name: 'Orc', price: 10 },
-            { name: 'Robinhood', price: 15 }
+            { name: 'GW', price: 0, gcPrice: 1000 },
+            { name: 'GH', price: 5, gcPrice: 2000 },
+            { name: 'GA', price: 5, gcPrice: 4000 },
+            { name: 'GM', price: 5, gcPrice: 8000 },
+            { name: 'Barbarian', price: 10, gcPrice: 8000 },
+            { name: 'Paladin', price: 10, gcPrice: 12000 },
+            { name: 'Voldemort', price: 15, gcPrice: 100000 },
+            { name: 'Orc', price: 10, gcPrice: 25000 },
+            { name: 'Robinhood', price: 15, gcPrice: 35000 },
         ];
 
-        // Fetch owned generals for the user
         const ownedGenerals = player.ownedGenerals || [];
-
-        // Ensure GW is included as a default, but don't add it twice if the user already owns it
-        if (!ownedGenerals.includes('GW')) {
-            ownedGenerals.push('GW');
-        }
-
-        // Mark the generals with ownership and avoid duplication
-        const generalsWithOwnership = allGenerals.map(general => ({
-            name: general.name,
-            price: general.price,
-            owned: ownedGenerals.includes(general.name)
+        const generals = allGenerals.map(general => ({
+            ...general,
+            owned: ownedGenerals.includes(general.name),
         }));
 
-        res.json(generalsWithOwnership);
+        res.json({ generals, gcBalance: player.generalsCoin || 0 });
     } catch (error) {
         res.status(500).json({ message: "Error fetching generals" });
     }
 });
+
+app.post('/purchase-with-gc', async (req, res) => {
+    const { username, generalName, gcPrice } = req.body;
+
+    if (!username || !generalName || typeof gcPrice !== 'number') {
+        return res.status(400).json({ success: false, message: 'Invalid input data' });
+    }
+
+    try {
+        const player = await Player.findOne({ username });
+
+        if (!player) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        if (player.generalsCoin < gcPrice) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient General Coins. You need ${gcPrice - player.generalsCoin} more.`,
+            });
+        }
+
+        player.generalsCoin -= gcPrice;
+        player.ownedGenerals.push(generalName);
+        await player.save();
+
+        res.json({ success: true, message: `Successfully purchased ${generalName} using General Coins!` });
+    } catch (error) {
+        console.error('Error processing purchase:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+
+
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
@@ -305,7 +327,8 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: { balance: 1 } }         // Increment balance by 1
+            { $inc: { balance: 1, generalsCoin: 200  } },         // Increment balance by 1
+            
         );
         
         console.log('Successfully updated balance for top 5 players');
@@ -360,7 +383,7 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
 
 // Function to check if user is eligible for a new general
 // Function to check and unlock generals based on games played
-async function checkAndUnlockGeneral(username) {
+/*async function checkAndUnlockGeneral(username) {
     try {
         const player = await Player.findOne({ username: username });
         if (!player) {
@@ -391,7 +414,7 @@ async function checkAndUnlockGeneral(username) {
         console.error('Error unlocking generals:', error);
         return 'Error unlocking generals';
     }
-}
+} */
 
 // Start or reset a game timer
 function startTurnTimer(roomId, currentPlayer) {
@@ -925,14 +948,14 @@ async function updateGameResult(winnerUsername, loserUsername) {
         let ratingChange = 0;
         const ratingDifference = winner.rating - loser.rating;
 
-        if (ratingDifference >= 50) {
-            ratingChange = 0; // No points gained for the winner
-        }else if (ratingDifference >= 15) {
-            ratingChange = 0; // Minimal points gained for the winner
-        }  else if (ratingDifference >= 10) {
+        if (ratingDifference >= 100) {
+            ratingChange = 5; // No points gained for the winner
+        }else if (ratingDifference >= 50) {
             ratingChange = 5; // Minimal points gained for the winner
+        }  else if (ratingDifference >= 20) {
+            ratingChange = 10; // Minimal points gained for the winner
         } else if (ratingDifference < 0) {
-            ratingChange = 10; // Big gain for the winner when beating a higher-rated player
+            ratingChange = 15; // Big gain for the winner when beating a higher-rated player
         } else {
             ratingChange = 10; // Moderate gain when players are closely rated
         }
@@ -947,7 +970,8 @@ async function updateGameResult(winnerUsername, loserUsername) {
         // Increment games played
         winner.gamesPlayed += 1;
         loser.gamesPlayed += 1;
-
+        winner.generalsCoin += 50;
+        loser.generalsCoin -= 10;
         // Save changes
         await winner.save();
         await loser.save();
@@ -978,7 +1002,8 @@ async function updateBotGameResult(playerUsername, botWins) {
 
         // Increment games played for the player
         player.gamesPlayed += 1;
-
+        player.generalsCoin -= 10;
+        
         // Save changes
         await player.save();
 
@@ -1478,7 +1503,7 @@ socket.on('emojiSelected', function(data) {
                 if (player) {
                     // Add 5 points to the player's rating
                     player.rating += 10;
-        
+                    player.generalsCoin += 35;
                     // Ensure the rating does not exceed the maximum, e.g., 1500
                     player.rating = Math.min(player.rating, 1500);
         

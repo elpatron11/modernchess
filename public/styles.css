@@ -206,6 +206,10 @@ img {
     }
 }
 
+#topContainer{
+    display: flex;
+    align-items: center;
+}
 
 .user-controls {
     width: 100%; /* Full width */
@@ -324,9 +328,12 @@ img {
 td .tower-hp {
     font-size: 13px;  /* Adjust this value to your preferred size */
     color: rgb(231, 231, 231);  /* Optional: Change the color of the text */
-    text-align: right;
-    font-weight: bold;
-    display: block; /* Ensure the label is a block-level element */
+    text-align:right;
+    
+    
+    display: flex; /* Ensure the label is a block-level element */
+    
+    justify-content:right;
 }
 
 
@@ -391,7 +398,7 @@ td .tower-hp {
     color:#00f819;
     font-weight: bold;    
     width: 150px; /* Adjust the width as needed */    
-    padding: 12px; /* Add some padding for spacing inside the box */
+    padding: 8px; /* Add some padding for spacing inside the box */
     display: flex;
     align-items: center;
     background-color: #007BFF;
@@ -402,39 +409,53 @@ td .tower-hp {
     border: 2px solid #00f819; /* Border to complement color scheme */
       /* Centering logic */
       position: absolute; /* Position absolutely within parent */
-      left: 20%; /* Start from the center horizontally */
+      left: 10%; /* Start from the center horizontally */
       transform: translateX(-50%); /* Offset by 50% of width to truly center */
-      top: 20px; /* Adjust for spacing from the top */
+      top: 10px; /* Adjust for spacing from the top */
 }
 #userInfo p {
     margin-bottom: 5px; /* Add some space between paragraphs */
 }
 /* Responsive styles for smaller screens */
 
+
+
 .shop-button {
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    padding: 10px 20px; /* Padding for the button */
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    font-size: 14px; /* Font size */
+    background-color: #27dd0b; /* Primary color */
+    color: white; /* Text color */
+    padding: 12px 24px; /* Increased padding for better spacing */
+    border: 2px solid #0958c7; /* Subtle border for depth */
+    border-radius: 25px; /* More rounded corners for modern look */
+    border-style:outset;
+    font-size: 14px; /* Slightly larger font for readability */
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold; /* Bold text for emphasis */
     cursor: pointer; /* Pointer cursor */
     display: flex; /* Flex for icon and text alignment */
-    align-items: center; /* Center icon and text vertically */
-    justify-content: center; /* Center content */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-    width: 100px;
-    height: 50px;
-    
-}
-
-.shop-button i {
-    margin-right: 10px; /* Space between icon and text */
-    font-size: 18px; /* Increase icon size */
+    align-items: center; /* Vertically center icon and text */
+    justify-content: center; /* Horizontally center content */
+    transition: all 0.3s ease; /* Smooth hover and click effects */
+    width: 260px; /* Adjusted width */
+    height: 55px; /* Adjusted height */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for 3D effect */
+    padding: 5px;
 }
 
 .shop-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: #135ece; /* Darker shade on hover */
+    color: #e0e0e0; /* Slightly lighter text color */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+    transform: translateY(-2px); /* Slight upward movement on hover */
+}
+
+.shop-button:active {
+    background-color: #0837c3; /* Even darker shade for click effect */
+    transform: translateY(2px); /* Push-down effect */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+}
+
+#topRankingButton{
+    border-radius: 5px;
 }
 
 #playButton{
@@ -832,7 +853,11 @@ td .tower-hp {
     font-size: 18px;
 }
 
-
+.board-cell {
+    aspect-ratio: 1; /* Ensure cells stay square */
+    width: 55px;
+    height: 55px;
+}
 
 
 

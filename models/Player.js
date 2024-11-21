@@ -45,6 +45,11 @@ const playerSchema = new mongoose.Schema({
   balance: {
     type: Number,
     default: 0
+  },
+
+  generalsCoin: {
+    type: Number,
+    default: 20
   }
   
 

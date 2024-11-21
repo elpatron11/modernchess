@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generals Store</title>
     <style>
+        h1{
+            display:flex;
+            align-items: center;
+            justify-content: center;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            color: green;
+            padding: 0.5em;
+
+        }
+
         .container {
             display: flex;
             flex-wrap: wrap;
@@ -20,25 +30,46 @@
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
         .card img {
-        width: 300px;
-        height: 300px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
         .owned {
             color: green;
             font-weight: bold;
         }
-        .paypal-button {
+        .paypal-button, .gc-button {
             margin-top: 10px;
             text-decoration: none;
             background-color: #007bff;
             color: white;
             padding: 10px 15px;
             border-radius: 5px;
+            display: inline-block;
         }
-        .paypal-button:hover {
+        .paypal-button:hover, .gc-button:hover {
             background-color: #0056b3;
+        }
+        .gc-button {
+            background-color: gold;
+            color: black;
+            font-weight: bold;
+        }
+        .gc-button:hover {
+            background-color: darkgoldenrod;
+            color: white;
+        }
+        .price-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .price-container img {
+            margin-left: 5px;
+            width: 24px;
+            height: 24px;
         }
         .back-button {
             margin: 20px;
@@ -52,9 +83,30 @@
         .back-button:hover {
             background-color: #0056b3;
         }
+        .balance-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin: 10px 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .balance-container img {
+            margin-left: 5px;
+            width: 24px;
+            height: 24px;
+        }
+
+        #gcBalanceDisplay{
+            color:rgb(156, 133, 5);
+        }
     </style>
 </head>
 <body>
+
+<div class="balance-container" id="gcBalanceDisplay">
+    <!-- GC Balance will be dynamically updated here -->
+</div>
 
 <h1>Available Generals</h1>
 <button class="back-button" id="backButton">Back to Home</button>
@@ -65,25 +117,29 @@
 
 <script>
     document.getElementById('backButton').addEventListener('click', function() {
-        window.location.href = '/';  // Redirects back to the home or main page
+        window.location.href = '/'; // Redirect to the home page
     });
 
     document.addEventListener('DOMContentLoaded', function() {
         const username = localStorage.getItem('username'); // Get the logged-in user's username
-
+        
         if (!username) {
             alert('Please log in to view your generals.');
             return;
         }
 
-        // Fetch general data from the server, including ownership
+        // Fetch general data from the server, including ownership and balance
         fetch(`/generals?username=${username}`)
             .then(response => response.json())
-            .then(generals => {
+            .then(data => {
+                const { generals, gcBalance } = data; // Assuming the server returns the general list and GC balance
                 const generalContainer = document.getElementById('generalContainer');
+                const gcBalanceDisplay = document.getElementById('gcBalanceDisplay');
 
-                // Clear any existing content in the container
-                generalContainer.innerHTML = '';
+                // Display the GC balance
+                gcBalanceDisplay.innerHTML = `Balance: ${gcBalance} <img src="/resources/images/gccoin.png" alt="GC Coin">`;
+
+                generalContainer.innerHTML = ''; // Clear the container
 
                 generals.forEach(general => {
                     const card = document.createElement('div');
@@ -100,24 +156,47 @@
                     card.appendChild(title);
 
                     if (general.owned) {
-                        // If the general is owned, display as owned
                         const ownedText = document.createElement('p');
                         ownedText.textContent = 'Owned';
                         ownedText.classList.add('owned');
                         card.appendChild(ownedText);
                     } else {
-                        // Otherwise, show price and PayPal link
+                        // Price in USD
                         const priceText = document.createElement('p');
                         priceText.textContent = `Price: $${general.price}`;
 
-                        // Replace with your own PayPal link or payment service link
+                        // GC Price with icon
+                        const gcPriceContainer = document.createElement('div');
+                        gcPriceContainer.classList.add('price-container');
+                        const gcPriceText = document.createElement('span');
+                        gcPriceText.textContent = `${general.gcPrice}`;
+                        const gcCoinImage = document.createElement('img');
+                        gcCoinImage.src = '/resources/images/gccoin.png'; // Update with your GC coin image path
+                        gcCoinImage.alt = 'GC Coin';
+
+                        gcPriceContainer.appendChild(gcPriceText);
+                        gcPriceContainer.appendChild(gcCoinImage);
+
+                        // PayPal button
                         const paypalLink = document.createElement('a');
-                        paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`;
+                        paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`; // Replace with dynamic link if needed
                         paypalLink.classList.add('paypal-button');
-                        paypalLink.textContent = 'Buy Now';
+                        paypalLink.textContent = 'Buy with PayPal';
+
+                        // GC Button
+                        const gcButton = document.createElement('button');
+                        gcButton.classList.add('gc-button');
+                        gcButton.textContent = 'Buy with GC';
+                        gcButton.onclick = () => {
+                            const currentUsername = localStorage.getItem('username'); // Always fetch the current username
+                            purchaseWithGC(general.name, general.gcPrice, currentUsername);
+                            console.log(currentUsername);
+                        };
 
                         card.appendChild(priceText);
+                        card.appendChild(gcPriceContainer);
                         card.appendChild(paypalLink);
+                        card.appendChild(gcButton);
                     }
 
                     generalContainer.appendChild(card);
@@ -125,6 +204,32 @@
             })
             .catch(error => console.error('Error loading generals:', error));
     });
+
+    function purchaseWithGC(generalName, gcPrice, username) {
+        console.log(username);
+    console.log(`Attempting purchase: Username: ${username}, General: ${generalName}, GC Price: ${gcPrice}`);
+
+    fetch('/purchase-with-gc', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, generalName, gcPrice }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server response:', data);
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload to update the balance and owned generals
+            } else {
+                alert(`Failed to purchase: ${data.message}`);
+            }
+        })
+        .catch(error => console.error('Error purchasing general with GC:', error));
+}
+
+
 </script>
 
 </body>
