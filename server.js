@@ -149,7 +149,7 @@ app.post('/update-game-result', async (req, res) => {
             return res.status(404).json({ message: "One or both players not found." });
         }
 
-        const winnerNewRating = Math.min(1500, winner.rating + 50);
+        const winnerNewRating = Math.min(1700, winner.rating + 50);
         const loserNewRating = Math.max(1200, loser.rating - 50);
 
         const updatedWinner = await Player.findOneAndUpdate(
@@ -1063,8 +1063,8 @@ function createGameBoard() {
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
-    board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 18 };  // Player 1 Tower
-    board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 20 };  // Player 2 Tower
+    board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 10 };  // Player 1 Tower
+    board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 12 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -1499,7 +1499,9 @@ socket.on('emojiSelected', function(data) {
                 unitHasAttacked: {},
                 unitHasMoved: {}
             };
-    
+                    // Add Towers for Player 1 and Player 2
+            games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
+            games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
             console.log(`Game initialized with players:`, games[roomId].players);
             turnCounter = 0;
             io.to(roomId).emit('updateTurnCounter', turnCounter);
@@ -1650,7 +1652,7 @@ socket.on('emojiSelected', function(data) {
                     player.rating += 10;
                     player.generalsCoin += 25;
                     // Ensure the rating does not exceed the maximum, e.g., 1500
-                    player.rating = Math.min(player.rating, 1500);
+                    player.rating = Math.min(player.rating, 1700);
         
                     // Save the updated rating to the database
                     await player.save();
