@@ -910,8 +910,8 @@ async function makeMove(from, to, roomId, playerId) {
     
                 const damage = getUnitDamage(attackingPiece); // Get damage from the attacking piece
                 tower.hp -= damage; // Apply damage to tower
-                // Emit a board update with the tower's new HP
-                io.to(roomId).emit('updateBoard', { board: game.board });
+            // Emit a board update with the tower's new HP
+            
                 console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${damage} damage.`);
         
 
