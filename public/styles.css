@@ -427,7 +427,7 @@ td .tower-hp {
     border: 2px solid #0958c7; /* Subtle border for depth */
     border-radius: 25px; /* More rounded corners for modern look */
     border-style:outset;
-    font-size: 14px; /* Slightly larger font for readability */
+    font-size: 16px; /* Slightly larger font for readability */
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-weight: bold; /* Bold text for emphasis */
     cursor: pointer; /* Pointer cursor */
