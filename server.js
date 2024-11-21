@@ -460,7 +460,7 @@ function switchTurn(roomId) {
 
      
 }
-function botTakeTurn(roomId) {
+async function botTakeTurn(roomId) {
     const game = games[roomId];
     if (!game) return;
 
@@ -468,7 +468,7 @@ function botTakeTurn(roomId) {
     const unitsThatAttacked = new Set(); // Track which units have attacked this turn
 
     // Function to perform a single action with a delay
-    function attemptAction() {
+   async function attemptAction() {
         if (actionsPerformed >= 2) {
              // Increment the turn counter after the bot's full turn
              turnCounter++;
@@ -549,14 +549,17 @@ function botTakeTurn(roomId) {
 
         // Schedule the next action attempt if fewer than 2 actions have been performed
         if (actionsPerformed < 2) {
-            setTimeout(attemptAction, 2000);
- 
+            setTimeout(attemptAction, 6000);
+            // Wait for board updates to propagate
+             await delay(6000);
 
         }
     }
 
     // Start the first action attempt with an initial delay
-    setTimeout(attemptAction, 4000);
+    setTimeout(attemptAction, 5000);
+    // Wait for board updates to propagate
+    await delay(5000);
    
 }
 
@@ -769,7 +772,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
 }
 
 
-function makeMove(from, to, roomId, playerId) {
+async function makeMove(from, to, roomId, playerId) {
     const game = games[roomId];
     if (!game) {
         console.error(`Game not found for roomId: ${roomId}`);
@@ -823,13 +826,45 @@ function makeMove(from, to, roomId, playerId) {
                 }
 
             }
+
+            if(attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P2_GM') || attackingPiece.startsWith('P2_Voldemort'))
+            {
+                if(targetPiece.startsWith('P1_Orc')){
+                    hitChance = 0;
+                }
+            }
+
+            if(attackingPiece.startsWith('P2_A'))
+                {
+                    if(targetPiece.startsWith('P1_GH')){
+                        hitChance = 0;
+                    }
+                }
+
             // Random chance to hit or miss
             if (Math.random() > hitChance) {
                 console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                 io.to(roomId).emit('attackMiss', { targetPosition: to, message: `${targetPiece} avoided the attack!` });
+
+                  // General Warrior counter-attack logic
+                  if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
+                    const counterRoll = Math.random();
+                    if (counterRoll <= 0.4) {  // 40% chance to counter-attack
+                        console.log(`Counter-attack! ${attackingPiece} is removed.`);
+                        game.board[from.row][from.col].unit = 'counterattack'; 
+                        io.to(roomId).emit('updateBoard', { board: game.board });
+                        io.to(roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
+                                            // Emit board update after move or attack
+                        
+                                    // Pause bot execution to allow client to process the update
+                        await delay(4000); // Wait for 2 seconds (adjust as necessary)
+                        game.board[from.row][from.col].unit = ''; 
+                        io.to(roomId).emit('updateBoard', { board: game.board });
+                        
+                    }}
                 
                 // Count this as an action even though it missed
-                game.actionCount++;
+                game.actionCount ++;
                 if (game.actionCount >= 2) {
                     switchTurn(roomId); // End the bot's turn after performing 2 actions
                 }
@@ -849,16 +884,86 @@ function makeMove(from, to, roomId, playerId) {
                 board[to.row][to.col].unit = 'towerdestroyed';
                 io.to(roomId).emit('gameOver', 'Player 2 wins!');
             }
-        } else {
-            console.log(`Bot is moving from (${from.row},${from.col}) to (${to.row},${to.col})`);
-            board[to.row][to.col].unit = attackingPiece;
+        } 
+
+       
+
+            console.log(`Bot is attacking from (${from.row},${from.col}) to (${to.row},${to.col})`);
             io.to(roomId).emit('botAttackHit');
-            board[to.row][to.col].unit = 'explosion';  // replace defender img
-            setTimeout(() => {
+            console.log(`piece that is attacking is ${attackingPiece} and ${game.board[to.row][to.col].unit}`)
+
+            if (attackingPiece.startsWith('P1_M') || attackingPiece.startsWith('P2_M'))
+                {
+                    game.board[to.row][to.col].unit = 'magehit';  // replace the target piece
+                    if (attackingPiece.startsWith('P2_M')){
+                        game.board[from.row][from.col].unit = 'p2mageattack';
+                    }
+                }
+            else if(attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A'))
+                {
+                    game.board[to.row][to.col].unit = 'archerhit';  // replace the target piece
+                    if (attackingPiece.startsWith('P2_A')){
+                        game.board[from.row][from.col].unit = 'archerattack';
+                    }
+                   
+                } else if(attackingPiece.startsWith('P1_Paladin') || attackingPiece.startsWith('P2_Paladin'))
+                    {
+                        game.board[to.row][to.col].unit = 'paladinhit';  // replace the target piece
+                        if (attackingPiece.startsWith('P2_Paladin')){
+                            game.board[from.row][from.col].unit = 'paladin2attack';
+                        }
+                        
+                        
+                    }
+                else if(attackingPiece.startsWith('P1_GA') || attackingPiece.startsWith('P2_GA'))
+                    {
+                        game.board[to.row][to.col].unit = 'gahit';  // replace the target piece
+                        if (attackingPiece.startsWith('P2_GA')){
+                            game.board[from.row][from.col].unit = 'archerattack';
+                        }
+                                               
+                    }
+
+                else{
+                game.board[to.row][to.col].unit = 'explosion';  // replace defender img
+                io.to(roomId).emit('updateBoard', { board: game.board });    
+                    
+                }  
+                
+                
+            //board[to.row][to.col].unit = 'explosion';  // replace defender img
+            io.to(roomId).emit('updateBoard', { board: game.board });
+            await delay(4000); // Wait for 2 seconds (adjust as necessary)
                 board[to.row][to.col].unit = '';  // Clear target piece after successful attack
-            }, 3000); // 3 seconds for the hit animation
-            
-        }
+                board[from.row][from.col].unit = attackingPiece;
+                io.to(roomId).emit('updateBoard', { board: game.board });
+                
+               
+               
+                if(targetPiece.startsWith('P1_Voldemort') || targetPiece.startsWith('P2_Voldemort')) {
+                    console.log(`Mage ${targetPiece} defeated by ${attackingPiece}`);
+                
+                    // Get the team prefix from the attacking unit
+                    let teamPrefix = attackingPiece.substring(0, 3); // This gets "P1_" or "P2_"
+                
+                    // Determine the new team prefix based on the current one
+                    let newTeamPrefix = (teamPrefix === 'P1_') ? 'P2_' : 'P1_';
+                
+                    // Change the team of the attacking unit
+                    let newUnit = newTeamPrefix + attackingPiece.substring(3); // Changes "P1_H" to "P2_H" or vice versa
+                   // Update the attacking unit on the board
+                   if(newUnit.startsWith('P1_T') || newUnit.startsWith('P2_T')) {
+                    console.log("this is a tower cant be converted")
+                    } 
+                    else{           
+                    delay(4000);   
+                     game.board[from.row][from.col].unit = newUnit;
+                    console.log(`Converted ${attackingPiece} to ${newUnit}`);
+                     io.to(roomId).emit('unitConvert', `This! ${attackingPiece} is now your enemy.`);    }              
+                     await delay(4000);
+            }    
+                
+        
     } else {
         // Handle movement if it's not an attack
         console.log(`Bot is moving from (${from.row},${from.col}) to (${to.row},${to.col})`);
@@ -868,7 +973,7 @@ function makeMove(from, to, roomId, playerId) {
 
     // Emit board update after move or attack
     io.to(roomId).emit('updateBoard', { board: game.board });
-
+    
     // Increment action count and end turn if necessary
     game.actionCount++;
     if (game.actionCount >= 2) {
@@ -877,6 +982,10 @@ function makeMove(from, to, roomId, playerId) {
     return true;
 }
 
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Helper function to randomly place terrain on a row
 function placeRandomTerrain(board, row, type, count) {
@@ -1503,7 +1612,7 @@ socket.on('emojiSelected', function(data) {
                 if (player) {
                     // Add 5 points to the player's rating
                     player.rating += 10;
-                    player.generalsCoin += 35;
+                    player.generalsCoin += 25;
                     // Ensure the rating does not exceed the maximum, e.g., 1500
                     player.rating = Math.min(player.rating, 1500);
         
