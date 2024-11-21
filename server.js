@@ -433,7 +433,7 @@ function startTurnTimer(roomId, currentPlayer) {
 let botAccount = {
     username: 'Bot123',
     password: '12345678',
-    general: 'GA',
+    general: 'GW',
     socketId: 'botSocketId12345'  // Static socket ID for the bot
 };
 // Switch turns
@@ -772,6 +772,23 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
 }
 
 
+
+function getUnitDamage(unit) {
+    const unitDamageMap = {
+        'P1_A': 2, 'P2_A': 2, // Archers
+        'P1_H': 3, 'P2_H': 3, // Horses
+        'P1_W': 1, 'P2_W': 1, // Warriors
+        'P1_M': 4, 'P2_M': 4, // Mages
+        'P1_GW': 5, 'P2_GW': 5, // General Warrior
+        'P1_GA': 4, 'P2_GA': 4, // General Archer
+        'P1_GH': 3, 'P2_GH': 3, // General Horse
+        // Add other units with their respective damages
+    };
+    return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
+}
+
+
+
 async function makeMove(from, to, roomId, playerId) {
     const game = games[roomId];
     if (!game) {
@@ -852,7 +869,9 @@ async function makeMove(from, to, roomId, playerId) {
                     if (counterRoll <= 0.4) {  // 40% chance to counter-attack
                         console.log(`Counter-attack! ${attackingPiece} is removed.`);
                         game.board[from.row][from.col].unit = 'counterattack'; 
+                        await delay(2000); // Wait for 2 seconds (adjust as necessary)
                         io.to(roomId).emit('updateBoard', { board: game.board });
+                        await delay(2000); // Wait for 2 seconds (adjust as necessary)
                         io.to(roomId).emit('counterAttack', `Counter-attack! ${attackingPiece} is removed.`);
                                             // Emit board update after move or attack
                         
@@ -860,7 +879,7 @@ async function makeMove(from, to, roomId, playerId) {
                         await delay(4000); // Wait for 2 seconds (adjust as necessary)
                         game.board[from.row][from.col].unit = ''; 
                         io.to(roomId).emit('updateBoard', { board: game.board });
-                        
+                        await delay(2000); // Wait for 2 seconds (adjust as necessary)
                     }}
                 
                 // Count this as an action even though it missed
@@ -872,13 +891,29 @@ async function makeMove(from, to, roomId, playerId) {
             }
         }
 
-        // If attack succeeds or avoidance is bypassed
-        console.log(`Bot is attacking from (${from.row},${from.col}) to (${to.row},${to.col})`);
 
-        if (targetPiece === "P1_T") {
-            const tower = board[to.row][to.col];
-            tower.hp = tower.hp ? tower.hp - 3 : 26;  // Initialize if not already set, then reduce HP
-            console.log(`Player 1's tower at (${to.row}, ${to.col}) now has ${tower.hp} HP.`);
+        let isTower = false;
+        let damage = getUnitDamage(attackingPiece);  // Get damage based on unit type
+    
+         // Check if the target is a tower
+        if (targetPiece === 'P1_T' || targetPiece === 'P2_T') {
+                isTower = true;
+            }
+    
+            // Deal damage to towers
+            if (isTower) {
+                const tower = game.board[to.row][to.col];
+    
+                if (!tower.hp) {
+                    tower.hp = 26;  // Initialize tower HP if not already set
+                }
+    
+                const damage = getUnitDamage(attackingPiece); // Get damage from the attacking piece
+                tower.hp -= damage; // Apply damage to tower
+                // Emit a board update with the tower's new HP
+                io.to(roomId).emit('updateBoard', { board: game.board });
+                console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${damage} damage.`);
+        
 
             if (tower.hp <= 0) {
                 board[to.row][to.col].unit = 'towerdestroyed';
