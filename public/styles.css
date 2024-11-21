@@ -435,10 +435,24 @@ td .tower-hp {
     align-items: center; /* Vertically center icon and text */
     justify-content: center; /* Horizontally center content */
     transition: all 0.3s ease; /* Smooth hover and click effects */
-    width: 260px; /* Adjusted width */
+    width: 150px; /* Adjusted width */
     height: 55px; /* Adjusted height */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for 3D effect */
-    padding: 5px;
+    padding: 10px;
+    margin: 10px;
+    animation: pulse 1.5s infinite; /* Add pulsing animation */
+}
+/* Keyframes for pulsing effect */
+@keyframes pulse {
+    0% {
+        transform: scale(1); /* Original size */
+    }
+    50% {
+        transform: scale(1.1); /* Slightly bigger */
+    }
+    100% {
+        transform: scale(1); /* Back to original size */
+    }
 }
 
 .shop-button:hover {
