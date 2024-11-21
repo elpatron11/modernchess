@@ -91,7 +91,7 @@ app.post('/login', async (req, res) => {
         if (trimmedPassword !== player.password) {
             return res.status(400).json({ message: "Invalid credentials." });
         }
-        const generalUnlockMessage = await checkAndUnlockGeneral(username);
+       // const generalUnlockMessage = await checkAndUnlockGeneral(username);
         
         res.json({
             message: "Login successful",
