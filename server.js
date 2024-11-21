@@ -1050,10 +1050,10 @@ function createGameBoard() {
 
 
     // Add Player 1 and Player 2's Horse (H) units
-    board[0][2].unit = 'P1_H';
+    board[0][1].unit = 'P1_H';
     board[0][5].unit = 'P1_H';
     board[7][2].unit = 'P2_H';
-    board[7][5].unit = 'P2_H';
+    board[7][6].unit = 'P2_H';
 
     // Add Player 1 and Player 2's Archer (A) units
     board[0][4].unit = 'P1_M';
@@ -1063,8 +1063,8 @@ function createGameBoard() {
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
-    board[2][4] = { terrain: 'normal', unit: 'P1_T', hp: 26 };  // Player 1 Tower
-    board[5][3] = { terrain: 'normal', unit: 'P2_T', hp: 28 };  // Player 2 Tower
+    board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 18 };  // Player 1 Tower
+    board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 20 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -1795,7 +1795,7 @@ socket.on('emojiSelected', function(data) {
                         //To heal the tower
                 if (attackingPiece.startsWith('P1_GM') || attackingPiece.startsWith('P2_GM')) {
                     // Determine which player is attacking and get the corresponding tower position
-                    let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 2, col: 4 } : { row: 5, col: 3 };
+                    let towerPosition = attackingPiece.startsWith('P1_GM') ? { row: 0, col: 3 } : { row: 7, col: 5 };
                     let tower = game.board[towerPosition.row][towerPosition.col];
                 
                     // Log the state of the tower before attempting to heal
