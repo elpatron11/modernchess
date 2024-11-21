@@ -100,7 +100,7 @@ app.post('/login', async (req, res) => {
             gamesPlayed: player.gamesPlayed,
             ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
             balance: player.balance,
-            generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
+            //generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
