@@ -1100,7 +1100,8 @@ function getImageForUnit(unitType) {
         'gahit': '/resources/images/animation/gahit.gif',
         'paladinhit': '/resources/images/animation/paladinhit.gif',
         'paladinattack': '/resources/images/animation/paladinattack.gif',
-        'paladin2attack': '/resources/images/animation/paladin2attack.gif'
+        'paladin2attack': '/resources/images/animation/paladin2attack.gif',
+         'attackhit': '/resources/images/animation/explosion.gif'
         // Add other units as needed
     };
     return unitImages[unitType] || '';  // Return the image URL or an empty string if no unit

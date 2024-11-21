@@ -845,7 +845,7 @@ async function makeMove(from, to, roomId, playerId) {
             if (Math.random() > hitChance) {
                 console.log(`Attack missed! ${targetPiece} avoided the hit.`);
                 io.to(roomId).emit('attackMiss', { targetPosition: to, message: `${targetPiece} avoided the attack!` });
-
+                io.to(roomId).emit('updateBoard', { board: game.board });
                   // General Warrior counter-attack logic
                   if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                     const counterRoll = Math.random();
@@ -899,10 +899,10 @@ async function makeMove(from, to, roomId, playerId) {
                         game.board[from.row][from.col].unit = 'p2mageattack';
                     }
                 }
-            else if(attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A'))
+            else if(attackingPiece.startsWith('P2_T') || attackingPiece.startsWith('P2_A') )
                 {
                     game.board[to.row][to.col].unit = 'archerhit';  // replace the target piece
-                    if (attackingPiece.startsWith('P2_A')){
+                    if (attackingPiece.startsWith('P2_A') || attackingPiece.startsWith('P2_T')){
                         game.board[from.row][from.col].unit = 'archerattack';
                     }
                    
@@ -923,9 +923,10 @@ async function makeMove(from, to, roomId, playerId) {
                         }
                                                
                     }
-
+                     
                 else{
                 game.board[to.row][to.col].unit = 'explosion';  // replace defender img
+                game.board[from.row][from.col].unit = 'attackhit';
                 io.to(roomId).emit('updateBoard', { board: game.board });    
                     
                 }  
@@ -1947,10 +1948,10 @@ socket.on('emojiSelected', function(data) {
                             game.board[from.row][from.col].unit = 'p2mageattack';
                         }
                     }
-                    else if(attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A'))
+                    else if(attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A') || attackingPiece.startsWith('P1_T') || attackingPiece.startsWith('P2_T'))
                     {
                         game.board[to.row][to.col].unit = 'archerhit';  // replace the target piece
-                        if (attackingPiece.startsWith('P1_A')){
+                        if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P1_T')){
                             game.board[from.row][from.col].unit = 'archerattack';
                         }
                         else{
