@@ -192,10 +192,10 @@ app.get('/generals', async (req, res) => {
             { name: 'GA', price: 5, gcPrice: 700 },
             { name: 'GM', price: 5, gcPrice: 800 },
             { name: 'Barbarian', price: 10, gcPrice: 1000 },
-            { name: 'Paladin', price: 10, gcPrice: 1200 },
-            { name: 'Voldemort', price: 15, gcPrice: 25000 },
+            { name: 'Paladin', price: 10, gcPrice: 1200 },            
             { name: 'Orc', price: 10, gcPrice: 1200 },
-            { name: 'Robinhood', price: 15, gcPrice: 25000 },
+            { name: 'Voldemort', price: 15, gcPrice: 25000 },
+            { name: 'Robinhood', price: 15, gcPrice: 25000 }
         ];
 
         const ownedGenerals = player.ownedGenerals || [];
