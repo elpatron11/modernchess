@@ -5,42 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generals Store</title>
     <style>
-        h1{
-            display:flex;
+        h1 {
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
             color: green;
-            padding: 0.5em;
-
+            padding: 5px;
+        }
+        h3{
+            color: purple;
+            padding: 5px;
+            margin: 5px;
         }
 
+        p{
+            margin: 5px;
+            font-weight: bold;
+            color:green;
+
+        }
+        span{
+            color: rgb(123, 105, 3);
+        }
+    
         .container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
         }
+    
         .card {
             border: 1px solid #ccc;
             border-radius: 10px;
             width: 320px;
-            margin: 15px;
-            padding: 10px;
+            margin: 5px;
+            padding: 5px;
             text-align: center;
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
+    
         .card img {
             width: 300px;
             height: 300px;
             object-fit: cover;
             border-radius: 8px;
         }
+    
         .owned {
             color: green;
             font-weight: bold;
         }
+    
         .paypal-button, .gc-button {
             margin-top: 10px;
+            width: 100;
             text-decoration: none;
             background-color: #007bff;
             color: white;
@@ -48,29 +67,41 @@
             border-radius: 5px;
             display: inline-block;
         }
+    
         .paypal-button:hover, .gc-button:hover {
             background-color: #0056b3;
         }
+    
         .gc-button {
             background-color: gold;
-            color: black;
+            color: white;
             font-weight: bold;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+
         }
+    
         .gc-button:hover {
             background-color: darkgoldenrod;
             color: white;
         }
+    
         .price-container {
             display: flex;
             justify-content: center;
             align-items: center;
             margin-top: 10px;
         }
+    
         .price-container img {
             margin-left: 5px;
             width: 24px;
             height: 24px;
         }
+    
         .back-button {
             margin: 20px;
             padding: 10px 20px;
@@ -80,9 +111,11 @@
             border-radius: 5px;
             cursor: pointer;
         }
+    
         .back-button:hover {
             background-color: #0056b3;
         }
+    
         .balance-container {
             display: flex;
             justify-content: flex-end;
@@ -91,16 +124,56 @@
             font-weight: bold;
             font-size: 1.2em;
         }
+    
         .balance-container img {
             margin-left: 5px;
             width: 24px;
             height: 24px;
         }
-
-        #gcBalanceDisplay{
-            color:rgb(156, 133, 5);
+    
+        #gcBalanceDisplay {
+            color: rgb(156, 133, 5);
         }
+    
+        /* Media query for smaller screens */
+        @media screen and (max-width: 768px) {
+            .card {
+                width: 200px;
+                margin: 10px;
+                padding: 5px;
+            }
+    
+            .card img {
+                width: 180px;
+                height: 180px;
+            }
+    
+            .paypal-button, .gc-button {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+    
+            h1 {
+                font-size: 1.5em;
+            }
+    
+                        .price-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 10px;
+            }
+
+            .price-container img {
+                margin-left: 5px;
+                width: 16px; /* Adjusted size for smaller coin icon */
+                height: 16px;
+                vertical-align: middle;
+            }
+
+                    }
     </style>
+    
 </head>
 <body>
 
@@ -181,12 +254,12 @@
                         const paypalLink = document.createElement('a');
                         paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`; // Replace with dynamic link if needed
                         paypalLink.classList.add('paypal-button');
-                        paypalLink.textContent = 'Buy with PayPal';
+                        paypalLink.textContent = 'PayPal';
 
                         // GC Button
                         const gcButton = document.createElement('button');
                         gcButton.classList.add('gc-button');
-                        gcButton.textContent = 'Buy with GC';
+                        gcButton.textContent = 'GC';
                         gcButton.onclick = () => {
                             const currentUsername = localStorage.getItem('username'); // Always fetch the current username
                             purchaseWithGC(general.name, general.gcPrice, currentUsername);
