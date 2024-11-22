@@ -39,6 +39,8 @@ const archerkill = document.getElementById('archerkill');
 let terrainType2 = 0;
 let terrainType3 = 0;
 let isSpectator = false; // Default to false
+let playerCard = null; // Global variable to store the player's selected card
+
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -76,7 +78,7 @@ function login() {
             if (data.generalUnlockMessage) {
             alert(data.generalUnlockMessage); // Notify the player about the unlocked general
             loadGeneralDropdown();
-            
+            loadCardDropdown(); // Load cards
             }
             
             document.getElementById('loginForm').style.display = 'none';
@@ -135,6 +137,7 @@ window.onload = function() {
     if (username) {
         // Optional: You can check with the server if the username is still valid
         loadGeneralDropdown(username); // Repopulate the dropdown based on ownership
+        loadCardDropdown(username); // Load cards
         fetch(`/player/${username}`)
             .then(response => response.json())
             .then(data => {
@@ -197,13 +200,14 @@ function logout() {
 function startMatchmaking() {
     console.log("Requesting to join a game");
     console.log("Emitting joinGame with general:", general);
-    socket.emit('joinGame', { general: general }); // Request the server to join a game
+    socket.emit('joinGame', { general: general, card:card }); // Request the server to join a game
         
 }
 
 function joinGame() {
         const username = localStorage.getItem('username'); 
         const general = document.getElementById('generalChoice').value;
+        const card = document.getElementById('cardChoice').value;
         letsgo.play();
         if (!username) {
             alert("Please log in before joining the game.");
@@ -211,12 +215,13 @@ function joinGame() {
             return;
         }
          // Ensure this ID matches your HTML element
-    if (!general) {
-        alert("Please select a general before joining.");
-        return;
-    }
-
-    socket.emit('joinGame', {username:username, general: general });
+         if (!general || !card) {
+            alert("Please select a general and a card before joining.");
+            return;
+        }
+    
+    playerCard = card; // Save the selected card globally
+    socket.emit('joinGame', {username:username, general: general, card: card });
 }
 
 function openLoginModal() {
@@ -288,6 +293,44 @@ function loadGeneralDropdown() {
             console.error('Error fetching player data:', error);
         });
 }
+
+//cards dropdown
+function loadCardDropdown() {
+    const username = localStorage.getItem('username');
+
+    fetch(`/player/${username}`)
+        .then(response => response.json())
+        .then(playerData => {
+            const cards = playerData.ownedCards || [];
+            
+            // Ensure the dropdown exists
+            const cardDropdown = document.getElementById('cardChoice');
+            cardDropdown.innerHTML = ''; // Clear existing options
+
+            // Populate dropdown
+            cards.forEach(card => {
+                const option = document.createElement('option');
+                option.value = card;
+                option.textContent = card; // Display the card name
+                cardDropdown.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching player data:', error);
+        });
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 const sliderItems = document.querySelectorAll('.slider-item');
 let currentIndex = 0;
@@ -389,8 +432,8 @@ function startLoadingBar(duration) {
 
 function updateTimerDisplay(seconds) {
     
-    document.getElementById('timerDisplay2').textContent = `Time: ${seconds}s`;
-    document.getElementById('timerDisplay2').style.width = '110px';
+    document.getElementById('timerDisplay2').textContent = `${seconds}s`;
+    document.getElementById('timerDisplay2').style.width = '60px';
     document.getElementById('timerDisplay2').style.fontSize = '13px';
     //document.getElementById('timerDisplay2').style.height = '30px';
 } 
@@ -477,7 +520,7 @@ socket.on('gameStart', (data) => {
     backgroundSound.play();
     start.play();
     terrainType2 = Math.random();
-    
+    playerCard = data.yourCard; // Save the player's card globally
     console.log(terrainType2);
     renderBoard();
     alert(`Game started! You are Player ${playerNumber}`);
@@ -498,10 +541,31 @@ socket.on('gameStart', (data) => {
    
     const statusDisplay = document.getElementById('statusDisplay');
     statusDisplay.style.display = 'none'; // Hide the status message
-       // Display opponent details
-       document.getElementById('opponentInfo').innerHTML = `
-       Opponent: ${data.opponentName}`;
-   
+
+    // Map card names to image file paths
+    const cardIcons = {
+        "Pushback": "/resources/images/card/icon/Pushback.gif",
+        "Tower Attacker": "/resources/images/card/icon/Tower Attacker.gif",
+        "Magia Negra": "/resources/images/card/icon/Magia Negra.gif",
+        "Tower Defense":"/resources/images/card/icon/Tower Defense.gif"
+        // Add paths for other cards
+    };
+
+    const opponentCardIcon = cardIcons[data.opponentCard] || "/resources/images/card/icon/Tower Defense.gif"; // Default image if card is not found
+
+
+     // Display opponent details with card icon
+        document.getElementById('opponentInfo').innerHTML = `
+        <div style="text-align: center", "font-size: 14px">
+            Opponent: ${data.opponentName} <br>
+            Card: ${data.opponentCard || 'No card selected'}
+            <div  style="margin-top: 10px;">
+                <img  id="opponentCardIcon"; src="${opponentCardIcon}" alt="${data.opponentCard}" style="width: 50px; height: 50px;">
+            </div>
+        </div>
+        `;
+
+   console.log(`Your card: ${data.yourCard}, Opponent's card: ${data.opponentCard}`);
 });
 
 
@@ -512,7 +576,7 @@ socket.on('updateBoard', (data) => {
     actionCount = 0;  // Reset action count after turn switch
     unitHasAttacked = {};  // Reset attack tracking after turn switch
     renderBoard();
-    document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'Turn: P1' : ' Turn: P2'} `;
+    document.getElementById('turnInfo').textContent = `${turn === 'P1' ? 'P1' : ' P2'} `;
     if (data.turn === 'P1') {
         // Logic to make the border red or any other indicator
         document.getElementById('turnInfo').style.color = 'black';
@@ -554,7 +618,7 @@ socket.on('lockGame', function(lock) {
 
 // Listen for the turn counter update from the server
 socket.on('updateTurnCounter', (turnCounter) => {
-    document.getElementById('turnCounterDisplay').textContent = `Action: #${turnCounter}`;
+    document.getElementById('turnCounterDisplay').textContent = `#${turnCounter}`;
 });
 
 
@@ -782,7 +846,7 @@ function onClick(row, col) {
                 }
             } else if (board[to.row][to.col].unit.startsWith(playerNumber === 'P1' ? 'P2' : 'P1')) {
                 // Attack logic, including Towers
-                if (isValidAttack(board[from.row][from.col], from.row, from.col, to.row, to.col)) {
+                if (isValidAttack(board[from.row][from.col], from.row, from.col, to.row, to.col, playerCard)) {
                     console.log(`Attacking opponent's piece: ${board[to.row][to.col].unit}`);
                     makeMove(from, to);  // Handle attacks with the same makeMove method
                     actionCount++;
@@ -878,7 +942,7 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
 
 // Make a move and notify the server
 function makeMove(from, to) {
-    socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to } });
+    socket.emit('makeMove', { roomId, player: playerNumber, move: { from, to },playerCard });
     const movingPiece = board[from.row][from.col].unit;
 
     // Check if the moving piece is a Horse or Mage
@@ -898,7 +962,7 @@ function makeMove(from, to) {
 }
 
 // Validate if the attack is valid
-function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
+function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol, playerCard) {
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
@@ -914,10 +978,20 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
 
     // General Warrior (GW), Warrior (W), and Towers attack logic (adjacent pieces, 1 space away in any direction)
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
-        piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||
-        piece.startsWith('P1_T') || piece.startsWith('P2_T') ||
+        piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||        
         piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian') ||
         piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc')) {
+        return rowDiff <= 1 && colDiff <= 1;
+    }
+
+      // Tower logic with "Tower Attacker" card
+    if ((piece.startsWith('P1_T') || piece.startsWith('P2_T')) && playerCard === 'Tower Attacker') {
+        return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 3);  // Vertical attack
+    }
+
+    // Default tower logic (adjacent attack only)
+    if (piece.startsWith('P1_T') || piece.startsWith('P2_T')) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -943,8 +1017,16 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol) {
      // Mage attack logic: attack up to 2 spaces away in straight lines (no diagonal attacks)
      if (piece.startsWith('P1_M') || piece.startsWith('P2_M')|| piece.startsWith('P1_GM') || piece.startsWith('P2_GM')
         || piece.startsWith('P1_Voldemort') || piece.startsWith('P2_Voldemort')) {
-        return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
-               (colDiff === 0 && rowDiff <= 2);  // Vertical attack
+            if (playerCard === 'Magia Negra') {
+                // Allow diagonal attacks up to 2 spaces with "Magia Negra"
+                return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
+                       (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
+                       (rowDiff === colDiff && rowDiff <= 2);  // Diagonal attack
+            } else {
+                // Default Mage attack: only horizontal and vertical, up to 2 spaces
+                return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
+                       (colDiff === 0 && rowDiff <= 2);  // Vertical attack
+            }
     }
     // General Paladin can attack up to 2 spaces and in diagonal too.
     if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
@@ -990,9 +1072,28 @@ function endTurn() {
     socket.emit('endTurn', { roomId, player: playerNumber });
 }
 
+//little player card icon to add below boardgame 
+function updatePlayerCard(cardName) {
+    const cardIcons = {
+        "Pushback": "/resources/images/card/icon/Pushback.gif",
+        "Tower Attacker": "/resources/images/card/icon/Tower Attacker.gif",
+        "Magia Negra": "/resources/images/card/icon/Magia Negra.gif",
+        "Tower Defense": "/resources/images/card/icon/Tower Defense.gif"
+    };
+
+    const playerCardIcon = document.getElementById('playerCardIcon');
+    const playerCardSrc = cardIcons[cardName] || "/resources/images/card/icon/Tower Defense.gif"; // Default if not found
+
+    if (playerCardIcon) {
+        playerCardIcon.src = playerCardSrc;
+        playerCardIcon.alt = cardName;
+    }
+}
+
 // Render the board in the HTML
 function renderBoard() {
       // Hide the control panel
+      document.getElementById('viewGeneralsButton').style.display = 'none';
       document.getElementById('slider-container').style.display = 'none';
       document.getElementById('control-Panel').style.display = 'none';
       document.getElementById('generalImage').style.display = 'none';
@@ -1007,6 +1108,11 @@ function renderBoard() {
       document.getElementById('emojiDisplays').style.display = 'block';
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
+
+    
+
+     // Update the player's card icon
+     updatePlayerCard(playerCard);
 
     for (let row = 0; row < board.length; row++) {
         const tr = document.createElement('tr');

@@ -134,7 +134,35 @@
         #gcBalanceDisplay {
             color: rgb(156, 133, 5);
         }
-    
+
+
+          .navigation-links {
+            display: flex;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        .navigation-links a {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .navigation-links a:hover {
+            background-color: #0056b3;
+        }
+
+        /* Adjust styling for smaller screens */
+        @media screen and (max-width: 768px) {
+            .navigation-links a {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
         /* Media query for smaller screens */
         @media screen and (max-width: 768px) {
             .card {
@@ -176,6 +204,10 @@
     
 </head>
 <body>
+    <div class="navigation-links">
+        <a href="/generals-store.html">Generals Store</a>
+        <a href="/cards-store.html">Cards Store</a>
+    </div>
 
 <div class="balance-container" id="gcBalanceDisplay">
     <!-- GC Balance will be dynamically updated here -->

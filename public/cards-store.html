@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards Store</title>
+    <style>
+        h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            color: green;
+            padding: 5px;
+        }
+        h3 {
+            color: purple;
+            padding: 5px;
+            margin: 5px;
+        }
+        p {
+            margin: 5px;
+            font-weight: bold;
+            color: green;
+        }
+        span {
+            color: rgb(123, 105, 3);
+        }
+    
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 320px;
+            margin: 5px;
+            padding: 5px;
+            text-align: center;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .card img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    
+        .owned {
+            color: green;
+            font-weight: bold;
+        }
+    
+        .paypal-button, .gc-button {
+            margin-top: 10px;
+            width: 100;
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    
+        .paypal-button:hover, .gc-button:hover {
+            background-color: #0056b3;
+        }
+    
+        .gc-button {
+            background-color: gold;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    
+        .gc-button:hover {
+            background-color: darkgoldenrod;
+        }
+    
+        .price-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+    
+        .price-container img {
+            margin-left: 5px;
+            width: 24px;
+            height: 24px;
+        }
+    
+        .balance-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin: 10px 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    
+        .balance-container img {
+            margin-left: 5px;
+            width: 24px;
+            height: 24px;
+        }
+    
+        #gcBalanceDisplay {
+            color: rgb(156, 133, 5);
+        }
+    
+        @media screen and (max-width: 768px) {
+            .card {
+                width: 200px;
+            }
+    
+            .card img {
+                width: 180px;
+                height: 180px;
+            }
+    
+            .paypal-button, .gc-button {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="balance-container" id="gcBalanceDisplay"></div>
+
+<h1>Available Cards</h1>
+<button class="back-button" id="backButton">Back to Home</button>
+
+<div id="cardContainer" class="container"></div>
+
+<script>
+    document.getElementById('backButton').addEventListener('click', function() {
+        window.location.href = '/'; // Redirect to the home page
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const username = localStorage.getItem('username'); // Get the logged-in user's username
+
+        if (!username) {
+            alert('Please log in to view your cards.');
+            return;
+        }
+
+        // Fetch card data from the server, including ownership and balance
+        fetch(`/cards?username=${username}`)
+            .then(response => response.json())
+            .then(data => {
+                const { cards, gcBalance } = data; // Assuming the server returns the card list and GC balance
+                const cardContainer = document.getElementById('cardContainer');
+                const gcBalanceDisplay = document.getElementById('gcBalanceDisplay');
+
+                // Display the GC balance
+                gcBalanceDisplay.innerHTML = `Balance: ${gcBalance} <img src="/resources/images/gccoin.png" alt="GC Coin">`;
+
+                cardContainer.innerHTML = ''; // Clear the container
+
+                cards.forEach(card => {
+                    const cardElement = document.createElement('div');
+                    cardElement.classList.add('card');
+
+                    const img = document.createElement('img');
+                    img.src = `/resources/images/card/${card.name}.gif`;
+                    img.alt = card.name;
+
+                    const title = document.createElement('h3');
+                    title.textContent = `${card.name}`;
+
+                    cardElement.appendChild(img);
+                    cardElement.appendChild(title);
+
+                    if (card.owned) {
+                        const ownedText = document.createElement('p');
+                        ownedText.textContent = 'Owned';
+                        ownedText.classList.add('owned');
+                        cardElement.appendChild(ownedText);
+                    } else {
+                        // Price in USD
+                        const priceText = document.createElement('p');
+                        priceText.textContent = `Price: $${card.price}`;
+
+                        // GC Price with icon
+                        const gcPriceContainer = document.createElement('div');
+                        gcPriceContainer.classList.add('price-container');
+                        const gcPriceText = document.createElement('span');
+                        gcPriceText.textContent = `${card.gcPrice}`;
+                        const gcCoinImage = document.createElement('img');
+                        gcCoinImage.src = '/resources/images/gccoin.png';
+                        gcCoinImage.alt = 'GC Coin';
+
+                        gcPriceContainer.appendChild(gcPriceText);
+                        gcPriceContainer.appendChild(gcCoinImage);
+
+                        // PayPal button
+                        const paypalLink = document.createElement('a');
+                        paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`; // Replace with dynamic link if needed
+                        paypalLink.classList.add('paypal-button');
+                        paypalLink.textContent = 'PayPal';
+
+                        // GC Button
+                        const gcButton = document.createElement('button');
+                        gcButton.classList.add('gc-button');
+                        gcButton.textContent = 'GC';
+                        gcButton.onclick = () => {
+                            const currentUsername = localStorage.getItem('username');
+                            purchaseWithGC(card.name, card.gcPrice, currentUsername);
+                        };
+
+                        cardElement.appendChild(priceText);
+                        cardElement.appendChild(gcPriceContainer);
+                        cardElement.appendChild(paypalLink);
+                        cardElement.appendChild(gcButton);
+                    }
+
+                    cardContainer.appendChild(cardElement);
+                });
+            })
+            .catch(error => console.error('Error loading cards:', error));
+    });
+
+    function purchaseWithGC(cardName, gcPrice, username) {
+        fetch('/purchase-card-with-gc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, cardName, gcPrice }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload to update the balance and owned cards
+                } else {
+                    alert(`Failed to purchase: ${data.message}`);
+                }
+            })
+            .catch(error => console.error('Error purchasing card with GC:', error));
+    }
+</script>
+
+</body>
+</html>

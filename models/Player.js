@@ -40,8 +40,8 @@ const playerSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  ownedGenerals: { type: [String], default: ['Barbarian'] },
-  
+  ownedGenerals: { type: [String], default: ['GM'] },
+  ownedCards: {type: [String], default: ['Tower Defense'] }, // Array to store the cards owned by the player
   balance: {
     type: Number,
     default: 0

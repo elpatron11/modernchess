@@ -70,7 +70,48 @@ li {
 
 #opponentInfo{
     background-color: #f44336;
+    border-radius: 5px;
+    border-style: inset;
+    box-shadow:#007BFF;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    color:#00f819;
+ 
 }
+
+#gameInfoContainer {
+    display:inline-flex;
+ 
+    gap: 10px;
+}
+
+#playerCardContainer {
+    display:inline-flex;
+    margin-top: 0px; /* Ensure consistent alignment */
+    padding:5px;
+    margin-left: 45px;
+}
+
+#playerCardIcon {
+    display:inline-flex;
+    width: 50px;
+    height: 50px;
+    margin-top: 5px;
+    margin-bottom: 10px; /* Ensure consistent alignment */
+    border-radius:30px;
+    border-style: groove;
+    box-shadow: #00f819 ;
+
+}
+
+#opponentCardIcon{
+    border-radius:30px;
+    border-style: groove;
+    box-shadow: #00f819 ;
+}
+
+
+
 .control-panel {
     background-color: white;
     padding: 1px 5px;
@@ -548,6 +589,8 @@ td .tower-hp {
 
 #infoContainer {
     display: none;  /* This will hide it by default on all screens */
+    padding: 5px;
+    margin: 5px;
 }
 
 .custom-alert {

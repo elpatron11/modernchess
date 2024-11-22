@@ -99,6 +99,7 @@ app.post('/login', async (req, res) => {
             rating: player.rating,
             gamesPlayed: player.gamesPlayed,
             ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
+            ownedCards: player.ownedCards,
             balance: player.balance,
             //generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
@@ -115,6 +116,7 @@ app.get('/player/:username', async (req, res) => {
             rating: player.rating,
             gamesPlayed: player.gamesPlayed,
             ownedGenerals: player.ownedGenerals,  // Return owned generals
+            ownedCards: player.ownedCards,
             balance: player.balance
         });
     } catch (error) {
@@ -194,8 +196,8 @@ app.get('/generals', async (req, res) => {
             { name: 'Barbarian', price: 10, gcPrice: 1000 },
             { name: 'Paladin', price: 10, gcPrice: 1200 },            
             { name: 'Orc', price: 10, gcPrice: 1200 },
-            { name: 'Voldemort', price: 15, gcPrice: 25000 },
-            { name: 'Robinhood', price: 15, gcPrice: 25000 }
+            { name: 'Voldemort', price: 15, gcPrice: 5000 },
+            { name: 'Robinhood', price: 15, gcPrice: 10000 }
         ];
 
         const ownedGenerals = player.ownedGenerals || [];
@@ -209,6 +211,10 @@ app.get('/generals', async (req, res) => {
         res.status(500).json({ message: "Error fetching generals" });
     }
 });
+
+
+
+
 
 app.post('/purchase-with-gc', async (req, res) => {
     const { username, generalName, gcPrice } = req.body;
@@ -242,6 +248,73 @@ app.post('/purchase-with-gc', async (req, res) => {
     }
 });
 
+
+
+app.get('/cards', async (req, res) => {
+    const username = req.query.username;
+    if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+    }
+
+    try {
+        const player = await Player.findOne({ username });
+        if (!player) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const allCards = [
+            { name: 'Tower Defense', price: 0, gcPrice: 0 },
+            { name: 'Tower Attacker', price: 5, gcPrice: 1000 },
+            { name: 'Pushback', price: 5, gcPrice: 3000 },           
+            { name: 'Magia Negra', price: 10, gcPrice: 5000 }
+            ];
+
+        const ownedCards = player.ownedCards || [];
+        const cards = allCards.map(card => ({
+            ...card,
+            owned: ownedCards.includes(card.name),
+        }));
+
+        res.json({ cards, gcBalance: player.generalsCoin || 0 });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching cards" });
+    }
+});
+
+app.post('/purchase-card-with-gc', async (req, res) => {
+    const { username, cardName, gcPrice } = req.body;
+
+    if (!username || !cardName || typeof gcPrice !== 'number') {
+        return res.status(400).json({ success: false, message: 'Invalid input data' });
+    }
+
+    try {
+        const player = await Player.findOne({ username });
+
+        if (!player) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        if (player.generalsCoin < gcPrice) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient General Coins. You need ${gcPrice - player.generalsCoin} more.`,
+            });
+        }
+
+        player.generalsCoin -= gcPrice;
+        player.ownedCards = player.ownedCards || [];
+        if (!player.ownedCards.includes(cardName)) {
+            player.ownedCards.push(cardName);
+        }
+        await player.save();
+
+        res.json({ success: true, message: `Successfully purchased ${cardName} using General Coins!` });
+    } catch (error) {
+        console.error('Error processing purchase:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 
 
@@ -434,7 +507,8 @@ let botAccount = {
     username: 'Bot123',
     password: '12345678',
     general: 'GH',
-    socketId: 'botSocketId12345'  // Static socket ID for the bot
+    card: 'Tower Defense',
+    socketId: 'botSocketId12345',  // Static socket ID for the bot
 };
 // Switch turns
 function switchTurn(roomId) {
@@ -462,6 +536,9 @@ function switchTurn(roomId) {
 }
 async function botTakeTurn(roomId) {
     const game = games[roomId];
+
+    console.log(`Cards for room ${roomId}:`, games[roomId].cards);
+
     if (!game) return;
 
     let actionsPerformed = 0;
@@ -1309,13 +1386,13 @@ socket.on('emojiSelected', function(data) {
  
     function joinGameWithPlayer(socket, data) {
         console.log("Received data for joinGame:", data);
-        if (!data || !data.general || !data.username) {
+        if (!data || !data.general || !data.username || !data.card) {
             console.error('Invalid or no data received for general or username');
             socket.emit('error', { message: 'Invalid or no data received for general or username.' });
             return;
         }
     
-        const { username, general } = data;
+        const { username, general, card } = data;
         if (!username) {
             socket.emit('error', { message: "You must be logged in to join the game." });
             return;
@@ -1363,11 +1440,26 @@ socket.on('emojiSelected', function(data) {
                         [socket.id]: data.general,
                         [opponent.id]: opponentData.general
                     },
+                    cards: {
+                        [socket.id]: card || 'DefaultCard',
+                        [opponent.id]: opponentData.card || 'DefaultCard'
+                    },
                     unitHasAttacked: {},
                     unitHasMoved: {},
                     gameConcluded: false
                 };
                 console.log(`Game initialized with players:`, games[roomId].players);
+                // Check cards and adjust tower HP if "Tower Defense" is selected
+                if (games[roomId].cards[socket.id] === 'Tower Defense') {
+                    games[roomId].board[0][2].hp += 6;  // Player 1 Tower gets +6 HP
+                    console.log(`Player 1's tower upgraded to ${games[roomId].board[0][2].hp} HP`);
+                }
+
+                if (games[roomId].cards[opponent.id] === 'Tower Defense') {
+                    games[roomId].board[7][5].hp += 6;  // Player 2 Tower gets +6 HP
+                    console.log(`Player 2's tower upgraded to ${games[roomId].board[7][5].hp} HP`);
+                }
+               
                 turnCounter = 0;
                 io.to(roomId).emit('updateTurnCounter', turnCounter);
                 games[roomId].board[0][3].unit = `P1_${data.general}`;
@@ -1381,7 +1473,9 @@ socket.on('emojiSelected', function(data) {
                     playerNumber: 'P1',
                     opponentNumber: 'P2',
                     playerName: games[roomId].players.P1.username,
-                    opponentName: games[roomId].players.P2.username
+                    opponentName: games[roomId].players.P2.username,
+                    opponentCard: games[roomId].cards[opponent.id],
+                    yourCard: games[roomId].cards[socket.id]
                 });
                 opponent.emit('gameStart', {
                     roomId,
@@ -1389,17 +1483,19 @@ socket.on('emojiSelected', function(data) {
                     playerNumber: 'P2',
                     opponentNumber: 'P1',
                     playerName: games[roomId].players.P2.username,
-                    opponentName: games[roomId].players.P1.username
+                    opponentName: games[roomId].players.P1.username,
+                    opponentCard: games[roomId].cards[socket.id],
+                    yourCard: games[roomId].cards[opponent.id]
                 });
             } else {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
-                matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
+                matchmakingQueue.push({ socket: socket, username: data.username, general: data.general,  card: data.card  });
                 socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
             }
         } else {
-            matchmakingQueue.push({ socket: socket, username: data.username, general: data.general });
+            matchmakingQueue.push({ socket: socket, username: data.username, general: data.general, card: data.card });
             socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-            console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general}`);
+            console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general} and ${data.card}`);
     
             // Start a timeout to join a game with bot if no match is found in 40 seconds
             setTimeout(() => {
@@ -1425,7 +1521,7 @@ socket.on('emojiSelected', function(data) {
             return;
         }
     
-        const { username, general } = data;
+        const { username, general, card } = data;
     
         if (!username) {
             socket.emit('error', { message: "You must be logged in to join the game." });
@@ -1462,7 +1558,7 @@ socket.on('emojiSelected', function(data) {
     
         // Add the bot only if no players are waiting, it's not in the queue or game, and cooldown has passed
         if (matchmakingQueue.length === 0 && username !== botAccount.username && !isBotInQueue && !isBotInGame && (currentTime - botLastQueuedTime >= BOT_QUEUE_COOLDOWN)) {
-            matchmakingQueue.push({ socket: botAccount.socketId, username: botAccount.username, general: botAccount.general });
+            matchmakingQueue.push({ socket: botAccount.socketId, username: botAccount.username, general: botAccount.general, card: botAccount.card });
             isBotInQueue = true; // Mark the bot as in the queue
             botLastQueuedTime = currentTime; // Update the last queued time for the bot
         }
@@ -1477,7 +1573,7 @@ socket.on('emojiSelected', function(data) {
             // Check if the real player is still connected
             if (!isBot && (!opponentSocketId || !opponentSocketId.connected)) {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
-                matchmakingQueue.push({ socket: socket, username, general });
+                matchmakingQueue.push({ socket: socket, username, general, card });
                 socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
                 return;
             }
@@ -1496,16 +1592,41 @@ socket.on('emojiSelected', function(data) {
                     [socket.id]: general,
                     [opponentSocketId]: opponentData.general
                 },
+                cards: {
+                    [socket.id]: card || 'DefaultCard',
+                    [opponentSocketId]: opponentData.card || 'DefaultCard'
+                },
                 unitHasAttacked: {},
                 unitHasMoved: {}
             };
                     // Add Towers for Player 1 and Player 2
-            games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
-            games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
+                    if(games[roomId].cards[socket.id] === 'Tower Defense' && games[roomId].cards[opponentSocketId] !== 'Tower Defense'){
+                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 7 };  // Player 1 Tower
+                     games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
+                    }
+                    
+                    else if(games[roomId].cards[opponentSocketId] === 'Tower Defense' && games[roomId].cards[socket.id] !== 'Tower Defense' ){
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
+                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 32 };  // Player 2 Tower
+                    }
+                    else if(games[roomId].cards[opponentSocketId] === 'Tower Defense'  && games[roomId].cards[socket.id] === 'Tower Defense'){
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 7 };  // Player 1 Tower
+                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 32 };  // Player 2 Tower
+                    }
+                    
+                   else {
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
+                        games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
+                    }
+
+                    console.log('Player 1 Card:', games[roomId].cards[socket.id]);
+                    console.log('Player 2 Card:', games[roomId].cards[opponentSocketId]);
+
             console.log(`Game initialized with players:`, games[roomId].players);
             turnCounter = 0;
             io.to(roomId).emit('updateTurnCounter', turnCounter);
-    
+
+            
             games[roomId].board[0][3].unit = `P1_${general}`;
             games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
     
@@ -1518,7 +1639,9 @@ socket.on('emojiSelected', function(data) {
                 playerNumber: 'P1',
                 opponentNumber: 'P2',
                 playerName: games[roomId].players.P1.username,
-                opponentName: games[roomId].players.P2.username
+                opponentName: games[roomId].players.P2.username,
+                yourCard: games[roomId].cards[socket.id],
+                opponentCard: games[roomId].cards[opponentSocketId]
             });
     
             if (!isBot) {
@@ -1528,7 +1651,9 @@ socket.on('emojiSelected', function(data) {
                     playerNumber: 'P2',
                     opponentNumber: 'P1',
                     playerName: games[roomId].players.P2.username,
-                    opponentName: games[roomId].players.P1.username
+                    opponentName: games[roomId].players.P1.username,
+                    yourCard: games[roomId].cards[socket.id],
+                    opponentCard: games[roomId].cards[opponentSocketId]
                 });
             }
     
@@ -1548,9 +1673,9 @@ socket.on('emojiSelected', function(data) {
     
             startTurnTimer(roomId, games[roomId].turn);
         } else {
-            matchmakingQueue.push({ socket: socket, username, general });
+            matchmakingQueue.push({ socket: socket, username, general, card });
             socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-            console.log(`Player ${socket.id} added to matchmaking queue with general ${general}`);
+            console.log(`Player ${socket.id} added to matchmaking queue with general ${general} and ${card} `);
         }
     }
 
@@ -1599,6 +1724,9 @@ socket.on('emojiSelected', function(data) {
     let RobinhoodAttaackCounts = {};
     socket.on('makeMove', (moveData) => {
         let game = games[moveData.roomId];
+      // Use socket ID to fetch the player card
+      
+
         if (!game) {
             console.log("Game not found or may have ended:", moveData.roomId);
             socket.emit('error', 'Game not found or may have ended.');
@@ -1609,13 +1737,25 @@ socket.on('emojiSelected', function(data) {
             socket.emit('notYourTurn');
             return;
         }
+
+        let playerCard = game.cards[socket.id];
+            // Debugging logs
+        console.log("Player Card:", playerCard);
+        console.log("Game Cards:", game.cards);
+
+        if (!playerCard) {
+            console.error("Player card not found. Using default.");
+            playerCard = 'DefaultCard';
+        }
     
         const { from, to } = moveData.move;
         const attackingPiece = game.board[from.row][from.col].unit;
         const targetPiece = game.board[to.row][to.col].unit;
         const fromTerrain = game.board[from.row][from.col].terrain;
         const destination = game.board[to.row][to.col].terrain;
-    
+            // Fetch `playerCard` from game data, assuming it's stored with the player information
+        
+        
         // Prevent movement onto water terrain
         if (destination === 'water' && !targetPiece.startsWith('P1_T') && !targetPiece.startsWith('P2_T')) {
             socket.emit('invalidAction', 'You cannot move onto water terrain.');
@@ -1948,6 +2088,8 @@ socket.on('emojiSelected', function(data) {
                 if (fromTerrain === 'red' && !isTower) {
                         hitChance = 1.0;
                 }
+
+                
                     if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                         const attackingTower = game.board[from.row][from.col];
             
@@ -2069,7 +2211,75 @@ socket.on('emojiSelected', function(data) {
                                 turn: game.turn,
                             });
                          }, 2000); // 3 seconds for the hit animation
-
+                        
+                        //pushback card logic for archer
+                         if (attackingPiece.startsWith('P1_A') || attackingPiece.startsWith('P2_A')) {
+                            // Check if the player's card is "Pushback"
+                            if (playerCard === 'Pushback') {
+                                console.log(`Pushback effect triggered for ${attackingPiece}.`);
+                        
+                                // Calculate the direction of the push
+                                const rowDiff = to.row - from.row; // Direction of row change
+                                const colDiff = to.col - from.col; // Direction of column change
+                        
+                                let pushRow1, pushCol1, pushRow2, pushCol2;
+                        
+                                // Determine push positions based on direction
+                                if (rowDiff !== 0) {
+                                    // Vertical push
+                                    pushRow1 = to.row + Math.sign(rowDiff); // 1 space further in the same vertical direction
+                                    pushCol1 = to.col;
+                                    pushRow2 = to.row + 2 * Math.sign(rowDiff); // 2 spaces further in the same vertical direction
+                                    pushCol2 = to.col;
+                                } else if (colDiff !== 0) {
+                                    // Horizontal push
+                                    pushRow1 = to.row;
+                                    pushCol1 = to.col + Math.sign(colDiff); // 1 space further in the same horizontal direction
+                                    pushRow2 = to.row;
+                                    pushCol2 = to.col + 2 * Math.sign(colDiff); // 2 spaces further in the same horizontal direction
+                                }
+                        
+                                // Check for availability of spaces and water terrain
+                                const isTwoSpaceEmptyAndValid =
+                                    game.board[pushRow2]?.[pushCol2]?.unit === '' &&
+                                    game.board[pushRow2]?.[pushCol2]?.terrain !== 'water';
+                                const isOneSpaceEmptyAndValid =
+                                    game.board[pushRow1]?.[pushCol1]?.unit === '' &&
+                                    game.board[pushRow1]?.[pushCol1]?.terrain !== 'water';
+                        
+                                if (isTwoSpaceEmptyAndValid) {
+                                    // Push to 2 spaces
+                                    setTimeout(() => {
+                                        game.board[pushRow2][pushCol2].unit = game.board[to.row][to.col].unit; // Move only the unit
+                                        game.board[to.row][to.col].unit = ''; // Clear the unit at the original position
+                        
+                                        console.log(`${game.board[pushRow2][pushCol2].unit} pushed to (${pushRow2}, ${pushCol2}).`);
+                                        io.to(moveData.roomId).emit('updateBoard', {
+                                            board: game.board,
+                                            terrain: game.terrain,
+                                            turn: game.turn,
+                                        });
+                                    }, 3000);
+                                } else if (isOneSpaceEmptyAndValid) {
+                                    // Push to 1 space
+                                    setTimeout(() => {
+                                        game.board[pushRow1][pushCol1].unit = game.board[to.row][to.col].unit; // Move only the unit
+                                        game.board[to.row][to.col].unit = ''; // Clear the unit at the original position
+                        
+                                        console.log(`${game.board[pushRow1][pushCol1].unit} pushed to (${pushRow1}, ${pushCol1}).`);
+                                        io.to(moveData.roomId).emit('updateBoard', {
+                                            board: game.board,
+                                            terrain: game.terrain,
+                                            turn: game.turn,
+                                        });
+                                    }, 3000);
+                                } else {
+                                    console.log(`Pushback failed. Blocked or invalid terrain at both positions.`);
+                                }
+                            }
+                        }
+                        
+                            
                     // General Warrior counter-attack logic
                     if (targetPiece.startsWith('P1_GW') || targetPiece.startsWith('P2_GW')) {
                         const counterRoll = Math.random();
