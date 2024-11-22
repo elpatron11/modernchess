@@ -114,7 +114,12 @@
         #gcBalanceDisplay {
             color: rgb(156, 133, 5);
         }
-    
+                .gc-coin-icon {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+        }
+            
         @media screen and (max-width: 768px) {
             .card {
                 width: 200px;
@@ -198,7 +203,7 @@
                         const gcCoinImage = document.createElement('img');
                         gcCoinImage.src = '/resources/images/gccoin.png';
                         gcCoinImage.alt = 'GC Coin';
-
+                        gcCoinImage.classList.add('gc-coin-icon');
                         gcPriceContainer.appendChild(gcPriceText);
                         gcPriceContainer.appendChild(gcCoinImage);
 
