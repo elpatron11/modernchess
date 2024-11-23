@@ -645,7 +645,7 @@ socket.on('attackHit', (data) => {
                 {
                     archerkill.play();
                 }
-    else if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood'))
+    else if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood')|| attackingPiece.startsWith('P1_Camaleon') || attackingPiece.startsWith('P2_Camaleon'))
                 {
                     robin.play();
                 }
@@ -898,8 +898,8 @@ function isValidMove(pieceData, fromRow, fromCol, toRow, toCol) {
         return false; // Towers can't move
     }
 
-    if (piece.startsWith('P1_W') || piece.startsWith('P2_W') || 
-        piece.startsWith('P1_GW') || piece.startsWith('P2_GW') || 
+    if (piece.startsWith('P1_W') || piece.startsWith('P2_W') || piece.startsWith('P1_Camaleon') || piece.startsWith('P2_Camaleon') 
+        || piece.startsWith('P1_GW') || piece.startsWith('P2_GW') || 
         piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian')  || 
         piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin') || 
         piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc') ) {
@@ -980,7 +980,9 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol, playerCard) {
     if (piece.startsWith('P1_W') || piece.startsWith('P2_W') ||
         piece.startsWith('P1_GW') || piece.startsWith('P2_GW') ||        
         piece.startsWith('P1_Barbarian') || piece.startsWith('P2_Barbarian') ||
-        piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc')) {
+        piece.startsWith('P1_Orc') || piece.startsWith('P2_Orc')||
+        piece.startsWith('P1_Camaleon') || piece.startsWith('P2_Camaleon')
+    ) {
         return rowDiff <= 1 && colDiff <= 1;
     }
 
@@ -1122,7 +1124,7 @@ function renderBoard() {
             td.id = `cell-${row}-${col}`;  // Assign ID in the format `cell-row-col`
             const terrainType = board[row][col].terrain;  // Get terrain type
             const unitType = board[row][col].unit;  // Get unit type
-
+            const cell = board[row][col]; // Ensure you define `cell` here
             // Set terrain background based on terrain type
             if (terrainType === 'water') {
                 td.classList.add('water-terrain');
@@ -1130,6 +1132,12 @@ function renderBoard() {
                 td.classList.add('red-terrain');
             } else if (terrainType === 'grass') {
                 td.classList.add('grass-terrain');
+                // Check if a camouflaged General (GC) is on this tile
+                if (cell.unit.startsWith('P1_Camaleon') || cell.unit.startsWith('P2_Camaleon')) {
+                    td.classList.add('camouflage'); // Add a special class for the camouflaged General
+                    console.log(`${cell.unit} is camouflaged on grass!`);
+                }
+
             } else {
                                                    
                     td.classList.add('normal-terrain');  // Apply first normal terrain class
@@ -1193,6 +1201,8 @@ function getImageForUnit(unitType) {
         'P2_Voldemort': '/resources/images/p2_voldemort.png',
         'P1_Robinhood': '/resources/images/p1_robin.png',
         'P2_Robinhood': '/resources/images/p2_robin.png',
+        'P1_Camaleon': '/resources/images/p1_camaleon.png',
+        'P2_Camaleon': '/resources/images/p2_camaleon.png',        
         'explosion': '/resources/images/animation/rip.gif',
         'warhit': '/resources/images/animation/hit.gif',
         'miss': '/resources/images/animation/miss.gif',

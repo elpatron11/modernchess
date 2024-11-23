@@ -189,10 +189,11 @@ app.get('/generals', async (req, res) => {
         }
 
         const allGenerals = [
-            { name: 'GW', price: 0, gcPrice: 500 },
+            { name: 'GM', price: 0, gcPrice: 0 },
+            { name: 'GW', price: 5, gcPrice: 500 },
+            { name: 'Camaleon', price: 5, gcPrice: 500 } ,           
             { name: 'GH', price: 5, gcPrice: 600 },
             { name: 'GA', price: 5, gcPrice: 700 },
-            { name: 'GM', price: 5, gcPrice: 800 },
             { name: 'Barbarian', price: 10, gcPrice: 1000 },
             { name: 'Paladin', price: 10, gcPrice: 1200 },            
             { name: 'Orc', price: 10, gcPrice: 1200 },
@@ -924,7 +925,10 @@ async function makeMove(from, to, roomId, playerId) {
                 hitChance = 0.2;  // General barbarian 70% chance to avoid
             } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
                 hitChance = 0.15;  // General Orc 70% chance to avoid
+            }else if (targetPiece.startsWith('P1_Camaleon') || targetPiece.startsWith('P2_Camaleon')) {
+                hitChance = 0.25;  // General Orc 70% chance to avoid
             }
+
             if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                 const attackingTower = game.board[from.row][from.col];
             
@@ -1769,7 +1773,7 @@ socket.on('emojiSelected', function(data) {
 
         if (!playerCard) {
             console.error("Player card not found. Using default.");
-            playerCard = 'DefaultCard';
+            playerCard = 'Tower Defense';
         }
     
         const { from, to } = moveData.move;
@@ -1806,6 +1810,14 @@ socket.on('emojiSelected', function(data) {
             return;
         }
         
+         // Grass-camouflaged General immunity check
+        /*if (targetPiece === 'P1_Camaleon' || targetPiece === 'P2_Camaleon') {
+        if (targetTerrain === 'grass') {
+            console.log(`Attack failed! ${targetPiece} is camouflaged in the grass and cannot be attacked.`);
+            return;
+        }
+    }*/
+
 
         async function updatePlayerRating(username) {
             try {
@@ -1860,6 +1872,8 @@ socket.on('emojiSelected', function(data) {
                 return 4;  // General Paladin deals 3 damage
             }else if (unit.startsWith('P1_Voldemort') || unit.startsWith('P2_Voldemort')) {
                 return 4;  // GeneralVoldemort deals 4 damage
+            }else if (unit.startsWith('P1_Camaleon') || unit.startsWith('P2_Camaleon')) {
+                return 3;  // General Paladin deals 3 damage
             }
             return 0;  // Default no damage for unrecognized units
         }
@@ -2010,7 +2024,11 @@ socket.on('emojiSelected', function(data) {
                         hitChance = 0.2;  // General barbarian 70% chance to avoid
                     } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
                         hitChance = 0.15;  // General Orc 85% chance to avoid
+                    }else if (targetPiece.startsWith('P1_Camaleon') || targetPiece.startsWith('P2_Camaleon')) {
+                        hitChance = 0.25;  // General Orc 70% chance to avoid
                     }
+
+        
                        // Ignore avoidance if attacking from red terrain
                     if (fromTerrain === 'red' && !isTower) {
                         hitChance = 1.0;
@@ -2063,6 +2081,8 @@ socket.on('emojiSelected', function(data) {
                     hitChance = 0.20;  // General barbarian 70% chance to avoid
                 } else if (targetPiece.startsWith('P1_Orc') || targetPiece.startsWith('P2_Orc')) {
                     hitChance = 0.15;  // General Orc 70% chance to avoid
+                }else if (targetPiece.startsWith('P1_Camaleon') || targetPiece.startsWith('P2_Camaleon')) {
+                    hitChance = 0.25;  // General Orc 70% chance to avoid
                 }
                 
                 //Darkmage converts after it dies
@@ -2106,7 +2126,13 @@ socket.on('emojiSelected', function(data) {
                         
                         }
                     }
-                            
+                 
+                    
+                if (attackingPiece.startsWith('P1_Camaleon') || attackingPiece.startsWith('P2_Camaleon')) {
+                        if (fromTerrain === 'grass' && !isTower) {
+                            hitChance = 1.0; // 100% hit chance when attacking from grass terrain
+                            console.log(`${attackingPiece} has 100% hit chance due to camouflage on grass.`);
+                        } }
                         
                     // Ignore avoidance if attacking from red terrain
                 if (fromTerrain === 'red' && !isTower) {
