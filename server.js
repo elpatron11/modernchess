@@ -755,7 +755,7 @@ function findAvailableMoves(game, player) {
 
 // Define maximum attack range for each piece type
 function getMaxAttackRange(piece) {
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_Robinhood")) {
+    if (piece.startsWith("P2_A") || piece.startsWith("P2_Robinhood")) {
         return 3; // Archer range
     } if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
         return 4; // Archer range
@@ -860,24 +860,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
 
 
 
-function getUnitDamage(unit) {
-    const unitDamageMap = {
-        'P1_A': 2, 'P2_A': 2, // Archers
-        'P1_H': 3, 'P2_H': 3, // Horses
-        'P1_W': 1, 'P2_W': 1, // Warriors
-        'P1_M': 4, 'P2_M': 4, // Mages
-        'P1_GW': 5, 'P2_GW': 5, // General Warrior
-        'P1_GA': 4, 'P2_GA': 4, // General Archer
-        'P1_GH': 3, 'P2_GH': 3, // General Horse
-        'P1_Orc': 4, 'P2_Orc': 4, // General Horse
-        'P1_Paladin': 3, 'P2_Paladin': 3, // General P
-        'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
-        'P1_GM': 4, 'P2_GM': 4, // General Horse
-        'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
-        // Add other units with their respective damages
-    };
-    return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
-}
+
 
 
 
@@ -933,7 +916,7 @@ async function makeMove(from, to, roomId, playerId) {
                 const attackingTower = game.board[from.row][from.col];
             
                 if (attackingTower.hp > 1) {
-                    attackingTower.hp -= 0;  // Reduce tower HP by 1 on attack
+                    attackingTower.hp -= -1;  // Reduce tower HP by 1 on attack
                     console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
                 }
 
@@ -986,6 +969,26 @@ async function makeMove(from, to, roomId, playerId) {
             }
         }
 
+        function getUnitDamage(unit) {
+            const unitDamageMap = {
+                'P1_A': 2, 'P2_A': 2, // Archers
+                'P1_H': 3, 'P2_H': 3, // Horses
+                'P1_W': 1, 'P2_W': 1, // Warriors
+                'P1_M': 4, 'P2_M': 4, // Mages
+                'P1_GW': 5, 'P2_GW': 5, // General Warrior
+                'P1_GA': 4, 'P2_GA': 4, // General Archer
+                'P1_GH': 3, 'P2_GH': 3, // General Horse
+                'P1_Orc': 4, 'P2_Orc': 4, // General Horse
+                'P1_Paladin': 3, 'P2_Paladin': 3, // General P
+                'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
+                'P1_GM': 4, 'P2_GM': 4, // General Horse
+                'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
+                // Add other units with their respective damages
+            };
+            return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
+        }
+        
+
 
         let isTower = false;
         let damage = getUnitDamage(attackingPiece);  // Get damage based on unit type
@@ -1003,7 +1006,7 @@ async function makeMove(from, to, roomId, playerId) {
                     tower.hp = 26;  // Initialize tower HP if not already set
                 }
     
-                const damage = getUnitDamage(attackingPiece); // Get damage from the attacking piece
+                damage = getUnitDamage(attackingPiece); // Get damage from the attacking piece
                 tower.hp -= damage; // Apply damage to tower
             // Emit a board update with the tower's new HP
             
