@@ -503,13 +503,22 @@ function startTurnTimer(roomId, currentPlayer) {
      io.to(roomId).emit('startTimer');
 }
 
+
 let botAccount = {
     username: 'Bot123',
-    password: '12345678',
-    general: 'GH',
+    password: '12345678',   
     card: 'Tower Defense',
     socketId: 'botSocketId12345',  // Static socket ID for the bot
 };
+
+// Function to assign a random general to the bot
+function assignRandomGeneralToBot() {
+    let availableGenerals = ['GW', 'GH', 'GA', 'GM', 'Barbarian', 'Paladin', 'Orc', 'Voldemort', 'Robinhood'];
+    const randomGeneral = availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
+    botAccount.general = randomGeneral;
+    console.log(`Bot assigned general: ${randomGeneral}`);
+}
+
 // Switch turns
 function switchTurn(roomId) {
     const game = games[roomId];
@@ -565,8 +574,8 @@ async function botTakeTurn(roomId) {
             const unitPosition = `${from.row},${from.col}`;
 
             return isValidAttack(game, game.board[from.row][from.col], from.row, from.col, to.row, to.col, unitsThatAttacked) &&
-                   (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M") || game.board[from.row][from.col].unit.startsWith("P2_GA")) &&
-                   !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
+                   (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M") || game.board[from.row][from.col].unit.startsWith("P2_GA") || game.board[from.row][from.col].unit.startsWith("P2_Robinhood") 
+                   || game.board[from.row][from.col].unit.startsWith("P2_GM") || game.board[from.row][from.col].unit.startsWith("P2_Voldemort" ) )&&  !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
         });
 
         let actionTaken = false;
@@ -671,7 +680,7 @@ function findAvailableMoves(game, player) {
             const maxAttackDistance = getMaxAttackRange(piece);
 
             // Check for valid ranged attacks for Archers, General Archers, and Mages
-            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA") || piece.startsWith("P2_M")) {
+            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA")  || piece.startsWith("P2_Robinhood") || piece.startsWith("P2_M") || piece.startsWith("P2_GM")  || piece.startsWith("P2_Voldemort")) {
                 for (let toRow = row - maxAttackDistance; toRow <= row + maxAttackDistance; toRow++) {
                     for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
                         if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length || (toRow === row && toCol === col)) continue;
@@ -745,12 +754,12 @@ function findAvailableMoves(game, player) {
 
 // Define maximum attack range for each piece type
 function getMaxAttackRange(piece) {
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") ) {
+    if (piece.startsWith("P1_A") || piece.startsWith("P2_Robinhood")) {
         return 3; // Archer range
     } if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
         return 4; // Archer range
     }
-    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
+    if (piece.startsWith("P2_Voldemort") || piece.startsWith("P2_M")  || piece.startsWith("P2_GM")) {
         return 2; // Mage range
     }
     return 1; // Default range for other pieces
@@ -824,7 +833,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    if (piece.startsWith("P1_A") || piece.startsWith("P2_A") ) {
+    if (piece.startsWith("P2_Robinhood") || piece.startsWith("P2_A") ) {
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
     } 
@@ -832,11 +841,11 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 4) || (colDiff === 0 && rowDiff <= 4);
     }
-    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")) {
+    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")  || piece.startsWith("P2_Barbarian")  || piece.startsWith("P2_GM") || piece.startsWith("P2_Voldemort")) {
         // Mages can attack within a 2x2 area in orthogonal directions only
         return (rowDiff <= 2 && colDiff === 0) || (colDiff <= 2 && rowDiff === 0);
     }
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW")) {
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW") || piece.startsWith("P2_Paladin")|| piece.startsWith("P2_Orc")) {
         // Warriors and General Warriors can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
     } 
@@ -859,6 +868,11 @@ function getUnitDamage(unit) {
         'P1_GW': 5, 'P2_GW': 5, // General Warrior
         'P1_GA': 4, 'P2_GA': 4, // General Archer
         'P1_GH': 3, 'P2_GH': 3, // General Horse
+        'P1_Orc': 4, 'P2_Orc': 4, // General Horse
+        'P1_Paladin': 3, 'P2_Paladin': 3, // General P
+        'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
+        'P1_GM': 4, 'P2_GM': 4, // General Horse
+        'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
         // Add other units with their respective damages
     };
     return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
@@ -1513,7 +1527,16 @@ socket.on('emojiSelected', function(data) {
     
         
     function joinGameWithBot(socket, data) {
+
         
+            // Function to assign a random general to the bot
+        function assignRandomGeneralToBot() {
+            let availableGenerals = ['GW', 'GH', 'GA', 'GM', 'Barbarian', 'Paladin', 'Orc', 'Voldemort', 'Robinhood'];
+            const randomGeneral = availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
+            botAccount.general = randomGeneral;
+            console.log(`Bot assigned general: ${randomGeneral}`);
+        }
+        assignRandomGeneralToBot(); // Assign a new general before starting the game       
         console.log("Received data for joinGame:", data);
         if (!data || !data.general || !data.username) {
             console.error('Invalid or no data received for general or username');
@@ -1577,7 +1600,8 @@ socket.on('emojiSelected', function(data) {
                 socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
                 return;
             }
-    
+            
+            assignRandomGeneralToBot(); // Assign a new general before starting the game
             const roomId = `${socket.id}-${opponentSocketId}`;
             games[roomId] = {
                 players: {
