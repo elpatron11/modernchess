@@ -321,15 +321,49 @@ app.post('/purchase-card-with-gc', async (req, res) => {
 
 //game Clock
 // Schedule the countdown to reset every 2 hours at specific times
-schedule.scheduleJob('00 14 * * *', function() { //6pm server time
+schedule.scheduleJob('00 10 * * *', function() { //6pm server time
     console.log('Job triggered at:', new Date()); // Log the current time when job is triggered
     //countdown = 7200; // reset countdown
     io.emit('countdown', { countdown });
     try {
         // Reset all player ratings to 1200 at 6pm server time
         Player.updateMany(
+            { rating: { $gte: 1600 } },  // Condition: rating is 1400 or more          
+            { $inc: { rating: -20 } }   // Action: decrement rating by 25
+        ).then(result => {
+                console.log('Ratings reset for all players:', result);
+            })
+            .catch(err => {
+                console.error('Error resetting player ratings:', err);
+            });
+            
+    } catch (error) {
+        console.error('Unexpected error occurred while resetting ratings:', error);
+    }
+
+
+    try {
+        // Reset all player ratings to 1200 at 6pm server time
+        Player.updateMany(
             { rating: { $gte: 1500 } },  // Condition: rating is 1400 or more          
-            { $inc: { rating: -60 } }   // Action: decrement rating by 25
+            { $inc: { rating: -50 } }   // Action: decrement rating by 25
+        ).then(result => {
+                console.log('Ratings reset for all players:', result);
+            })
+            .catch(err => {
+                console.error('Error resetting player ratings:', err);
+            });
+            
+    } catch (error) {
+        console.error('Unexpected error occurred while resetting ratings:', error);
+    }
+
+
+    try {
+        // Reset all player ratings to 1200 at 6pm server time
+        Player.updateMany(
+            { rating: { $gte: 1450 } },  // Condition: rating is 1500 or more          
+            { $inc: { rating: -20 } }   // Action: decrement rating by 25
         ).then(result => {
                 console.log('Ratings reset for all players:', result);
             })
@@ -345,7 +379,7 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
         // Reset all player ratings to 1200 at 6pm server time
         Player.updateMany(
             { rating: { $gte: 1350 } },  // Condition: rating is 1500 or more          
-            { $inc: { rating: -40 } }   // Action: decrement rating by 25
+            { $inc: { rating: -30 } }   // Action: decrement rating by 25
         ).then(result => {
                 console.log('Ratings reset for all players:', result);
             })
@@ -401,7 +435,7 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: { balance: 1, generalsCoin: 200  } },         // Increment balance by 1
+            { $inc: {generalsCoin: 200 } },         // Increment balance by 1
             
         );
         
@@ -409,6 +443,25 @@ schedule.scheduleJob('00 14 * * *', function() { //6pm server time
     } catch (error) {
         console.error('Unexpected error occurred while updating balance for top players:', error);
     }
+
+    try {
+        // Find the top 5 players based on rating
+        const topPlayers = await Player.find().sort({ rating: -1 }).limit(2).select('_id');
+        const topPlayerIds = topPlayers.map(player => player._id);
+
+        // Update only the top 5 players by increasing their balance by 1
+        await Player.updateMany(
+            { _id: { $in: topPlayerIds } },  // Match only top 5 players
+            { $inc: { balance: 1} },         // Increment balance by 1
+            
+        );
+        
+        console.log('Successfully updated balance for top 5 players');
+    } catch (error) {
+        console.error('Unexpected error occurred while updating balance for top players:', error);
+    }
+
+
 });
 
    
