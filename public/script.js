@@ -1126,6 +1126,7 @@ function renderBoard() {
       document.getElementById('slider-container').style.display = 'none';
       document.getElementById('control-Panel').style.display = 'none';
       document.getElementById('generalImage').style.display = 'none';
+      document.getElementById('cardImage').style.display = 'none';
       document.getElementById('apk').style.display = 'none';      
       document.getElementById('topRanking').style.display = 'none';
       document.getElementById('timerDisplay').style.display = 'none';
