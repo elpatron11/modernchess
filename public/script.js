@@ -94,7 +94,7 @@ function login() {
             document.getElementById('logoutButton').style.display = 'block';
             document.getElementById('generalPhoto').style.display = 'block';
             loadGeneralDropdown();  // Call this function after login success
-
+            loadCardDropdown(); // Load cards
         } else {
             alert('Login failed: ' + data.message);
         }
@@ -306,6 +306,10 @@ function loadCardDropdown() {
             // Ensure the dropdown exists
             const cardDropdown = document.getElementById('cardChoice');
             cardDropdown.innerHTML = ''; // Clear existing options
+               // Add default General Warrior (GW) if not already included
+               if (!cards.includes('Tower Defense')) {
+                cards.unshift('Tower Defense'); // Add GW at the start if it's missing
+            }
 
             // Populate dropdown
             cards.forEach(card => {
@@ -321,6 +325,7 @@ function loadCardDropdown() {
 }
 
 
+  
 
 
 
