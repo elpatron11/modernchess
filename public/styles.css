@@ -283,7 +283,26 @@ img {
     border: 1px solid #ddd;
 }
 
+#generalImage, #cardImage{
+    display: flex;
+    align-items: center;
+    border: 5px double #b0ada9;  /* Board grid */
+    justify-content: center;
+    border-radius: 10px;
+    filter: brightness(1);
+    
+    padding: 5px;
 
+}
+
+#generalPhoto{
+    display: inline-flex;
+    
+}
+
+#cardPhoto{
+    display: inline-flex;
+}
 
 .water-terrain {
     background-image: url('resources/images/terrain9.gif');

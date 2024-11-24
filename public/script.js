@@ -121,15 +121,23 @@ function register() {
     })
     .then(response => response.json())
     .then(data => {
+        registrationMessage.style.display = 'block'; // Show the message
         if (data.username) {
-            alert('Registration successful!');
-
+            registrationMessage.textContent = 'Registration successful --> Login!!';
+            registrationMessage.style.color = 'green';
         } else {
-            alert('Registration failed: ' + data.message);
+            registrationMessage.textContent = 'Registration failed: ' + data.message;
+            registrationMessage.style.color = 'red';
         }
     })
     .catch(error => console.error('Error registering:', error));
+    console.error('Error registering:', error);
+    registrationMessage.style.display = 'block';
+    registrationMessage.textContent = 'An unexpected error occurred. Please try again.';
+    registrationMessage.style.color = 'red';
 }
+
+
 
 window.onload = function() {
     const username = localStorage.getItem('username');
@@ -281,7 +289,9 @@ function loadGeneralDropdown() {
 
 
               // Set the initial image
+              const generalImage = document.getElementById('generalImage');
               generalImage.src = `/resources/images/dropdown/${generals[0]}.png`; // Adjust the path as necessary
+              document.getElementById('generalPhoto').style.display = 'block'; // Show the card photo
 
               // Add an event listener to change image on selection
               generalDropdown.addEventListener('change', function() {
@@ -318,6 +328,19 @@ function loadCardDropdown() {
                 option.textContent = card; // Display the card name
                 cardDropdown.appendChild(option);
             });
+
+           // Set the initial image
+           const cardImage = document.getElementById('cardImage');
+           cardImage.src = `/resources/images/card/${cards[0]}.gif`; // Adjust the path as necessary
+           document.getElementById('cardPhoto').style.display = 'block'; // Show the card photo
+           document.getElementById('cardPhoto').style.display = 'inline-flex'; // Ensure the image is visible
+           // Add an event listener to change the image on selection
+           cardDropdown.addEventListener('change', function () {
+               cardImage.src = `/resources/images/card/${this.value}.gif`; // Update the image source based on the selected value
+               document.getElementById('cardPhoto').style.display = 'block'; // Ensure the image is visible
+               document.getElementById('cardPhoto').style.display = 'inline-flex'; // Ensure the image is visible
+           });
+
         })
         .catch(error => {
             console.error('Error fetching player data:', error);
@@ -327,8 +350,7 @@ function loadCardDropdown() {
 
   
 
-
-
+ 
 
 
 
