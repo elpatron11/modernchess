@@ -760,7 +760,7 @@ function getMaxAttackRange(piece) {
     } if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
         return 4; // Archer range
     }
-    if (piece.startsWith("P2_Voldemort") || piece.startsWith("P2_M")  || piece.startsWith("P2_GM")) {
+    if (piece.startsWith("P2_Voldemort") || piece.startsWith("P2_M")  || piece.startsWith("P2_GM") || piece.startsWith("P2_Paladin")) {
         return 2; // Mage range
     }
     return 1; // Default range for other pieces
@@ -842,15 +842,15 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 4) || (colDiff === 0 && rowDiff <= 4);
     }
-    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")  || piece.startsWith("P2_Barbarian")  || piece.startsWith("P2_GM") || piece.startsWith("P2_Voldemort")) {
+    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")  || piece.startsWith("P2_Paladin")  || piece.startsWith("P2_GM") || piece.startsWith("P2_Voldemort")) {
         // Mages can attack within a 2x2 area in orthogonal directions only
         return (rowDiff <= 2 && colDiff === 0) || (colDiff <= 2 && rowDiff === 0);
     }
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW") || piece.startsWith("P2_Paladin")|| piece.startsWith("P2_Orc")) {
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW") || piece.startsWith("P2_Orc")) {
         // Warriors and General Warriors can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
     } 
-    if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P1_GH") || piece.startsWith("P2_GH")) {
+    if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P2_Camaleon") || piece.startsWith("P2_GH")) {
         // Horses can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
     }
@@ -983,6 +983,7 @@ async function makeMove(from, to, roomId, playerId) {
                 'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
                 'P1_GM': 4, 'P2_GM': 4, // General Horse
                 'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
+                'P1_Camaleon': 3, 'P2_Camaleon': 3, // General Horse
                 // Add other units with their respective damages
             };
             return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
@@ -1161,8 +1162,8 @@ function createGameBoard() {
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
-    board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 10 };  // Player 1 Tower
-    board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 12 };  // Player 2 Tower
+    board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 7 };  // Player 1 Tower
+    board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 8 };  // Player 2 Tower
 
     // Randomly place water and red terrain on rows 2-5
     for (let row = 2; row <= 5; row++) {
@@ -1632,22 +1633,22 @@ socket.on('emojiSelected', function(data) {
             };
                     // Add Towers for Player 1 and Player 2
                     if(games[roomId].cards[socket.id] === 'Tower Defense' && games[roomId].cards[opponentSocketId] !== 'Tower Defense'){
-                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 7 };  // Player 1 Tower
-                     games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
+                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
+                     games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 8 };  // Player 2 Tower
                     }
                     
                     else if(games[roomId].cards[opponentSocketId] === 'Tower Defense' && games[roomId].cards[socket.id] !== 'Tower Defense' ){
-                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
-                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 32 };  // Player 2 Tower
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 3 };  // Player 1 Tower
+                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     else if(games[roomId].cards[opponentSocketId] === 'Tower Defense'  && games[roomId].cards[socket.id] === 'Tower Defense'){
-                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 7 };  // Player 1 Tower
-                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 32 };  // Player 2 Tower
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
+                         games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     
                    else {
-                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 1 };  // Player 1 Tower
-                        games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 26 };  // Player 2 Tower
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 3 };  // Player 1 Tower
+                        games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 8 };  // Player 2 Tower
                     }
 
                     console.log('Player 1 Card:', games[roomId].cards[socket.id]);
@@ -1899,7 +1900,7 @@ socket.on('emojiSelected', function(data) {
                 const tower = game.board[to.row][to.col];
     
                 if (!tower.hp) {
-                    tower.hp = 28;  // Initialize tower HP if not already set
+                    tower.hp = 16;  // Initialize tower HP if not already set
                 }
     
                 tower.hp -= damage;  // Apply damage to tower
