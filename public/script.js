@@ -80,14 +80,22 @@ function login() {
             loadGeneralDropdown();
             loadCardDropdown(); // Load cards
             }
+              // Create a GC coin container
+              const gcCoinContainer = `
+              <div style="display: flex; align-items: center;">
+              
+              <span style="font-weight: bold; color:#00f819;">${data.generalsCoin}</span>
+                  <img src="resources/images/gccoin.png" alt="GC Coin" style="width: 15px; height: 15px; margin-left: 5px;">
+              </div>
+          `;
             
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('userInfo').style.display = 'block';
             document.getElementById('userInfo').innerHTML = `
-            ${data.username}</br>  
+             ${data.username}</br>  
             Rating:${data.rating}</br>
-            GC: ${data.generalsCoin}</br>
-             $${data.balance}.00 
+            $${data.balance}.00 
+            ${gcCoinContainer}</br>
         `;
       
             updateRatingImage(data.rating);

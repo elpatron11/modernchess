@@ -101,6 +101,7 @@ app.post('/login', async (req, res) => {
             ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
             ownedCards: player.ownedCards,
             balance: player.balance,
+            generalsCoin: player.generalsCoin
             //generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
     } catch (error) {
