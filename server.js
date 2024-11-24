@@ -1158,7 +1158,7 @@ function createGameBoard() {
     board[0][4].unit = 'P1_M';
     board[7][3].unit = 'P2_M';
     board[0][0].unit = 'P1_A';
-    board[7][0].unit = 'P2_A';
+    board[7][0].unit = 'P2_A'; 
     board[0][7].unit = 'P1_A';
     board[7][7].unit = 'P2_A';
     // Add Towers for Player 1 and Player 2
@@ -2403,8 +2403,8 @@ socket.on('emojiSelected', function(data) {
            io.to(moveData.roomId).emit('updateTurnCounter', turnCounter);
            // Every 20 turns, make both towers lose 1 HP
            if (turnCounter >= 100 && turnCounter % 2 === 0) {  // Every 2 full turns after the 20th turn
-               const p1Tower = game.board[3][0];
-               const p2Tower = game.board[4][7];
+               const p1Tower = game.board[0][2];
+               const p2Tower = game.board[7][5];
 
                // Reduce HP for Player 1's tower
                if (p1Tower.unit === 'P1_T' && p1Tower.hp > 1) {

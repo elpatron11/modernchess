@@ -71,8 +71,8 @@
     <div id="opponentInfo" class="d-inline-block mr-3"></div>
     
     <div id="emojiDisplays" class="emoji-displays"  style="display:none;">
-        <div id="emojiDisplayP1" class="emoji-display"></div>
-        
+        <div style="display: inline-block; margin-right: 5px;" id="emojiDisplayP1" class="emoji-display"></div>
+        <div style="display: inline-block;" id="emojiDisplayP2" class="emoji-display"></div>
     </div>
     <!-- Timer display container -->
     <div class="content-container">
@@ -148,7 +148,7 @@
             <span>🕒</span> <span>😠</span> </br> <span>😴</span> <span>🤔</span> <span>😕</span> <span>😎</span>
        </div>
         </div>
-        <div id="emojiDisplayP2" class="emoji-display"></div>
+        
 
         </div>
     </div>
@@ -182,7 +182,7 @@
 </div>     
     <div class="container text-center mt-4" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
         
-        <p id="instructionsTxt">Instructions: Now you can play 24hr vs bots and players. The bot wins give 5 rating and players give more (10-20). <br/>
+        <p id="instructionsTxt">Instructions: Now you can play 24hr vs bots and players. The bot wins give 5 rating + 25GC coins and players give more (10-20). <br/>
         Every day 1400 and up players loose some rating and have to try to stay on the top of the list. 
         Bots are not that smart so we have given them some advantages:<br/>
         Bots deal 4 dmg  to the tower(all units) and Bot tower attacks dont reduce their hp by -1.
@@ -193,11 +193,9 @@
         <h4 id="prizeTxt">Rating Prizes</h4>
         <p id="prizeTime">Every day at 7:00pm EST, the clock ends. Top players will make money:</p>
         <ul>
-            <li>Top 1: $10 -</li>
+            <li>Top 1: $1 -</li>
             <li>Top 2: $1 - </li>
-            <li>Top 3: $1 - </li>
-            <li>Top 4: $1 -</li>
-            <li>Top 5: $1 - </li>
+          
        
                                    
         </ul>
@@ -285,7 +283,7 @@
                 comicButton: "Historieta",
                 LoginButton: "Iniciar Session",
                 registerButton: "Registrarse",
-                instructionsTxt: "Instrucciones: Ahora puedes jugar las 24 horas contra bots y jugadores. Los bot dan 5 puntos pero jugadores dan mas(10-20). Cada dia los jugadores con mas de 1400 rating pierden algo de rating y deben tratar de mantenerse en la cima para ganar. Los bot le pegan 4 a la torre y la torre del bot no pierde 1hp al atacar.",
+                instructionsTxt: "Instrucciones: Ahora puedes jugar las 24 horas contra bots y jugadores. Los bot dan 5 puntos y 25GC (monedas)  pero jugadores dan mas(10-20). Cada dia los jugadores con mas de 1400 rating pierden algo de rating y deben tratar de mantenerse en la cima para ganar. Los bot le pegan 4 a la torre y la torre del bot no pierde 1hp al atacar.",
                 prizeTxt:"Premios por Rating",
                 prizeTime:"Todos los dias a las 7pm EST el reloj termina al llegar los jugadores top ganan dinero:",
                 unlockGeneral:"Consigue generales GRATIS",
