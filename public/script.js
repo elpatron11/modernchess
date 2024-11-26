@@ -580,6 +580,7 @@ socket.on('gameStart', (data) => {
     // Map card names to image file paths
     const cardIcons = {
         "Pushback": "/resources/images/card/icon/Pushback.gif",
+        "Army Boost": "/resources/images/card/icon/Army Boost.gif",
         "Tower Attacker": "/resources/images/card/icon/Tower Attacker.gif",
         "Magia Negra": "/resources/images/card/icon/Magia Negra.gif",
         "Tower Defense":"/resources/images/card/icon/Tower Defense.gif"
@@ -1113,6 +1114,7 @@ function endTurn() {
 function updatePlayerCard(cardName) {
     const cardIcons = {
         "Pushback": "/resources/images/card/icon/Pushback.gif",
+         "Army Boost": "/resources/images/card/icon/Army Boost.gif",
         "Tower Attacker": "/resources/images/card/icon/Tower Attacker.gif",
         "Magia Negra": "/resources/images/card/icon/Magia Negra.gif",
         "Tower Defense": "/resources/images/card/icon/Tower Defense.gif"

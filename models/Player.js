@@ -50,9 +50,10 @@ const playerSchema = new mongoose.Schema({
   generalsCoin: {
     type: Number,
     default: 20
-  }
+  },
   
-
+  ownedAvatars: { type: [String], default: ['/resources/images/avatars/default.png'] }, // Array of owned avatars
+  selectedAvatar: { type: String, default: '/resources/images/avatars/default.png' },  // Active avatar
     
 
 });

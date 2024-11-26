@@ -101,7 +101,6 @@ app.post('/login', async (req, res) => {
             ownedGenerals: player.ownedGenerals, // Send back the player's owned generals
             ownedCards: player.ownedCards,
             balance: player.balance,
-            generalsCoin: player.generalsCoin
             //generalUnlockMessage: generalUnlockMessage !== 'No new general unlocked' ? generalUnlockMessage : null
         });
     } catch (error) {
@@ -266,6 +265,7 @@ app.get('/cards', async (req, res) => {
 
         const allCards = [
             { name: 'Tower Defense', price: 0, gcPrice: 0 },
+            { name: 'Army Boost', price: 5, gcPrice: 500 }, // New Card
             { name: 'Tower Attacker', price: 5, gcPrice: 1000 },
             { name: 'Pushback', price: 5, gcPrice: 3000 },           
             { name: 'Magia Negra', price: 10, gcPrice: 5000 }
@@ -1525,6 +1525,7 @@ socket.on('emojiSelected', function(data) {
                     gameConcluded: false
                 };
                 console.log(`Game initialized with players:`, games[roomId].players);
+               
                 // Check cards and adjust tower HP if "Tower Defense" is selected
                 if (games[roomId].cards[socket.id] === 'Tower Defense') {
                     games[roomId].board[0][2].hp += 6;  // Player 1 Tower gets +6 HP
@@ -1535,6 +1536,29 @@ socket.on('emojiSelected', function(data) {
                     games[roomId].board[7][5].hp += 6;  // Player 2 Tower gets +6 HP
                     console.log(`Player 2's tower upgraded to ${games[roomId].board[7][5].hp} HP`);
                 }
+
+                         //Army Card
+                    // Army Boost: Add an extra Warrior to a fixed position
+                if (games[roomId].cards[socket.id] === 'Army Boost') {
+                    const warriorSpotP1 = { row: 0, col: 6 }; // Specific spot for Player 1
+                    if (!games[roomId].board[warriorSpotP1.row][warriorSpotP1.col].unit) {
+                        games[roomId].board[warriorSpotP1.row][warriorSpotP1.col].unit = 'P1_W'; // Add Warrior
+                        console.log(`Player 1 received an extra Warrior at (${warriorSpotP1.row}, ${warriorSpotP1.col}).`);
+                    } else {
+                        console.log(`Player 1's extra Warrior spot (${warriorSpotP1.row}, ${warriorSpotP1.col}) is occupied.`);
+                    }
+                }
+
+                if (games[roomId].cards[opponent.id] === 'Army Boost') {
+                    const warriorSpotP2 = { row: 7, col: 1 }; // Specific spot for Player 2
+                    if (!games[roomId].board[warriorSpotP2.row][warriorSpotP2.col].unit) {
+                        games[roomId].board[warriorSpotP2.row][warriorSpotP2.col].unit = 'P2_W'; // Add Warrior
+                        console.log(`Player 2 received an extra Warrior at (${warriorSpotP2.row}, ${warriorSpotP2.col}).`);
+                    } else {
+                        console.log(`Player 2's extra Warrior spot (${warriorSpotP2.row}, ${warriorSpotP2.col}) is occupied.`);
+                    }
+                }
+
                
                 turnCounter = 0;
                 io.to(roomId).emit('updateTurnCounter', turnCounter);
@@ -1712,7 +1736,18 @@ socket.on('emojiSelected', function(data) {
             turnCounter = 0;
             io.to(roomId).emit('updateTurnCounter', turnCounter);
 
-            
+            // Army Boost: Add an extra Warrior to a fixed position
+            if (games[roomId].cards[socket.id] === 'Army Boost') {
+                const warriorSpotP1 = { row: 0, col: 6 }; // Specific spot for Player 1
+                console.log(`Player 1 card: ${games[roomId].cards[socket.id]}`);
+
+                if (!games[roomId].board[warriorSpotP1.row][warriorSpotP1.col].unit) {
+                    games[roomId].board[warriorSpotP1.row][warriorSpotP1.col].unit = 'P1_W'; // Add Warrior
+                    console.log(`Player 1 received an extra Warrior at (${warriorSpotP1.row}, ${warriorSpotP1.col}).`);
+                } else {
+                    console.log(`Player 1's extra Warrior spot (${warriorSpotP1.row}, ${warriorSpotP1.col}) is occupied.`);
+                }
+            }
             games[roomId].board[0][3].unit = `P1_${general}`;
             games[roomId].board[7][4].unit = `P2_${opponentData.general}`;
     
