@@ -206,6 +206,28 @@
         
         
     </div> -->
+
+
+<!-- Conversion Modal -->
+<div id="conversionModal" class="modal" style="display: none;">
+    <div class="modal-content" style="text-align: center; padding: 20px;">
+        <span class="close-button" onclick="closeConversionModal()">&times;</span>
+        <h3>Convert GC Coins & Balance</h3>
+        
+        <!-- Conversion Form -->
+        <div>
+            <label for="gcToBalanceInput">GC to Balance:</label>
+            <input type="number" id="gcToBalanceInput" placeholder="Enter GC Amount">
+            <button onclick="convertGcToBalance()">Convert to Balance</button>
+        </div>
+        <hr>
+        <div>
+            <label for="balanceToGcInput">Balance to GC:</label>
+            <input type="number" id="balanceToGcInput" placeholder="Enter Balance Amount">
+            <button onclick="convertBalanceToGc()">Convert to GC</button>
+        </div>
+    </div>
+</div>
 </div>     
     <div class="container text-center mt-4" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
         
@@ -213,9 +235,11 @@
         Every day 1400 and up players loose some rating and have to try to stay on the top of the list. 
           </p>
                 <h1 style="color: red;">1500GC = $1 US</h1>
-
+                <button id="openConversionModal" style="margin-top: 10px;">Convert </button>
 
         <h4 id="prizeTxt">Rating Prizes</h4>
+            <!-- Add button to open conversion modal -->
+        
         <p id="prizeTime">Every day at 7:00pm EST, the clock ends. Top players will make money:</p>
         <ul>
             <li>Top 1: $500GC -</li>
@@ -299,6 +323,10 @@
                 prizeTime: "Every day at 7:00pm EST, the clock ends. Top players will make money:",
                 unlockGeneral:"Unlock FREE generals",
                 generalSelection:"Pick your General",
+                openConversionModal:"Convert",
+                logoutButton:"Logout",
+                leaveGameButton:"Leave Game"
+
                     },
             es: {
                 alertMessage: "¡Mensaje de alerta aquí!",
@@ -317,7 +345,9 @@
                 prizeTime:"Todos los dias a las 7pm EST el reloj termina al llegar los jugadores top ganan dinero:",
                 unlockGeneral:"Consigue generales GRATIS",
                 generalSelection:"Elije tu General",
-                
+                openConversionModal:"Convertir",
+                logoutButton:"Cerrar Sesion",
+                leaveGameButton:"Salirse"
             }
         };
 

@@ -483,6 +483,78 @@ schedule.scheduleJob('00 10 * * *', function() { //6pm server time
 
 });
 
+
+// Convert GC Coins to Balance
+app.post('/convert-gc-to-balance', async (req, res) => {
+    const { username, gcAmount } = req.body;
+
+    if (!username || typeof gcAmount !== 'number') {
+        return res.status(400).json({ success: false, message: 'Invalid input data.' });
+    }
+
+    try {
+        const player = await Player.findOne({ username });
+        if (!player) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        if (player.generalsCoin < gcAmount) {
+            return res.status(400).json({ success: false, message: 'Insufficient GC Coins.' });
+        }
+
+        // Convert GC to balance (1 balance for every 1500 GC)
+        const balanceEarned = Math.floor(gcAmount / 1500);
+        player.generalsCoin -= balanceEarned * 1500; // Deduct the GC Coins
+        player.balance += balanceEarned; // Add balance
+
+        await player.save();
+        res.json({ success: true, message: `Converted ${gcAmount} GC to ${balanceEarned} balance!` });
+    } catch (error) {
+        console.error('Error converting GC to balance:', error);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
+
+// Convert Balance to GC Coins
+app.post('/convert-balance-to-gc', async (req, res) => {
+    const { username, balanceAmount } = req.body;
+
+    if (!username || typeof balanceAmount !== 'number') {
+        return res.status(400).json({ success: false, message: 'Invalid input data.' });
+    }
+
+    try {
+        const player = await Player.findOne({ username });
+        if (!player) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        if (player.balance < balanceAmount) {
+            return res.status(400).json({ success: false, message: 'Insufficient balance.' });
+        }
+
+        // Convert balance to GC (1500 GC for every 1 balance)
+        const gcEarned = balanceAmount * 1500;
+        player.balance -= balanceAmount; // Deduct balance
+        player.generalsCoin += gcEarned; // Add GC Coins
+
+        await player.save();
+        res.json({ success: true, message: `Converted ${balanceAmount} balance to ${gcEarned} GC!` });
+    } catch (error) {
+        console.error('Error converting balance to GC:', error);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
    
   function checkWinCondition(game, player, roomId) {
     const opponent = player === 'P1' ? 'P2' : 'P1';

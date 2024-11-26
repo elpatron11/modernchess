@@ -1280,6 +1280,75 @@ function playOnMiss(){
     missSound.play()
 }
 
+
+
+// Open and close modal functions
+function openConversionModal() {
+    document.getElementById('conversionModal').style.display = 'block';
+}
+
+function closeConversionModal() {
+    document.getElementById('conversionModal').style.display = 'none';
+}
+
+// Conversion functions
+function convertGcToBalance() {
+    const gcAmount = parseInt(document.getElementById('gcToBalanceInput').value);
+    const username = localStorage.getItem('username');
+    if (gcAmount > 0) {
+        fetch('/convert-gc-to-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, gcAmount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                closeConversionModal(); // Close modal on success
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        alert('Please enter a valid GC amount.');
+    }
+}
+
+function convertBalanceToGc() {
+    const balanceAmount = parseInt(document.getElementById('balanceToGcInput').value);
+    const username = localStorage.getItem('username');
+    if (balanceAmount > 0) {
+        fetch('/convert-balance-to-gc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, balanceAmount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                closeConversionModal(); // Close modal on success
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        alert('Please enter a valid balance amount.');
+    }
+}
+
+// Attach event to the button
+document.getElementById('openConversionModal').onclick = openConversionModal;
+
+
+
+
+
+
+
+
+
+
+
 // Client-side JavaScript
 socket.on('waitingForOpponent', (data) => {
     const statusDisplay = document.getElementById('statusDisplay'); // Ensure you have this element in your HTML

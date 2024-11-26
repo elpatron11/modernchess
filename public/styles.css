@@ -732,6 +732,50 @@ td .tower-hp {
 }
 
 
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+        border-radius: 10px;
+    }
+    
+    .close-button {
+        color: red;
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close-button:hover {
+        color: darkred;
+    }
+
+  #openConversionModal{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px;
+
+        width: 100px;
+        color: rgb(216, 216, 216);
+        background-color: goldenrod;
+  }
+
+
 /* Center the slider in the web app */
 .slider-container {
     margin: 20px auto; /* Add margin to center and create space from the top */
