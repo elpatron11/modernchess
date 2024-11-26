@@ -605,6 +605,9 @@ socket.on('gameStart', (data) => {
 });
 
 
+
+
+
 // Update the board state after a move
 socket.on('updateBoard', (data) => {
     board = data.board;
@@ -798,6 +801,11 @@ socket.on('generalUnlocked', (data) => {
         alert(data.message); // Notify the player that they unlocked a new general
     }
 });
+
+
+
+
+
 
 
 function showAlert(message, duration = 3000) {
@@ -1189,6 +1197,8 @@ function renderBoard() {
                 unitImage.classList.add('unit-image');  // Optional: Add a class for styling
                 td.appendChild(unitImage);
 
+
+                       
                 // Display tower HP if it's a tower
                 if (unitType === 'P1_T' || unitType === 'P2_T') {
                     const tower = board[row][col];
@@ -1238,7 +1248,11 @@ function getImageForUnit(unitType) {
         'P1_Voldemort': '/resources/images/p1_voldemort.png',
         'P2_Voldemort': '/resources/images/p2_voldemort.png',
         'P1_Robinhood': '/resources/images/p1_robin.png',
+        'P1_Robinhood1': '/resources/images/p1_robin1.png',
+        'P1_Robinhood2': '/resources/images/p1_robin2.png',
         'P2_Robinhood': '/resources/images/p2_robin.png',
+        'P2_Robinhood1': '/resources/images/p2_robin1.png',
+        'P2_Robinhood2': '/resources/images/p2_robin2.png',
         'P1_Camaleon': '/resources/images/p1_camaleon.png',
         'P2_Camaleon': '/resources/images/p2_camaleon.png',        
         'explosion': '/resources/images/animation/rip.gif',
@@ -1348,6 +1362,8 @@ socket.on('gameStateUpdate', (data) => {
         cell.style.pointerEvents = 'none'; // Prevent interaction
     });
 });
+
+
 
 
 //Leave button

@@ -119,7 +119,17 @@
                     moneyIcon.style.marginRight = '5px'; // Add some spacing
 
                     const coinText = document.createElement('span');
+                    
+                    if(index === 4 || index === 3 || index === 2){
                     coinText.textContent = '200'; // Replace with dynamic value if needed
+                    }
+                    if(index === 1 ){
+                    coinText.textContent = '300'; // Replace with dynamic value if needed
+                    }
+                    if(index === 0 ){
+                    coinText.textContent = '500'; // Replace with dynamic value if needed
+                    }
+                    
                     coinText.style.fontWeight = 'bold'; // Make the text bold
 
                     moneyIconCell.appendChild(moneyIcon);

@@ -197,8 +197,8 @@ app.get('/generals', async (req, res) => {
             { name: 'Barbarian', price: 10, gcPrice: 1000 },
             { name: 'Paladin', price: 10, gcPrice: 1200 },            
             { name: 'Orc', price: 10, gcPrice: 1200 },
-            { name: 'Voldemort', price: 15, gcPrice: 5000 },
-            { name: 'Robinhood', price: 15, gcPrice: 10000 }
+            { name: 'Voldemort', price: 15, gcPrice: 3000 },
+            { name: 'Robinhood', price: 15, gcPrice: 5000 }
         ];
 
         const ownedGenerals = player.ownedGenerals || [];
@@ -453,7 +453,25 @@ schedule.scheduleJob('00 10 * * *', function() { //6pm server time
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: { balance: 1} },         // Increment balance by 1
+            { $inc: { generalsCoin: 100} },         // Increment balance by 1
+            
+        );
+        
+        console.log('Successfully updated balance for top 5 players');
+    } catch (error) {
+        console.error('Unexpected error occurred while updating balance for top players:', error);
+    }
+
+    
+    try {
+        // Find the top 5 players based on rating
+        const topPlayers = await Player.find().sort({ rating: -1 }).limit(1).select('_id');
+        const topPlayerIds = topPlayers.map(player => player._id);
+
+        // Update only the top 5 players by increasing their balance by 1
+        await Player.updateMany(
+            { _id: { $in: topPlayerIds } },  // Match only top 5 players
+            { $inc: { generalsCoin: 200} },         // Increment balance by 1
             
         );
         
@@ -968,12 +986,12 @@ async function makeMove(from, to, roomId, playerId) {
 
             if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                 const attackingTower = game.board[from.row][from.col];
-            
-                if (attackingTower.hp > 1) {
-                    attackingTower.hp -= -1;  // Reduce tower HP by 1 on attack
-                    console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
+                if(playerCard !== "Tower Attacker"){
+                    if (attackingTower.hp > 1) {
+                        attackingTower.hp -= -1;  // Reduce tower HP by 1 on attack
+                        console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
+                        }
                 }
-
             }
 
             if(attackingPiece.startsWith('P2_M') || attackingPiece.startsWith('P2_GM') || attackingPiece.startsWith('P2_Voldemort'))
@@ -1233,9 +1251,9 @@ function createGameBoard() {
     return board;
 }
 
-
 async function updateGameResult(winnerUsername, loserUsername) {
     try {
+        // Fetch players asynchronously
         const winner = await Player.findOne({ username: winnerUsername });
         const loser = await Player.findOne({ username: loserUsername });
 
@@ -1246,16 +1264,35 @@ async function updateGameResult(winnerUsername, loserUsername) {
         let ratingChange = 0;
         const ratingDifference = winner.rating - loser.rating;
 
-        if (ratingDifference >= 100) {
-            ratingChange = 5; // No points gained for the winner
-        }else if (ratingDifference >= 50) {
-            ratingChange = 5; // Minimal points gained for the winner
-        }  else if (ratingDifference >= 20) {
-            ratingChange = 10; // Minimal points gained for the winner
+        if (ratingDifference >= 150) {
+            ratingChange = 10; // No points gained for the winner
+              // Adjust General Coins
+            winner.generalsCoin += 20; // Winner gains coins
+            loser.generalsCoin -= 0; // Loser loses coins
+
+        } else if (ratingDifference >= 100) {
+              // Adjust General Coins
+            winner.generalsCoin += 50; // Winner gains coins
+            loser.generalsCoin -= 50; // Loser loses coins
+            ratingChange = 15; // Minimal points gained for the winner
+        } else if (ratingDifference >= 50) {
+            ratingChange = 20; // Moderate gain for the winner
+                // Adjust General Coins
+            winner.generalsCoin += 60; // Winner gains coins
+            loser.generalsCoin -= 60; // Loser loses coins
+
         } else if (ratingDifference < 0) {
-            ratingChange = 15; // Big gain for the winner when beating a higher-rated player
+            ratingChange = 45; // Big gain for the winner when beating a higher-rated player
+              // Adjust General Coins
+            winner.generalsCoin += 70; // Winner gains coins
+            loser.generalsCoin -= 70; // Loser loses coins
+
         } else {
-            ratingChange = 10; // Moderate gain when players are closely rated
+            ratingChange = 25; // Moderate gain when players are closely rated
+              // Adjust General Coins
+            winner.generalsCoin += 50; // Winner gains coins
+            loser.generalsCoin -= 50; // Loser loses coins
+
         }
 
         // Apply rating changes
@@ -1268,17 +1305,18 @@ async function updateGameResult(winnerUsername, loserUsername) {
         // Increment games played
         winner.gamesPlayed += 1;
         loser.gamesPlayed += 1;
-        winner.generalsCoin += 50;
-        loser.generalsCoin -= 10;
-        // Save changes
+
+      
+        // Save changes asynchronously
         await winner.save();
         await loser.save();
-        
+
         console.log('Updated game results with adjusted rating logic.');
     } catch (error) {
         console.error('Failed to update game results:', error);
     }
 }
+
 
 
 async function updateBotGameResult(playerUsername, botWins) {
@@ -1310,6 +1348,7 @@ async function updateBotGameResult(playerUsername, botWins) {
         console.error('Failed to update game results for player vs bot:', error);
     }
 }
+
 
 
 function logout() {
@@ -1425,25 +1464,21 @@ socket.on('emojiSelected', function(data) {
                 if (game.players[loser].username === botAccount.username) {
                     // Call a separate update function for bot loss
                     updateBotGameResult(game.players[winner].username)
-                        .then(() => {
+                       
                             console.log('Bot loss handled successfully');
                             // Optionally remove the game after updating results
                             delete games[roomId];
-                        })
-                        .catch((error) => {
-                            console.error('Failed to handle bot loss:', error);
-                        });
+                        
+                        
                 } else {
                     // Regular updateGameResult for player loss
                     updateGameResult(game.players[winner].username, game.players[loser].username)
-                        .then(() => {
+                       
                             console.log('Game result updated successfully');
                             // Optionally remove the game after updating results
                             delete games[roomId];
-                        })
-                        .catch((error) => {
-                            console.error('Failed to update game results:', error);
-                        });
+                       
+                       
                 }
 
 
@@ -1522,7 +1557,8 @@ socket.on('emojiSelected', function(data) {
                     },
                     unitHasAttacked: {},
                     unitHasMoved: {},
-                    gameConcluded: false
+                    gameConcluded: false,
+                    horseKills: {}, // Add a tracker for Horse kills
                 };
                 console.log(`Game initialized with players:`, games[roomId].players);
                
@@ -1558,6 +1594,8 @@ socket.on('emojiSelected', function(data) {
                         console.log(`Player 2's extra Warrior spot (${warriorSpotP2.row}, ${warriorSpotP2.col}) is occupied.`);
                     }
                 }
+
+
 
                
                 turnCounter = 0;
@@ -2205,17 +2243,22 @@ socket.on('emojiSelected', function(data) {
                     if(attackingPiece.startsWith('P1_Robinhood') || attackingPiece.startsWith('P2_Robinhood') )
                     {
                         if (RobinhoodAttaackCounts[attackingPiece]) {
-                            RobinhoodAttaackCounts[attackingPiece]++;
+                          
                             console.log("Archer chance", RobinhoodAttaackCounts[attackingPiece])
-                    }
+                            RobinhoodAttaackCounts[attackingPiece]++;
+                        
+                                            
+                                
+                            }
                         else{
                             RobinhoodAttaackCounts[attackingPiece] = 1;
+                            
                         }
                         if (RobinhoodAttaackCounts[attackingPiece] % 3 === 0) {
                             hitChance = 1.0;  // 100% hit chance on every third attack
                             console.log("Archer should 1 hit now", RobinhoodAttaackCounts[attackingPiece] )
-                            RobinhoodAttaackCounts[attackingPiece] = 0;
-                            
+                                                    
+                                RobinhoodAttaackCounts[attackingPiece] = 0;
                         
                         }
                     }
@@ -2234,19 +2277,20 @@ socket.on('emojiSelected', function(data) {
 
                 
                     if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
+                       if(playerCard !== 'Tower Attacker'){
                         const attackingTower = game.board[from.row][from.col];
-            
-                        if (attackingTower.hp > 1) {
-                            attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
-                            console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
-            
-                            // Check if attacking tower is destroyed due to HP loss
-                            if (attackingTower.hp <= 0) {
-                                console.log(`Tower ${attackingPiece} is destroyed!`);
-                                game.board[from.row][from.col].unit = 'towerdestroyed';  // Remove the attacking tower from the board
-                                io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed. `);
-                                io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} Lose!`)
-                                
+                                if (attackingTower.hp > 1) {
+                                attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
+                                console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
+                
+                                // Check if attacking tower is destroyed due to HP loss
+                                if (attackingTower.hp <= 0) {
+                                    console.log(`Tower ${attackingPiece} is destroyed!`);
+                                    game.board[from.row][from.col].unit = 'towerdestroyed';  // Remove the attacking tower from the board
+                                    io.to(moveData.roomId).emit('towerDestroyed', `Tower ${attackingPiece} is destroyed. `);
+                                    io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} Lose!`)
+                                    
+                                }
                             }
                         }
                     }
@@ -2496,52 +2540,64 @@ socket.on('emojiSelected', function(data) {
                const p2Tower = game.board[7][5];
 
                // Reduce HP for Player 1's tower
-               if (p1Tower.unit === 'P1_T' && p1Tower.hp > 1) {
-                   p1Tower.hp -= 1;
-                   console.log(`Player 1's tower loses 1 HP, now at ${p1Tower.hp}`);
-                   io.to(moveData.roomId).emit('towerDamaged', `Player 1's tower loses 1 HP! Remaining HP: ${p1Tower.hp}`);
+    // Reduce HP for Player 1's tower unless "Attacking Tower" card is active
+    if (p1Tower.unit === 'P1_T' && p1Tower.hp > 1) {
+        // Check if Player 1 has the "Attacking Tower" card
+        if (games[moveData.roomId].cards[socket.id] !== 'Attacking Tower') {
+            p1Tower.hp -= 1;
+            console.log(`Player 1's tower loses 1 HP, now at ${p1Tower.hp}`);
+            io.to(moveData.roomId).emit('towerDamaged', `Player 1's tower loses 1 HP! Remaining HP: ${p1Tower.hp}`);
 
-                   // Check if Player 1's tower is destroyed
-                   if (p1Tower.hp <= 0) {
-                       game.board[3][0].unit = 'towerdestroyed';  // Remove the tower from the board
-                       io.to(moveData.roomId).emit('updateBoard', {
-                                board: game.board,
-                                terrain: game.terrain,
-                                turn: game.turn,
-                            });
-                       io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
-                       io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
-                       if (checkWinCondition(game, 'P2',moveData.roomId)) {
-                        io.to(roomId).emit('gameOver', 'Player 2 wins!');
-                        return;
-                    }
-                   }
-               }
+            // Check if Player 1's tower is destroyed
+            if (p1Tower.hp <= 0) {
+                game.board[3][0].unit = 'towerdestroyed'; // Remove the tower from the board
+                io.to(moveData.roomId).emit('updateBoard', {
+                    board: game.board,
+                    terrain: game.terrain,
+                    turn: game.turn,
+                });
+                io.to(moveData.roomId).emit('towerDestroyed', `Player 1's tower is destroyed!`);
 
-               // Reduce HP for Player 2's tower
-               if (p2Tower.unit === 'P2_T' && p2Tower.hp > 1) {
-                   p2Tower.hp -= 1;
-                   console.log(`Player 2's tower loses 1 HP, now at ${p2Tower.hp}`);
-                   io.to(moveData.roomId).emit('towerDamaged', `Player 2's tower loses 1 HP! Remaining HP: ${p2Tower.hp}`);
+                // Check win condition
+                if (checkWinCondition(game, 'P2', moveData.roomId)) {
+                    io.to(moveData.roomId).emit('gameOver', 'Player 2 wins!');
+                    return;
+                }
+            }
+        } else {
+            console.log(`Player 1's tower is protected by the "Attacking Tower" card.`);
+        }
+    }
 
-                   // Check if Player 2's tower is destroyed
-                   if (p2Tower.hp <= 0) {
-                       game.board[4][7].unit = 'towerdestroyed';  // Remove the tower from the board
-                       io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
-                       io.to(moveData.roomId).emit('gameOver', `Player ${moveData.player} wins!`)
-                       io.to(moveData.roomId).emit('updateBoard', {
-                        board: game.board,
-                        terrain: game.terrain,
-                        turn: game.turn,
-                    });                       
-                       // Check for game over, as Player 1 would win
-                        if (checkWinCondition(game, 'P1',moveData.roomId)) {
-                         io.to(moveData.roomId).emit('gameOver', 'Player 1 wins!');
-                            return;
-                         }
-                       
-                   }
-               }
+    // Reduce HP for Player 2's tower unless "Attacking Tower" card is active
+    if (p2Tower.unit === 'P2_T' && p2Tower.hp > 1) {
+        // Check if Player 2 has the "Attacking Tower" card
+        if (games[moveData.roomId].cards[opponent.id] !== 'Attacking Tower') {
+            p2Tower.hp -= 1;
+            console.log(`Player 2's tower loses 1 HP, now at ${p2Tower.hp}`);
+            io.to(moveData.roomId).emit('towerDamaged', `Player 2's tower loses 1 HP! Remaining HP: ${p2Tower.hp}`);
+
+            // Check if Player 2's tower is destroyed
+            if (p2Tower.hp <= 0) {
+                game.board[4][7].unit = 'towerdestroyed'; // Remove the tower from the board
+                io.to(moveData.roomId).emit('updateBoard', {
+                    board: game.board,
+                    terrain: game.terrain,
+                    turn: game.turn,
+                });
+                io.to(moveData.roomId).emit('towerDestroyed', `Player 2's tower is destroyed!`);
+
+                // Check win condition
+                if (checkWinCondition(game, 'P1', moveData.roomId)) {
+                    io.to(moveData.roomId).emit('gameOver', 'Player 1 wins!');
+                    return;
+                }
+            }
+        } else {
+            console.log(`Player 2's tower is protected by the "Attacking Tower" card.`);
+        }
+    }
+
 
                // Optionally, check for win conditions after a tower is destroyed
                if (checkWinCondition(game, game.turn,moveData.roomId )) {
@@ -2631,24 +2687,24 @@ socket.on('emojiSelected', function(data) {
 
             // Call `updateBotGameResult` with the real player's username and bot's result
             updateBotGameResult(realPlayerUsername, botWins)
-                .then(() => {
+               
                     console.log(`Bot result handled successfully. Bot ${botWins ? 'won' : 'lost'}.`);
                     delete games[roomId]; // Optionally delete the game afterward
-                })
-                .catch((error) => {
+               
+                
                     console.error('Failed to handle bot result:', error);
-                });
+              
         } else {
             // Regular updateGameResult for player loss
             updateGameResult(game.players[winner].username, game.players[loser].username)
-                .then(() => {
+             
                     console.log('Game result updated successfully');
                     // Optionally remove the game after updating results
                     delete games[roomId];
-                })
-                .catch((error) => {
+                
+                
                     console.error('Failed to update game results:', error);
-                });
+              
         }
 
             }
