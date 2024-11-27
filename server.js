@@ -763,9 +763,9 @@ async function botTakeTurn(roomId) {
 
         // If no attacks are available, attempt a move
         if (!actionTaken && availableMoves.moves.length > 0) {
-            const randomMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
-            console.log(`Bot chose to move from (${randomMove.move.from.row}, ${randomMove.move.from.col}) to (${randomMove.move.to.row}, ${randomMove.move.to.col})`);
-            executeMove(randomMove, roomId);
+            const selectedMove = getMoveTowardsTarget(availableMoves, 0, 2);
+            console.log(`Bot chose to move from (${selectedMove.move.from.row}, ${selectedMove.move.from.col}) to (${selectedMove.move.to.row}, ${selectedMove.move.to.col})`);
+            executeMove(selectedMove, roomId);
             actionsPerformed++;
         } else if (!actionTaken) {
             console.error('No valid moves available for the bot.');
@@ -797,6 +797,28 @@ async function botTakeTurn(roomId) {
     // Wait for board updates to propagate
     await delay(5000);
    
+}
+
+function getMoveTowardsTarget(availableMoves, targetRow, targetCol) {
+    return availableMoves.moves
+        .map(move => {
+            const from = move.move.from;
+            const to = move.move.to;
+
+            // Ensure `from` and `to` are valid objects
+            if (!from || !to) {
+                console.error("Invalid move object:", move);
+                return null;
+            }
+
+            const currentDistance = Math.abs(from.row - targetRow) + Math.abs(from.col - targetCol);
+            const newDistance = Math.abs(to.row - targetRow) + Math.abs(to.col - targetCol);
+
+            return { move, currentDistance, newDistance };
+        })
+        .filter(entry => entry !== null && entry.newDistance < entry.currentDistance) // Ensure valid entries and closer moves
+        .sort((a, b) => a.newDistance - b.newDistance) // Sort by proximity
+        .map(entry => entry.move)[0]; // Return the closest move
 }
 
 
