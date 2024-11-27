@@ -2630,10 +2630,14 @@ socket.on('emojiSelected', function(data) {
         }
     }
 
+        // Determine opponent socket ID
+    const opponentSocketId = Object.keys(game.players).find(
+        (id) => id !== socket.id
+    );
     // Reduce HP for Player 2's tower unless "Attacking Tower" card is active
     if (p2Tower.unit === 'P2_T' && p2Tower.hp > 1) {
         // Check if Player 2 has the "Attacking Tower" card
-        if (games[moveData.roomId].cards[opponent.id] !== 'Attacking Tower') {
+        if (games[moveData.roomId].cards[opponentSocketId] !== 'Attacking Tower') {
             p2Tower.hp -= 1;
             console.log(`Player 2's tower loses 1 HP, now at ${p2Tower.hp}`);
             io.to(moveData.roomId).emit('towerDamaged', `Player 2's tower loses 1 HP! Remaining HP: ${p2Tower.hp}`);
