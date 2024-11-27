@@ -41,6 +41,7 @@ let terrainType3 = 0;
 let isSpectator = false; // Default to false
 let playerCard = null; // Global variable to store the player's selected card
 
+
 // Join a room when the player clicks the join button
 // Function to start matchmaking
 
@@ -389,21 +390,8 @@ socket.on('playerData', (data) => {
 });
 
 
-// Listen for reconnection attempts
-socket.on('reconnect', (attemptNumber) => {
-    console.log(`Reconnected after ${attemptNumber} attempts.`);
-    // Inform the server about the reconnection and room rejoin
-    const roomId = localStorage.getItem('roomId'); // Store room ID in localStorage
-    const playerData = JSON.parse(localStorage.getItem('playerData')); // Store player state
-    if (roomId && playerData) {
-        socket.emit('rejoinRoom', { roomId, playerData });
-    }
-});
 
-// Handle reconnection errors
-socket.on('reconnect_error', (error) => {
-    console.error('Reconnection failed:', error);
-});
+
 
 
 
@@ -1449,13 +1437,7 @@ document.getElementById('leaveGameButton').addEventListener('click', function() 
     
 });
 
-socket.on('disconnect', () => {
-    document.getElementById('reconnectMessage').style.display = 'block';
-});
 
-socket.on('reconnect', () => {
-    document.getElementById('reconnectMessage').style.display = 'none';
-});
 
 document.getElementById("LoginButton").addEventListener("click", function () {
     openLoginModal(); // Reuse the existing modal opening logic

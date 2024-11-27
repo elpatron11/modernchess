@@ -28,6 +28,9 @@ const schedule = require('node-schedule');
 let countdown = 0; // counter for event timer.
 const gameTimers = {}; // Stores timers for each game
 // Add bot account to matchmaking if no players are waiting
+app.use(express.static('public', {
+    maxAge: '1d' // Cache files for one day
+}));
 
 
 mongoose.connect(process.env.DB_URL, {
@@ -39,7 +42,9 @@ mongoose.connect(process.env.DB_URL, {
 mongoose.connection.on('open', () => {
     console.log('Connected to MongoDB');
 });
-app.use(express.static('public'));
+app.use(express.static('public', {
+    maxAge: '1d' // Cache files for one day
+}));
 
 app.use(express.json()); // for parsing application/json
 
@@ -518,7 +523,7 @@ app.post('/convert-gc-to-balance', async (req, res) => {
 // Convert Balance to GC Coins
 app.post('/convert-balance-to-gc', async (req, res) => {
     const { username, balanceAmount } = req.body;
-
+    
     if (!username || typeof balanceAmount !== 'number') {
         return res.status(400).json({ success: false, message: 'Invalid input data.' });
     }
@@ -1487,25 +1492,7 @@ io.on('connection',(socket) => {
         activeGames[roomId] = gameState;
     });
    
-      // Listen for the rejoinRoom event
-      socket.on('rejoinRoom', ({ roomId, playerData }) => {
-        const room = io.sockets.adapter.rooms.get(roomId);
-
-        if (room) {
-            // Check if the room exists
-            socket.join(roomId); // Add the player back to the room
-            console.log(`Player ${playerData.name} rejoined room ${roomId}`);
-
-            // Optionally, notify other players in the room
-            socket.to(roomId).emit('playerRejoined', playerData);
-
-            // Restore the game state if necessary
-            io.to(socket.id).emit('restoreState', { roomId, playerData });
-        } else {
-            // If the room no longer exists, notify the client
-            io.to(socket.id).emit('rejoinError', 'Room does not exist or game has ended.');
-        }
-    });
+  
  // Server-side (Node.js)
 // Handling emoji selection within a game room
 socket.on('emojiSelected', function(data) {
