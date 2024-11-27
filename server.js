@@ -1063,6 +1063,8 @@ async function makeMove(from, to, roomId, playerId) {
 
             if (attackingPiece === 'P1_T' || attackingPiece === 'P2_T') {
                 const attackingTower = game.board[from.row][from.col];
+                const playerCard = game.cards[playerId];
+
                 if(playerCard !== "Tower Attacker"){
                     if (attackingTower.hp > 1) {
                         attackingTower.hp -= -1;  // Reduce tower HP by 1 on attack
