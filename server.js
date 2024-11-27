@@ -725,7 +725,7 @@ async function botTakeTurn(roomId) {
 
             return isValidAttack(game, game.board[from.row][from.col], from.row, from.col, to.row, to.col, unitsThatAttacked) &&
                    (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M") || game.board[from.row][from.col].unit.startsWith("P2_GA") || game.board[from.row][from.col].unit.startsWith("P2_Robinhood") 
-                   || game.board[from.row][from.col].unit.startsWith("P2_GM") || game.board[from.row][from.col].unit.startsWith("P2_Voldemort" ) )&&  !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
+                   || game.board[from.row][from.col].unit.startsWith("P2_GM") || game.board[from.row][from.col].unit.startsWith("P2_Paladin") || game.board[from.row][from.col].unit.startsWith("P2_Voldemort" ) )&&  !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
         });
 
         let actionTaken = false;
@@ -800,7 +800,7 @@ async function botTakeTurn(roomId) {
 }
 
 function getMoveTowardsTarget(availableMoves, targetRow, targetCol) {
-    return availableMoves.moves
+    const movesWithDistances = availableMoves.moves
         .map(move => {
             const from = move.move.from;
             const to = move.move.to;
@@ -816,10 +816,26 @@ function getMoveTowardsTarget(availableMoves, targetRow, targetCol) {
 
             return { move, currentDistance, newDistance };
         })
-        .filter(entry => entry !== null && entry.newDistance < entry.currentDistance) // Ensure valid entries and closer moves
-        .sort((a, b) => a.newDistance - b.newDistance) // Sort by proximity
-        .map(entry => entry.move)[0]; // Return the closest move
+        .filter(entry => entry !== null); // Ensure valid entries
+
+    // Find moves that actually get closer to the target
+    const closerMoves = movesWithDistances.filter(entry => entry.newDistance < entry.currentDistance)
+        .sort((a, b) => a.newDistance - b.newDistance); // Sort by proximity
+
+    if (closerMoves.length > 0) {
+        return closerMoves[0].move; // Return the closest move if available
+    } else {
+        // Fallback: pick a random move if no closer move is available
+        const randomMove = availableMoves.moves[Math.floor(Math.random() * availableMoves.moves.length)];
+        if (!randomMove) {
+            console.error("No valid moves available.");
+            return null;
+        }
+        console.log("Fallback to random move:", randomMove);
+        return randomMove;
+    }
 }
+
 
 
 
@@ -852,7 +868,7 @@ function findAvailableMoves(game, player) {
             const maxAttackDistance = getMaxAttackRange(piece);
 
             // Check for valid ranged attacks for Archers, General Archers, and Mages
-            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA")  || piece.startsWith("P2_Robinhood") || piece.startsWith("P2_M") || piece.startsWith("P2_GM")  || piece.startsWith("P2_Voldemort")) {
+            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA")  || piece.startsWith("P2_Robinhood") || piece.startsWith("P2_M") || piece.startsWith("P2_GM")  || piece.startsWith("P2_Voldemort") || piece.startsWith("P2_Paladin")) {
                 for (let toRow = row - maxAttackDistance; toRow <= row + maxAttackDistance; toRow++) {
                     for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
                         if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length || (toRow === row && toCol === col)) continue;
@@ -1168,7 +1184,7 @@ async function makeMove(from, to, roomId, playerId) {
         let damage = getUnitDamage(attackingPiece);  // Get damage based on unit type
     
          // Check if the target is a tower
-        if (targetPiece === 'P1_T' || targetPiece === 'P2_T') {
+        if (targetPiece === 'P1_T' ) {
                 isTower = true;
             }
     
@@ -2712,89 +2728,57 @@ socket.on('emojiSelected', function(data) {
     
 
     socket.on('disconnect', () => {
-        delete activePlayers[socket.id];  // Remove player from active list
         console.log(`Player logged out, total active players: ${Object.keys(activePlayers).length}`);
-
-            // Remove from games and spectators
-        for (const roomId in games) {
+    
+        // Process each game to handle disconnects
+        Object.keys(games).forEach(roomId => {
             const game = games[roomId];
-
-            // Remove from players or spectators
+    
+            // Remove from spectators first
+            game.spectators = game.spectators.filter(spectatorId => spectatorId !== socket.id);
+    
+            // Check if the disconnecting player was part of this game
             if (game.players.P1.socketId === socket.id || game.players.P2.socketId === socket.id) {
-                console.log(`Player ${socket.id} was part of game ${roomId}, concluding the game.`);
-                game.gameConcluded = true; // Mark game as concluded
-                delete games[roomId];
-            } else {
-                game.spectators = game.spectators.filter(spectatorId => spectatorId !== socket.id);
-                console.log(`Spectator ${socket.id} removed from game ${roomId}`);
+                if (!game.gameConcluded) {
+                    const loser = game.players.P1.socketId === socket.id ? 'P1' : 'P2';
+                    const winner = loser === 'P1' ? 'P2' : 'P1';
+    
+                    // Notify remaining player and update game result
+                    io.to(roomId).emit('gameOver', {
+                        message: `Player ${loser} disconnected. Player ${winner} wins by default.`,
+                        winner: game.players[winner].username,
+                        loser: game.players[loser].username
+                    });
+    
+                    game.gameConcluded = true;
+    
+                    try {
+                        // Depending on whether a bot is involved, call the appropriate result update function
+                        if (game.players[winner].username === botAccount.username || game.players[loser].username === botAccount.username) {
+                            const realPlayerUsername = game.players[winner].username === botAccount.username ? game.players[loser].username : game.players[winner].username;
+                            const botWins = game.players[winner].username === botAccount.username;
+                            updateBotGameResult(realPlayerUsername, botWins);
+                        } else {
+                            updateGameResult(game.players[winner].username, game.players[loser].username);
+                        }
+                        console.log('Game result updated successfully');
+                    } catch (error) {
+                        console.error('Failed to update game results:', error);
+                    }
+    
+                    // Optionally delete the game
+                    delete games[roomId];
+                } else {
+                    console.log(`Game ${roomId} already concluded. No action needed on disconnect.`);
+                }
             }
-        }
-
+        });
+    
         // Remove from matchmaking queue
         const initialQueueLength = matchmakingQueue.length;
         matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id);
         if (initialQueueLength !== matchmakingQueue.length) {
             console.log(`Player ${socket.id} removed from matchmaking queue.`);
-        }
-        
-        // Check if the player was part of any ongoing game
-        for (const roomId in games) {
-            const game = games[roomId];
-    
-            // Skip processing if the game has already been concluded
-            if (game.gameConcluded) {
-                console.log(`Game ${roomId} already concluded. No action needed on disconnect.`);
-                continue; // Skip to the next game if this one is already concluded
-            }
-    
-            if (game.players['P1'].socketId === socket.id || game.players['P2'].socketId === socket.id) {
-                const loser = game.players['P1'].socketId === socket.id ? 'P1' : 'P2';
-                const winner = loser === 'P1' ? 'P2' : 'P1';
-    
-                // Emit gameOver to both players
-                io.to(roomId).emit('gameOver', {
-                    message: `Player ${loser} disconnected. Player ${winner} wins by default.`,
-                    winner: game.players[winner].username,
-                    loser: game.players[loser].username
-                });
-    
-                // Mark the game as concluded to prevent further actions affecting the result
-                game.gameConcluded = true;
-    
-               // Check if the loser is the bot
-     // Check if the bot is the winner or loser
-        if (game.players[winner].username === botAccount.username || game.players[loser].username === botAccount.username) {
-            // Determine who is the actual player
-            const realPlayerUsername = game.players[winner].username === botAccount.username 
-                ? game.players[loser].username 
-                : game.players[winner].username;
-            
-            // Determine if the bot won or lost
-            const botWins = game.players[winner].username === botAccount.username;
-
-            // Call `updateBotGameResult` with the real player's username and bot's result
-            updateBotGameResult(realPlayerUsername, botWins)
-               
-                    console.log(`Bot result handled successfully. Bot ${botWins ? 'won' : 'lost'}.`);
-                    delete games[roomId]; // Optionally delete the game afterward
-               
-                
-                    console.error('Failed to handle bot result:', error);
-              
-        } else {
-            // Regular updateGameResult for player loss
-            updateGameResult(game.players[winner].username, game.players[loser].username)
-             
-                    console.log('Game result updated successfully');
-                    // Optionally remove the game after updating results
-                    delete games[roomId];
-                
-                
-                    console.error('Failed to update game results:', error);
-              
-        }
-
-            }
         }
     });
     
