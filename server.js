@@ -1067,7 +1067,7 @@ async function makeMove(from, to, roomId, playerId) {
 
                 if(playerCard !== "Tower Attacker"){
                     if (attackingTower.hp > 1) {
-                        attackingTower.hp -= -1;  // Reduce tower HP by 1 on attack
+                        attackingTower.hp -= 1;  // Reduce tower HP by 1 on attack
                         console.log(`${attackingPiece} tower now has ${attackingTower.hp} HP after attacking.`);
                         }
                 }
