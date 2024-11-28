@@ -2055,8 +2055,8 @@ socket.on('emojiSelected', function(data) {
                 
                 if (player) {
                     // Add 5 points to the player's rating
-                    player.rating += 10;
-                    player.generalsCoin += 25;
+                    player.rating += 15;
+                    player.generalsCoin += 35;
                     // Ensure the rating does not exceed the maximum, e.g., 1500
                     player.rating = Math.min(player.rating, 1700);
         
