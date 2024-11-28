@@ -1040,7 +1040,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
     if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P2_Camaleon") || piece.startsWith("P2_GH")) {
         // Horses can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
-    }  if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
+    }  if (piece.startsWith('P2_Paladin')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
                (rowDiff === colDiff && rowDiff <= 2);  // Diagonal
@@ -1852,7 +1852,7 @@ socket.on('emojiSelected', function(data) {
             };
                     // Add Towers for Player 1 and Player 2
                     if(games[roomId].cards[socket.id] === 'Tower Defense' && games[roomId].cards[opponentSocketId] !== 'Tower Defense'){
-                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
+                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 6 };  // Player 1 Tower
                      games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 8 };  // Player 2 Tower
                     }
                     
@@ -1861,7 +1861,7 @@ socket.on('emojiSelected', function(data) {
                          games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     else if(games[roomId].cards[opponentSocketId] === 'Tower Defense'  && games[roomId].cards[socket.id] === 'Tower Defense'){
-                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 6 };  // Player 1 Tower
                          games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     
