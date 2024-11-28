@@ -657,7 +657,7 @@ function startTurnTimer(roomId, currentPlayer) {
 let botAccount = {
     username: 'Bot123',
     password: '12345678',   
-    card: 'Tower Defense',
+    card: 'Tower Attacker',
     socketId: 'botSocketId12345',  // Static socket ID for the bot
 };
 
@@ -725,7 +725,7 @@ async function botTakeTurn(roomId) {
 
             return isValidAttack(game, game.board[from.row][from.col], from.row, from.col, to.row, to.col, unitsThatAttacked) &&
                    (game.board[from.row][from.col].unit.startsWith("P2_A") || game.board[from.row][from.col].unit.startsWith("P2_M") || game.board[from.row][from.col].unit.startsWith("P2_GA") || game.board[from.row][from.col].unit.startsWith("P2_Robinhood") 
-                   || game.board[from.row][from.col].unit.startsWith("P2_GM") || game.board[from.row][from.col].unit.startsWith("P2_Paladin") || game.board[from.row][from.col].unit.startsWith("P2_Voldemort" ) )&&  !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
+                   || game.board[from.row][from.col].unit.startsWith("P2_GM")|| game.board[from.row][from.col].unit.startsWith("P2_T") || game.board[from.row][from.col].unit.startsWith("P2_Paladin") || game.board[from.row][from.col].unit.startsWith("P2_Voldemort" ) )&&  !unitsThatAttacked.has(unitPosition); // Ensure the unit hasn’t attacked yet
         });
 
         let actionTaken = false;
@@ -763,7 +763,10 @@ async function botTakeTurn(roomId) {
 
         // If no attacks are available, attempt a move
         if (!actionTaken && availableMoves.moves.length > 0) {
-            const selectedMove = getMoveTowardsTarget(availableMoves, 0, 2);
+             // Randomly choose a target column between 2 and 4
+             // Randomly choose between target (0, 2) and (4, 5)
+             const targetPosition = Math.random() < 0.5 ? {row: 0, col: 2} : {row: 4, col: 5};
+            const selectedMove = getMoveTowardsTarget(availableMoves,  targetPosition.row, targetPosition.col);
             console.log(`Bot chose to move from (${selectedMove.move.from.row}, ${selectedMove.move.from.col}) to (${selectedMove.move.to.row}, ${selectedMove.move.to.col})`);
             executeMove(selectedMove, roomId);
             actionsPerformed++;
@@ -868,7 +871,7 @@ function findAvailableMoves(game, player) {
             const maxAttackDistance = getMaxAttackRange(piece);
 
             // Check for valid ranged attacks for Archers, General Archers, and Mages
-            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA")  || piece.startsWith("P2_Robinhood") || piece.startsWith("P2_M") || piece.startsWith("P2_GM")  || piece.startsWith("P2_Voldemort") || piece.startsWith("P2_Paladin")) {
+            if (piece.startsWith("P2_A") || piece.startsWith("P2_GA")  || piece.startsWith("P2_T") || piece.startsWith("P2_Robinhood") || piece.startsWith("P2_M") || piece.startsWith("P2_GM")  || piece.startsWith("P2_Voldemort") || piece.startsWith("P2_Paladin")) {
                 for (let toRow = row - maxAttackDistance; toRow <= row + maxAttackDistance; toRow++) {
                     for (let toCol = col - maxAttackDistance; toCol <= col + maxAttackDistance; toCol++) {
                         if (toRow < 0 || toRow >= board.length || toCol < 0 || toCol >= board[0].length || (toRow === row && toCol === col)) continue;
@@ -942,7 +945,7 @@ function findAvailableMoves(game, player) {
 
 // Define maximum attack range for each piece type
 function getMaxAttackRange(piece) {
-    if (piece.startsWith("P2_A") || piece.startsWith("P2_Robinhood")) {
+    if (piece.startsWith("P2_A") || piece.startsWith("P2_Robinhood")|| piece.startsWith("P2_T")) {
         return 3; // Archer range
     } if (piece.startsWith("P1_GA") || piece.startsWith("P2_GA")) {
         return 4; // Archer range
@@ -1021,7 +1024,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    if (piece.startsWith("P2_Robinhood") || piece.startsWith("P2_A") ) {
+    if (piece.startsWith("P2_Robinhood") || piece.startsWith("P2_A") || piece.startsWith("P2_T")) {
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 3) || (colDiff === 0 && rowDiff <= 3);
     } 
@@ -1040,7 +1043,7 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
     if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P2_Camaleon") || piece.startsWith("P2_GH")) {
         // Horses can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
-    }  if (piece.startsWith('P2_Paladin')) {
+    }  if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
         return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
                (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
                (rowDiff === colDiff && rowDiff <= 2);  // Diagonal
@@ -1852,7 +1855,7 @@ socket.on('emojiSelected', function(data) {
             };
                     // Add Towers for Player 1 and Player 2
                     if(games[roomId].cards[socket.id] === 'Tower Defense' && games[roomId].cards[opponentSocketId] !== 'Tower Defense'){
-                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 6 };  // Player 1 Tower
+                    games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
                      games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 8 };  // Player 2 Tower
                     }
                     
@@ -1861,7 +1864,7 @@ socket.on('emojiSelected', function(data) {
                          games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     else if(games[roomId].cards[opponentSocketId] === 'Tower Defense'  && games[roomId].cards[socket.id] === 'Tower Defense'){
-                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 6 };  // Player 1 Tower
+                        games[roomId].board[0][2] = { terrain: 'normal', unit: 'P1_T', hp: 9 };  // Player 1 Tower
                          games[roomId].board[7][5] = { terrain: 'normal', unit: 'P2_T', hp: 14 };  // Player 2 Tower
                     }
                     
