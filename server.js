@@ -1029,18 +1029,23 @@ function isValidAttack(game, pieceData, fromRow, fromCol, toRow, toCol, unitsTha
         // Archers attack in a cross pattern, up to 3 spaces
         return (rowDiff === 0 && colDiff <= 4) || (colDiff === 0 && rowDiff <= 4);
     }
-    if (piece.startsWith("P1_M") || piece.startsWith("P2_M")  || piece.startsWith("P2_Paladin")  || piece.startsWith("P2_GM") || piece.startsWith("P2_Voldemort")) {
+    if (piece.startsWith("P1_M") || piece.startsWith("P2_M") || piece.startsWith("P2_GM") || piece.startsWith("P2_Voldemort")) {
         // Mages can attack within a 2x2 area in orthogonal directions only
         return (rowDiff <= 2 && colDiff === 0) || (colDiff <= 2 && rowDiff === 0);
     }
-    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P1_Barbarian") || piece.startsWith("P2_GW") || piece.startsWith("P2_Orc")) {
+    if (piece.startsWith("P1_W") || piece.startsWith("P2_W") || piece.startsWith("P2_Barbarian") || piece.startsWith("P2_GW") || piece.startsWith("P2_Orc")) {
         // Warriors and General Warriors can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
     } 
     if (piece.startsWith("P1_H") || piece.startsWith("P2_T") || piece.startsWith("P2_H") || piece.startsWith("P2_Camaleon") || piece.startsWith("P2_GH")) {
         // Horses can attack adjacent squares
         return rowDiff <= 1 && colDiff <= 1;
+    }  if (piece.startsWith('P1_Paladin') || piece.startsWith('P2_Paladin')) {
+        return (rowDiff === 0 && colDiff <= 2) ||  // Horizontal attack
+               (colDiff === 0 && rowDiff <= 2) ||  // Vertical attack
+               (rowDiff === colDiff && rowDiff <= 2);  // Diagonal
     }
+
 
     return false; // Default no attack
 }
@@ -1071,6 +1076,53 @@ async function makeMove(from, to, roomId, playerId) {
     const isAttack = isValidAttack(game, board[from.row][from.col], from.row, from.col, to.row, to.col);
 
     if (isAttack && targetPiece) {
+
+       
+        // Check if the target is a tower
+        if (targetPiece.startsWith('P1_T') || targetPiece.startsWith('P2_T')) {
+            // Assume the tower's hit points are stored in an hp attribute
+            if (typeof board[to.row][to.col].hp === 'undefined') {
+                board[to.row][to.col].hp = 20; // Example initial HP, adjust as needed
+            }
+            function getUnitDamage(unit) {
+                const unitDamageMap = {
+                    'P1_A': 2, 'P2_A': 2, // Archers
+                    'P1_H': 3, 'P2_H': 3, // Horses
+                    'P1_W': 1, 'P2_W': 3, // Warriors
+                    'P1_M': 4, 'P2_M': 4, // Mages
+                    'P1_GW': 5, 'P2_GW': 5, // General Warrior
+                    'P1_GA': 4, 'P2_GA': 4, // General Archer
+                    'P1_GH': 3, 'P2_GH': 3, // General Horse
+                    'P1_Orc': 4, 'P2_Orc': 4, // General Horse
+                    'P1_Paladin': 3, 'P2_Paladin': 3, // General P
+                    'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
+                    'P1_GM': 4, 'P2_GM': 4, // General Horse
+                    'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
+                    'P1_Camaleon': 3, 'P2_Camaleon': 3, // General Horse
+                    // Add other units with their respective damages
+                };
+                return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
+            }
+
+
+            let damage2 = getUnitDamage(attackingPiece); // Get damage based on the attacking unit type
+            // Apply damage to the tower
+            board[to.row][to.col].hp -= damage2;
+
+            console.log(`Tower at (${to.row}, ${to.col}) now has ${board[to.row][to.col].hp} HP.`);
+
+            // Check if the tower is destroyed
+            if (board[to.row][to.col].hp <= 0) {
+                console.log(`Tower at (${to.row}, ${to.col}) is destroyed.`);
+                board[to.row][to.col].unit = ''; // Remove the tower
+                io.to(roomId).emit('towerDestroyed', { position: to, message: "Tower has been destroyed!" });
+            } else {
+                io.to(roomId).emit('updateTowerHp', { position: to, newHp: board[to.row][to.col].hp });
+            }
+           
+
+        } else
+        {  
         // Avoidance logic (skip for towers or if bot is attacking from red terrain)
         let hitChance = 1.0;
         if (!attackingPiece.startsWith("P2_M") && !targetPiece.startsWith('P2_T') && fromTerrain !== 'red') {
@@ -1157,57 +1209,9 @@ async function makeMove(from, to, roomId, playerId) {
                 return true; // End function here if attack missed
             }
         }
-
-        function getUnitDamage(unit) {
-            const unitDamageMap = {
-                'P1_A': 2, 'P2_A': 2, // Archers
-                'P1_H': 3, 'P2_H': 3, // Horses
-                'P1_W': 1, 'P2_W': 1, // Warriors
-                'P1_M': 4, 'P2_M': 4, // Mages
-                'P1_GW': 5, 'P2_GW': 5, // General Warrior
-                'P1_GA': 4, 'P2_GA': 4, // General Archer
-                'P1_GH': 3, 'P2_GH': 3, // General Horse
-                'P1_Orc': 4, 'P2_Orc': 4, // General Horse
-                'P1_Paladin': 3, 'P2_Paladin': 3, // General P
-                'P1_Barbarian': 3, 'P2_Barbarian': 3, // General B
-                'P1_GM': 4, 'P2_GM': 4, // General Horse
-                'P1_Voldemort': 4, 'P2_Voldemort': 4, // General Horse
-                'P1_Camaleon': 3, 'P2_Camaleon': 3, // General Horse
-                // Add other units with their respective damages
-            };
-            return unitDamageMap[unit] || 3; // Default damage is 1 if unit type is not in the map
-        }
+    
+ 
         
-
-
-        let isTower = false;
-        let damage = getUnitDamage(attackingPiece);  // Get damage based on unit type
-    
-         // Check if the target is a tower
-        if (targetPiece === 'P1_T' ) {
-                isTower = true;
-            }
-    
-            // Deal damage to towers
-            if (isTower) {
-                const tower = game.board[to.row][to.col];
-    
-                if (!tower.hp) {
-                    tower.hp = 26;  // Initialize tower HP if not already set
-                }
-    
-                damage = getUnitDamage(attackingPiece); // Get damage from the attacking piece
-                tower.hp -= damage; // Apply damage to tower
-            // Emit a board update with the tower's new HP
-            
-                console.log(`Tower at (${to.row}, ${to.col}) now has ${tower.hp} HP after taking ${damage} damage.`);
-        
-
-            if (tower.hp <= 0) {
-                board[to.row][to.col].unit = 'towerdestroyed';
-                io.to(roomId).emit('gameOver', 'Player 2 wins!');
-            }
-        } 
 
        
 
@@ -1287,7 +1291,7 @@ async function makeMove(from, to, roomId, playerId) {
                      await delay(4000);
             }    
                 
-        
+        } 
     } else {
         // Handle movement if it's not an attack
         console.log(`Bot is moving from (${from.row},${from.col}) to (${to.row},${to.col})`);
