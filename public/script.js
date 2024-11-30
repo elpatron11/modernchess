@@ -1342,6 +1342,7 @@ socket.on('waitingForOpponent', (data) => {
     const statusDisplay = document.getElementById('statusDisplay'); // Ensure you have this element in your HTML
     statusDisplay.textContent = data.status;
     statusDisplay.style.display = 'block';  // Make the status visible
+    
 });
 
 // Event listener for the "View Generals" button

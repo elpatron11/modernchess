@@ -1734,21 +1734,27 @@ socket.on('emojiSelected', function(data) {
             } else {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
                 matchmakingQueue.push({ socket: socket, username: data.username, general: data.general,  card: data.card  });
-                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
+                socket.emit('waitingForOpponent', { status: 'Waiting/Esperando...' });
             }
         } else {
             matchmakingQueue.push({ socket: socket, username: data.username, general: data.general, card: data.card });
-            socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
-            console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general} and ${data.card}`);
-    
-            // Start a timeout to join a game with bot if no match is found in 40 seconds
-            setTimeout(() => {
-                const isStillQueued = matchmakingQueue.some(player => player.socket.id === socket.id);
-                if (isStillQueued) {
-                    matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id); // Remove player from queue
-                    joinGameWithBot(socket, data); // Call function to join with bot
-                }
-            }, 40000); // 40 seconds timeout
+    socket.emit('waitingForOpponent', { status: 'Waiting/Esperando...', timeLeft: 40 });
+    console.log(`Player ${socket.id} added to matchmaking queue with general ${data.general} and ${data.card}`);
+
+    let countDown = 40; // Total wait time
+    const countDownInterval = setInterval(() => {
+        countDown -= 1; // Update every 5 seconds
+        if (countDown > 0) {
+            socket.emit('waitingForOpponent', { status: `Waiting/Esperando... ${countDown} sec` });
+        } else {
+            clearInterval(countDownInterval);
+            const isStillQueued = matchmakingQueue.some(player => player.socket.id === socket.id);
+            if (isStillQueued) {
+                matchmakingQueue = matchmakingQueue.filter(player => player.socket.id !== socket.id); // Remove player from queue
+                joinGameWithBot(socket, data); // Call function to join with bot
+            }
+        }
+    }, 1000); // 5 seconds interval
         }
     }
     
@@ -1827,7 +1833,7 @@ socket.on('emojiSelected', function(data) {
             if (!isBot && (!opponentSocketId || !opponentSocketId.connected)) {
                 console.error('Matchmaking error: Invalid or disconnected opponent.');
                 matchmakingQueue.push({ socket: socket, username, general, card });
-                socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
+                socket.emit('waitingForOpponent', { status: 'Waiting/Esperando...' });
                 return;
             }
             
@@ -1939,7 +1945,7 @@ socket.on('emojiSelected', function(data) {
             startTurnTimer(roomId, games[roomId].turn);
         } else {
             matchmakingQueue.push({ socket: socket, username, general, card });
-            socket.emit('waitingForOpponent', { status: 'Waiting for an opponent...' });
+            socket.emit('waitingForOpponent', { status: 'Waiting/Esperando...' });
             console.log(`Player ${socket.id} added to matchmaking queue with general ${general} and ${card} `);
         }
     }

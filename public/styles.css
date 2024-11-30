@@ -430,6 +430,7 @@ td .tower-hp {
   height: 100px;
   padding: 5px;
  
+  
 }
 
 #leaveGameButton {
@@ -838,6 +839,8 @@ td .tower-hp {
     transform: scale(1.1); /* Slightly enlarge on hover */
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); /* More prominent shadow */
 }
+
+
 
 
 #LoginButton {
