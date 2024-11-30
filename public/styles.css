@@ -65,7 +65,14 @@ li {
  font:#f4f4f4;
 }
 
-
+#generalsSelection2{
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10000; /* On top of other elements */
+    left:1111;
+    top: 1000;
+    
+}
 
 
 #opponentInfo{
@@ -423,15 +430,6 @@ td .tower-hp {
 }
 
 
-#signs {
- display:flex;
- align-items: center;
- width: 100px;
-  height: 100px;
-  padding: 5px;
- 
-  
-}
 
 #leaveGameButton {
     display: none; /* Button is hidden by default */
