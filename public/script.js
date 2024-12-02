@@ -297,14 +297,22 @@ function loadGeneralDropdown() {
             });
 
 
-              // Set the initial image
-              const generalImage = document.getElementById('generalImage');
+                            // Set the initial image
+                            // Set the initial image and error handling
+                const generalImage = document.getElementById('generalImage');
+                generalImage.onerror = function() {
+                    // This replaces the .png extension with .gif if the .png fails to load
+                    this.src = this.src.replace('.png', '.gif');
+                };
+
               generalImage.src = `/resources/images/dropdown/${generals[0]}.png`; // Adjust the path as necessary
+              
               document.getElementById('generalPhoto').style.display = 'block'; // Show the card photo
 
               // Add an event listener to change image on selection
               generalDropdown.addEventListener('change', function() {
                   generalImage.src = `resources/images/dropdown/${this.value}.png`; // Update the image source based on the selected value
+                  
                   document.getElementById('generalPhoto').style.display = 'block';
               });
         })

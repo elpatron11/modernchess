@@ -194,22 +194,45 @@ app.get('/generals', async (req, res) => {
         }
 
         const allGenerals = [
-            { name: 'GM', price: 0, gcPrice: 0 },
-            { name: 'GW', price: 5, gcPrice: 500 },
-            { name: 'Camaleon', price: 5, gcPrice: 500 } ,           
-            { name: 'GH', price: 5, gcPrice: 600 },
-            { name: 'GA', price: 5, gcPrice: 700 },
-            { name: 'Barbarian', price: 10, gcPrice: 1000 },
-            { name: 'Paladin', price: 10, gcPrice: 1200 },            
-            { name: 'Orc', price: 10, gcPrice: 1200 },
-            { name: 'Voldemort', price: 15, gcPrice: 3000 },
-            { name: 'Robinhood', price: 15, gcPrice: 5000 }
+            { name: 'GM', price: 0, gcPrice: 0, totalAvailable: Infinity },
+            { name: 'GW', price: 5, gcPrice: 500, totalAvailable: Infinity },             
+            { name: 'GH', price: 5, gcPrice: 1000, totalAvailable: Infinity },
+            { name: 'GA', price: 5, gcPrice: 2000, totalAvailable: Infinity },
+            { name: 'Camaleon', price: 5, gcPrice: 15000, totalAvailable: 100 } ,  
+            { name: 'Barbarian', price: 10, gcPrice: 15000, totalAvailable: 100 },
+            { name: 'Paladin', price: 10, gcPrice: 15000, totalAvailable: 100 },            
+            { name: 'Orc', price: 10, gcPrice: 15000, totalAvailable: 100 },
+            { name: 'Robinhood', price: 15, gcPrice: 30000, totalAvailable: 20 },
+            { name: 'Voldemort', price: 15, gcPrice: 30000, totalAvailable: 20 }
         ];
 
+                // Fetch the count of generals sold from the database
+        async function fetchGeneralsSold() {
+            try {
+                const generalsCount = await Player.aggregate([
+                    { $unwind: "$ownedGenerals" },
+                    { $group: { _id: "$ownedGenerals", count: { $sum: 1 } } }
+                ]);
+                return generalsCount.reduce((acc, curr) => {
+                    acc[curr._id] = curr.count;
+                    return acc;
+                }, {});
+            } catch (error) {
+                console.error("Failed to fetch generals count from DB:", error);
+                return {};
+            }
+        }
+      
+
         const ownedGenerals = player.ownedGenerals || [];
+        const generalsSold = await fetchGeneralsSold();
         const generals = allGenerals.map(general => ({
             ...general,
             owned: ownedGenerals.includes(general.name),
+            quantityAvailable: general.totalAvailable !== Infinity 
+        ? `${general.totalAvailable - (generalsSold[general.name] || 0)}/${general.totalAvailable}` 
+        : 'Unlimited'
+
         }));
 
         res.json({ generals, gcBalance: player.generalsCoin || 0 });

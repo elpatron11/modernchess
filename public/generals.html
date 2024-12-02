@@ -226,89 +226,97 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        const username = localStorage.getItem('username'); // Get the logged-in user's username
-        
-        if (!username) {
-            alert('Please log in to view your generals.');
-            return;
-        }
+    const username = localStorage.getItem('username');
+    
+    if (!username) {
+        alert('Please log in to view your generals.');
+        return;
+    }
 
-        // Fetch general data from the server, including ownership and balance
-        fetch(`/generals?username=${username}`)
-            .then(response => response.json())
-            .then(data => {
-                const { generals, gcBalance } = data; // Assuming the server returns the general list and GC balance
-                const generalContainer = document.getElementById('generalContainer');
-                const gcBalanceDisplay = document.getElementById('gcBalanceDisplay');
+    // Fetch general data from the server, including ownership and balance
+    fetch(`/generals?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+            const { generals, gcBalance } = data;
+            const generalContainer = document.getElementById('generalContainer');
+            const gcBalanceDisplay = document.getElementById('gcBalanceDisplay');
 
-                // Display the GC balance
-                gcBalanceDisplay.innerHTML = `Balance: ${gcBalance} <img src="/resources/images/gccoin.png" alt="GC Coin">`;
+            // Display the GC balance
+            gcBalanceDisplay.innerHTML = `Balance: ${gcBalance} <img src="/resources/images/gccoin.png" alt="GC Coin">`;
 
-                generalContainer.innerHTML = ''; // Clear the container
+            generalContainer.innerHTML = ''; // Clear the container
 
-                generals.forEach(general => {
-                    const card = document.createElement('div');
-                    card.classList.add('card');
+            generals.forEach(general => {
+                const card = document.createElement('div');
+                card.classList.add('card');
 
-                    const img = document.createElement('img');
-                    img.src = `/resources/images/dropdown/${general.name}.png`;
-                    img.alt = general.name;
+                const img = document.createElement('img');
+                img.src = `/resources/images/dropdown/${general.name}.png`;
+                img.alt = general.name;
+                            // If the PNG fails to load, try loading the GIF
+                img.onerror = () => {
+                    img.src = `/resources/images/dropdown/${general.name}.gif`;
+                };
 
-                    const title = document.createElement('h3');
-                    title.textContent = `General ${general.name}`;
 
-                    card.appendChild(img);
-                    card.appendChild(title);
+                const title = document.createElement('h3');
+                title.textContent = `General ${general.name}`;
 
-                    if (general.owned) {
-                        const ownedText = document.createElement('p');
-                        ownedText.textContent = 'Owned';
-                        ownedText.classList.add('owned');
-                        card.appendChild(ownedText);
-                    } else {
-                        // Price in USD
-                        const priceText = document.createElement('p');
-                        priceText.textContent = `Price: $${general.price}`;
+                card.appendChild(img);
+                card.appendChild(title);
 
-                        // GC Price with icon
-                        const gcPriceContainer = document.createElement('div');
-                        gcPriceContainer.classList.add('price-container');
-                        const gcPriceText = document.createElement('span');
-                        gcPriceText.textContent = `${general.gcPrice}`;
-                        const gcCoinImage = document.createElement('img');
-                        gcCoinImage.src = '/resources/images/gccoin.png'; // Update with your GC coin image path
-                        gcCoinImage.alt = 'GC Coin';
+                // Check ownership and availability
+                if (general.owned) {
+                    const ownedText = document.createElement('p');
+                    ownedText.textContent = 'Owned';
+                    ownedText.classList.add('owned');
+                    const ownedtxt2 = document.createElement('p');
+                    ownedtxt2.textContent = `Available: ${general.quantityAvailable}`;
+                    card.appendChild(ownedText);
+                    card.appendChild(ownedtxt2);
+                } else if (general.quantityAvailable === 0) {
+                    const soldOutText = document.createElement('p');
+                    soldOutText.textContent = 'Sold Out';
+                    soldOutText.style.color = 'red';
+                    soldOutText.style.fontWeight = 'bold';
+                    card.appendChild(soldOutText);
+                } else {
+                  const priceText = document.createElement('p');
+                  //  priceText.textContent = `Price: $${general.price}`;
+                    const availableText = document.createElement('p');
+                    availableText.textContent = `Available: ${general.quantityAvailable}`;
 
-                        gcPriceContainer.appendChild(gcPriceText);
-                        gcPriceContainer.appendChild(gcCoinImage);
+                    const gcPriceContainer = document.createElement('div');
+                    gcPriceContainer.classList.add('price-container');
+                    const gcPriceText = document.createElement('span');
+                    gcPriceText.textContent = `${general.gcPrice}`;
+                    const gcCoinImage = document.createElement('img');
+                    gcCoinImage.src = '/resources/images/gccoin.png';
+                    gcCoinImage.alt = 'GC Coin';
 
-                        // PayPal button
-                        const paypalLink = document.createElement('a');
-                        paypalLink.href = `https://www.paypal.com/ncp/payment/HWT98VJQ8C3SJ`; // Replace with dynamic link if needed
-                        paypalLink.classList.add('paypal-button');
-                        paypalLink.textContent = 'PayPal';
+                    gcPriceContainer.appendChild(gcPriceText);
+                    gcPriceContainer.appendChild(gcCoinImage);
 
-                        // GC Button
-                        const gcButton = document.createElement('button');
-                        gcButton.classList.add('gc-button');
-                        gcButton.textContent = 'GC';
-                        gcButton.onclick = () => {
-                            const currentUsername = localStorage.getItem('username'); // Always fetch the current username
-                            purchaseWithGC(general.name, general.gcPrice, currentUsername);
-                            console.log(currentUsername);
-                        };
+                    const gcButton = document.createElement('button');
+                    gcButton.classList.add('gc-button');
+                    gcButton.textContent = 'Buy with GC';
+                    gcButton.onclick = () => {
+                        purchaseWithGC(general.name, general.gcPrice, username);
+                    };
 
-                        card.appendChild(priceText);
-                        card.appendChild(gcPriceContainer);
-                        card.appendChild(paypalLink);
-                        card.appendChild(gcButton);
-                    }
+                    card.appendChild(priceText);
+                    card.appendChild(availableText);
+                    card.appendChild(gcPriceContainer);
+                    card.appendChild(gcButton);
+                }
 
-                    generalContainer.appendChild(card);
-                });
-            })
-            .catch(error => console.error('Error loading generals:', error));
-    });
+                generalContainer.appendChild(card);
+            });
+        })
+        .catch(error => console.error('Error loading generals:', error));
+});
+
+
 
     function purchaseWithGC(generalName, gcPrice, username) {
         console.log(username);
