@@ -198,12 +198,12 @@ app.get('/generals', async (req, res) => {
             { name: 'GW', price: 5, gcPrice: 500, totalAvailable: Infinity },             
             { name: 'GH', price: 5, gcPrice: 1000, totalAvailable: Infinity },
             { name: 'GA', price: 5, gcPrice: 2000, totalAvailable: Infinity },
-            { name: 'Camaleon', price: 5, gcPrice: 15000, totalAvailable: 100 } ,  
-            { name: 'Barbarian', price: 10, gcPrice: 15000, totalAvailable: 100 },
-            { name: 'Paladin', price: 10, gcPrice: 15000, totalAvailable: 100 },            
-            { name: 'Orc', price: 10, gcPrice: 15000, totalAvailable: 100 },
-            { name: 'Robinhood', price: 15, gcPrice: 30000, totalAvailable: 20 },
-            { name: 'Voldemort', price: 15, gcPrice: 30000, totalAvailable: 20 }
+            { name: 'Camaleon', price: 5, gcPrice: 10000, totalAvailable: 20 } ,  
+            { name: 'Barbarian', price: 10, gcPrice: 10000, totalAvailable: 20 },
+            { name: 'Paladin', price: 10, gcPrice: 15000, totalAvailable: 20 },            
+            { name: 'Orc', price: 10, gcPrice: 15000, totalAvailable: 10 },
+            { name: 'Robinhood', price: 15, gcPrice: 30000, totalAvailable: 5 },
+            { name: 'Voldemort', price: 15, gcPrice: 30000, totalAvailable: 5 }
         ];
 
                 // Fetch the count of generals sold from the database
@@ -458,13 +458,13 @@ schedule.scheduleJob('00 10 * * *', function() { //6pm server time
 
     try {
         // Find the top 5 players based on rating
-        const topPlayers = await Player.find().sort({ rating: -1 }).limit(5).select('_id');
+        const topPlayers = await Player.find().sort({ rating: -1 }).limit(3).select('_id');
         const topPlayerIds = topPlayers.map(player => player._id);
 
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: {generalsCoin: 200 } },         // Increment balance by 1
+            { $inc: {generalsCoin: 1000 } },         // Increment balance by 1
             
         );
         
@@ -481,7 +481,7 @@ schedule.scheduleJob('00 10 * * *', function() { //6pm server time
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: { generalsCoin: 100} },         // Increment balance by 1
+            { $inc: { generalsCoin: 1000} },         // Increment balance by 1
             
         );
         
@@ -499,7 +499,7 @@ schedule.scheduleJob('00 10 * * *', function() { //6pm server time
         // Update only the top 5 players by increasing their balance by 1
         await Player.updateMany(
             { _id: { $in: topPlayerIds } },  // Match only top 5 players
-            { $inc: { generalsCoin: 200} },         // Increment balance by 1
+            { $inc: { generalsCoin: 1000} },         // Increment balance by 1
             
         );
         
