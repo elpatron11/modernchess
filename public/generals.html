@@ -246,6 +246,26 @@
 
             generalContainer.innerHTML = ''; // Clear the container
 
+             // Create and append the GC Coins card
+             const gcCoinCard = document.createElement('div');
+            gcCoinCard.classList.add('card');
+            const gcCoinImg = document.createElement('img');
+            gcCoinImg.src = '/resources/images/gcbag.gif'; // Your GC coin image path
+            gcCoinImg.alt = 'GC Coins';
+            const gcCoinTitle = document.createElement('h3');
+            gcCoinTitle.textContent = 'GC Coins';
+            const paypalLink = document.createElement('a');
+            paypalLink.href = 'https://www.paypal.com/ncp/payment/2R7SRKLBMECEJ'; // Replace with your PayPal link
+            paypalLink.classList.add('paypal-button');
+            paypalLink.textContent = 'Buy';
+
+            gcCoinCard.appendChild(gcCoinImg);
+            gcCoinCard.appendChild(gcCoinTitle);
+            gcCoinCard.appendChild(paypalLink);
+            generalContainer.appendChild(gcCoinCard);
+
+
+
             generals.forEach(general => {
                 const card = document.createElement('div');
                 card.classList.add('card');
