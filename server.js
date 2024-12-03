@@ -531,8 +531,8 @@ app.post('/convert-gc-to-balance', async (req, res) => {
         }
 
         // Convert GC to balance (1 balance for every 1500 GC)
-        const balanceEarned = Math.floor(gcAmount / 1500);
-        player.generalsCoin -= balanceEarned * 1500; // Deduct the GC Coins
+        const balanceEarned = Math.floor(gcAmount / 3000);
+        player.generalsCoin -= balanceEarned * 3000; // Deduct the GC Coins
         player.balance += balanceEarned; // Add balance
 
         await player.save();
