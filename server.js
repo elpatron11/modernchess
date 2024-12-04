@@ -195,9 +195,9 @@ app.get('/generals', async (req, res) => {
 
         const allGenerals = [
             { name: 'GM', price: 0, gcPrice: 0, totalAvailable: Infinity },
-            { name: 'GW', price: 5, gcPrice: 500, totalAvailable: Infinity },             
-            { name: 'GH', price: 5, gcPrice: 1000, totalAvailable: Infinity },
-            { name: 'GA', price: 5, gcPrice: 2000, totalAvailable: Infinity },
+            { name: 'GW', price: 5, gcPrice: 1000, totalAvailable: 20 },             
+            { name: 'GH', price: 5, gcPrice: 5000, totalAvailable: 20 },
+            { name: 'GA', price: 5, gcPrice: 10000, totalAvailable: 20 },
             { name: 'Camaleon', price: 5, gcPrice: 10000, totalAvailable: 20 } ,  
             { name: 'Barbarian', price: 10, gcPrice: 10000, totalAvailable: 20 },
             { name: 'Paladin', price: 10, gcPrice: 15000, totalAvailable: 20 },            
