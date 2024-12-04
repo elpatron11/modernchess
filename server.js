@@ -593,11 +593,13 @@ app.post('/convert-balance-to-gc', async (req, res) => {
     for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
             const unit = game.board[row][col].unit;
-            if (unit.startsWith(opponent)) {
+            if (unit.startsWith(opponent) && ((unit !=="archerattack") || (unit !=="p1mageattack") || (unit !=="p2mageattack")  || (unit !=="paladinattack") || (unit !=="paladin2attack"))) {
                 if (unit.includes('_T')) {
                     towerAlive = true;  // Opponent's tower is still alive
                 } else {
+                    
                     unitsAlive = true;  // Opponent has other units alive
+                    
                 }
             }
         }
