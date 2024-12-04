@@ -1545,6 +1545,10 @@ io.on('connection',(socket) => {
                     board: game.board,
                     turn: game.turn,
                     players: game.players,
+                    playerCards: { // Including card details
+                        P1: game.cards[game.players.P1.socketId],
+                        P2: game.cards[game.players.P2.socketId]
+                    }
                 });
             } else {
                 socket.emit('error', 'Game not found or has ended.');

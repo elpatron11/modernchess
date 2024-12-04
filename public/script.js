@@ -225,6 +225,7 @@ function joinGame() {
         const username = localStorage.getItem('username'); 
         const general = document.getElementById('generalChoice').value;
         const card = document.getElementById('cardChoice').value;
+        
         letsgo.play();
         if (!username) {
             alert("Please log in before joining the game.");
@@ -1150,6 +1151,9 @@ function renderBoard() {
       document.getElementById('infoContainer').style.display = 'block';
       document.getElementById('gameBoard').style.display = 'block';
       document.getElementById('emojiDisplays').style.display = 'block';
+
+      const statusDisplay = document.getElementById('statusDisplay');
+      statusDisplay.style.display = 'none'; // Hide the status message
     const gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
 
@@ -1367,11 +1371,63 @@ socket.on('gameStateUpdate', (data) => {
     
     renderBoard(data.board);
     updateTurnDisplay(data.turn);
-     // Disable clicks for spectators
+        
+    const player1Info = document.getElementById('player1Info'); // Element where player info is displayed
+    const player2Info = document.getElementById('player2Info');
+
+    // Update player usernames
+    player1Info.textContent = `Player 1: ${data.players.P1.username}`;
+    player2Info.textContent = `Player 2: ${data.players.P2.username}`;
+    
+    
+    if (data.playerCards){
+     displayPlayerCards(data.playerCards); // New function to handle displaying cards
+    }
      document.querySelectorAll('.board-cell').forEach(cell => {
         cell.style.pointerEvents = 'none'; // Prevent interaction
     });
 });
+
+
+
+
+
+function displayPlayerCards(cards) {
+    const cardIcons = {
+        "Pushback": "/resources/images/card/icon/Pushback.gif",
+        "Army Boost": "/resources/images/card/icon/Army Boost.gif",
+        "Tower Attacker": "/resources/images/card/icon/Tower Attacker.gif",
+        "Magia Negra": "/resources/images/card/icon/Magia Negra.gif",
+        "Tower Defense": "/resources/images/card/icon/Tower Defense.gif"
+    };
+
+    const player1Card = cards.P1;
+    const player2Card = cards.P2;
+
+    const player1CardImage = document.getElementById('player1CardImage');
+    const player2CardImage = document.getElementById('player2CardImage');
+    document.getElementById('emojiDisplays').style.display = "none";
+    document.getElementById('playerCardContainer').style.display = "none";
+    document.getElementById('emojiPicker').style.display = "none";
+
+    document.getElementById('player1Card').style.display = "block";
+    document.getElementById('player2Card').style.display = "block";
+
+
+    console.log(`Player 1 Card: ${player1Card}, Player 2 Card: ${player2Card}`); // Debugging
+
+    player1CardImage.src = cardIcons[player1Card] || "/resources/images/card/icon/default.gif";
+    player2CardImage.src = cardIcons[player2Card] || "/resources/images/card/icon/default.gif";
+
+    player1CardImage.onerror = () => {
+        console.error('Failed to load image for Player 1');
+        player1CardImage.src = "/resources/images/card/icon/default.gif"; // Fallback image
+    };
+    player2CardImage.onerror = () => {
+        console.error('Failed to load image for Player 2');
+        player2CardImage.src = "/resources/images/card/icon/default.gif"; // Fallback image
+    };
+}
 
 
 

@@ -887,8 +887,27 @@ td .tower-hp {
         transform: translateY(0);
     }
 }
+#player1Card #player2Card{
+    display: inline-block;
+   
+}
 
+.player-info {
+    display: inline-block;
+   
+    margin: 20px;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    text-align: center;
+}
 
+.player-info img {
+   display:inline-block;
+    width: 100px;
+    height: auto;
+    margin-top: 10px;
+}
 /* Spectator container styles */
 #spectatorContainer {
     margin: 20px auto;
