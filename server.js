@@ -293,10 +293,10 @@ app.get('/cards', async (req, res) => {
 
         const allCards = [
             { name: 'Tower Defense', price: 0, gcPrice: 0 },
-            { name: 'Army Boost', price: 5, gcPrice: 500 }, // New Card
-            { name: 'Tower Attacker', price: 5, gcPrice: 1000 },
-            { name: 'Pushback', price: 5, gcPrice: 3000 },           
-            { name: 'Magia Negra', price: 10, gcPrice: 5000 }
+            { name: 'Army Boost', price: 5, gcPrice: 1000 }, // New Card
+            { name: 'Tower Attacker', price: 5, gcPrice: 2000 },
+            { name: 'Pushback', price: 5, gcPrice: 6000 },           
+            { name: 'Magia Negra', price: 10, gcPrice: 10000 }
             ];
 
         const ownedCards = player.ownedCards || [];
@@ -684,13 +684,7 @@ let botAccount = {
     socketId: 'botSocketId12345',  // Static socket ID for the bot
 };
 
-// Function to assign a random general to the bot
-function assignRandomGeneralToBot() {
-    let availableGenerals = ['GW', 'GH', 'GA', 'GM', 'Barbarian', 'Paladin', 'Orc', 'Voldemort', 'Robinhood'];
-    const randomGeneral = availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
-    botAccount.general = randomGeneral;
-    console.log(`Bot assigned general: ${randomGeneral}`);
-}
+
 
 // Switch turns
 function switchTurn(roomId) {

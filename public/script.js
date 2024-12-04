@@ -1029,7 +1029,7 @@ function isValidAttack(pieceData, fromRow, fromCol, toRow, toCol, playerCard) {
       // Tower logic with "Tower Attacker" card
     if ((piece.startsWith('P1_T') || piece.startsWith('P2_T')) && playerCard === 'Tower Attacker') {
         return (rowDiff === 0 && colDiff <= 3) ||  // Horizontal attack
-               (colDiff === 0 && rowDiff <= 3);  // Vertical attack
+               (colDiff === 0 && rowDiff <= 3) || (rowDiff === colDiff && rowDiff <= 1);  // Vertical attack
     }
 
     // Default tower logic (adjacent attack only)
